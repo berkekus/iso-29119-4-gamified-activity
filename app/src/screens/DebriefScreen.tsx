@@ -12,11 +12,8 @@ interface Props {
 
 export default function DebriefScreen({ onNavigate, onBack }: Props) {
   const { mcdc, resetMcdc } = useGameStore()
-  const { verdictResult, faultResults, triggeredMisconceptions } = {
-    verdictResult: mcdc.verdictResult,
-    faultResults: mcdc.faultResults,
-    triggeredMisconceptions: useGameStore.getState().triggeredMisconceptions,
-  }
+  const { verdictResult, faultResults } = mcdc
+  const triggeredMisconceptions = mcdc.misconceptions.filter(m => m.triggered)
 
   const isGuilty = verdictResult?.coverageAchieved && faultResults.every(f => f.detected)
   const coverageVal = verdictResult?.coveragePercent ?? 0

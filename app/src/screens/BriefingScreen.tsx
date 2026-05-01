@@ -149,18 +149,21 @@ export default function BriefingScreen({ onNavigate, onBack }: Props) {
           </div>
 
           {/* Dialog */}
-          {dialogIdx < dialogs.length && (
-            <DialogBox
-              speaker={dialogs[dialogIdx].speaker}
-              text={dialogs[dialogIdx].text}
-              portrait={dialogIdx === 0 || dialogIdx === 2 ? <JudgeSprite size={60} /> : <ProsecutorSprite size={60} />}
-              onNext={() => {
-                if (dialogIdx < dialogs.length - 1) setDialogIdx(dialogIdx + 1)
-                else onNavigate('investigation')
-              }}
-              isLast={dialogIdx === dialogs.length - 1}
-            />
-          )}
+          {dialogs[dialogIdx] && (() => {
+            const dialog = dialogs[dialogIdx]!
+            return (
+              <DialogBox
+                speaker={dialog.speaker}
+                text={dialog.text}
+                portrait={dialogIdx === 0 || dialogIdx === 2 ? <JudgeSprite size={60} /> : <ProsecutorSprite size={60} />}
+                onNext={() => {
+                  if (dialogIdx < dialogs.length - 1) setDialogIdx(dialogIdx + 1)
+                  else onNavigate('investigation')
+                }}
+                isLast={dialogIdx === dialogs.length - 1}
+              />
+            )
+          })()}
 
           {/* Time hint */}
           <div style={{ fontFamily: PIXEL_FONT, fontSize: 7, color: TC.grey, textAlign: 'center', padding: 8 }}>

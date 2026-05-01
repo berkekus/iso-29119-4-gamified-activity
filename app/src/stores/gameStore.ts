@@ -70,6 +70,7 @@ interface GameState {
   submitForVerdict: () => void
   advancePhase: () => void
   resetGame: () => void
+  resetMcdc: () => void
 
   // MCDC namespace — B-UI actions
   mcdc: McdcState
@@ -174,6 +175,10 @@ export const useGameStore = create<GameState>((set, get) => ({
       verdict: null,
       mcdc: initialMcdc,
     })
+  },
+
+  resetMcdc: () => {
+    set({ mcdc: initialMcdc })
   },
 
   // MCDC namespace
