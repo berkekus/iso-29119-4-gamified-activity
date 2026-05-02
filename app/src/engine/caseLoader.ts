@@ -46,6 +46,13 @@ const TechniqueEnum = z.enum([
   'MCDC',
 ])
 
+/** Multi-choice option used by level_picker (and other discrete-choice) cases. */
+const OptionSchema = z.object({
+  id: z.string(),
+  label: z.string(),
+  is_correct: z.boolean(),
+})
+
 export const CaseFileSchema = z.object({
   id: z.string(),
   // 'act' is the campaign chapter; we keep legacy values + add hierarchy acts
@@ -75,6 +82,8 @@ export const CaseFileSchema = z.object({
   estimated_time_sec: z.number().int().positive().optional(),
   /** Concept Analysis cross-reference, e.g. §3 row index. */
   concept_ref: z.string().optional(),
+  /** Multi-choice options for level_picker / similar question types. */
+  options: z.array(OptionSchema).optional(),
 })
 
 export type CaseFile = z.infer<typeof CaseFileSchema>

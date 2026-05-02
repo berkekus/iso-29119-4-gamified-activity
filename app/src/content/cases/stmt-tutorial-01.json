@@ -1,0 +1,30 @@
+{
+  "id": "stmt-tutorial-01",
+  "act": "STMT_BRANCH",
+  "difficulty": 1,
+  "iso_clauses": ["§5.3.1", "§6.3.1"],
+  "technique": "STATEMENT",
+  "layer": 1,
+  "question_type": "binary_verdict",
+  "misconception_target": "NONE",
+  "concept_ref": "§2 Level 1 — Statement testing (executed nodes, CFG)",
+  "estimated_time_sec": 60,
+  "scenario": {
+    "title": "First Trial — Greeting Service",
+    "narrative": "You are reviewing a tiny greeting helper. Every line of the function must execute at least once for Statement coverage.",
+    "code": "def greet(name):\n    msg = 'Hello, ' + name\n    return msg",
+    "conditions": [],
+    "decision_expression": ""
+  },
+  "claim": "The single test T1 below achieves 100% Statement coverage.",
+  "test_set": [
+    { "id": "T1", "inputs": { "name_given": true }, "outcome": true }
+  ],
+  "hints": [
+    "Statement coverage only asks: did every line of code execute at least once? Re-read Law Card 1.",
+    "There are 2 executable lines (the assignment and the return). Did T1 hit both?",
+    "Solution — Yes. T1 runs both lines exactly once, so Statement coverage is 100%. (Note: there are no decisions to test here, so Statement is the strongest applicable level.)"
+  ],
+  "seeded_faults": [],
+  "misconceptions": []
+}

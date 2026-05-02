@@ -1,0 +1,49 @@
+{
+  "id": "branch-loop-trap-01",
+  "act": "STMT_BRANCH",
+  "difficulty": 3,
+  "iso_clauses": ["§5.3.2", "§6.3.2"],
+  "technique": "BRANCH",
+  "layer": 1,
+  "question_type": "level_picker",
+  "misconception_target": "STMT-GUARANTEES-BRANCH",
+  "concept_ref": "§3 row 2 — 'Statement coverage guarantees branch coverage' (corrected by Branch testing)",
+  "estimated_time_sec": 150,
+  "scenario": {
+    "title": "The Empty Loop",
+    "narrative": "A batch processor walks through a list of items. The QA engineer ran one test with a non-empty list, saw every line execute, and signed off.",
+    "code": "def process_all(items):\n    count = 0\n    for item in items:\n        handle(item)\n        count += 1\n    return count",
+    "conditions": [
+      { "id": "L", "label": "items is non-empty (loop body executed at least once)" }
+    ],
+    "decision_expression": "L"
+  },
+  "claim": "Which is the STRONGEST coverage level the test set below actually satisfies?",
+  "test_set": [
+    { "id": "T1", "inputs": { "L": true }, "outcome": true }
+  ],
+  "hints": [
+    "A `for` (or `while`) loop has a TRUE edge (enter the body) and a FALSE edge (skip the body / exit immediately). Re-read Law Card 2.",
+    "T1 enters the loop body — so the TRUE edge is covered and every line runs. But which edge is NOT covered? What test would exercise it?",
+    "Solution — Statement: 100% (every line executed). Branch: 50% (the 'empty list' false-edge of the `for` is never taken). Strongest satisfied level = STATEMENT only. Add T2 with items=[] to reach Branch coverage."
+  ],
+  "options": [
+    { "id": "opt-stmt",     "label": "Statement only",                "is_correct": true  },
+    { "id": "opt-branch",   "label": "Branch (and therefore Statement)", "is_correct": false },
+    { "id": "opt-decision", "label": "Decision",                      "is_correct": false },
+    { "id": "opt-none",     "label": "None — not even Statement",     "is_correct": false }
+  ],
+  "seeded_faults": [
+    {
+      "id": "F1",
+      "description": "process_all returns the wrong default (e.g. None) when items is empty.",
+      "trigger": { "condition": "L", "requiredDecisionFlip": true }
+    }
+  ],
+  "misconceptions": [
+    {
+      "id": "STMT-GUARANTEES-BRANCH",
+      "explanation_md": "Statement coverage does NOT guarantee Branch coverage. A loop that is entered at least once executes every line, satisfying Statement testing — but the implicit 'skip the loop' edge stays untested. To detect empty-list bugs you must add a test that exercises the FALSE edge of the loop predicate."
+    }
+  ]
+}
