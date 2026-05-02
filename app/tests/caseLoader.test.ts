@@ -4,6 +4,9 @@ import validCaseJson from '../src/content/cases/mcdc-altitude-disengage-01.json'
 import stmtTutorialJson from '../src/content/cases/stmt-tutorial-01.json'
 import stmtHiddenBranchJson from '../src/content/cases/stmt-hidden-branch-01.json'
 import branchLoopTrapJson from '../src/content/cases/branch-loop-trap-01.json'
+import decisionAndTrapJson from '../src/content/cases/decision-and-trap-01.json'
+import bcOrThreeCondJson from '../src/content/cases/bc-or-three-cond-01.json'
+import bcNegationMaskJson from '../src/content/cases/bc-negation-mask-01.json'
 import mcdcTutorialJson from '../src/content/cases/mcdc-tutorial-01.json'
 import mcdcTrapIsolationJson from '../src/content/cases/mcdc-trap-isolation-01.json'
 
@@ -42,6 +45,12 @@ describe('CaseFile schema', () => {
     expect(() => loadCase(stmtTutorialJson)).not.toThrow()
     expect(() => loadCase(stmtHiddenBranchJson)).not.toThrow()
     expect(() => loadCase(branchLoopTrapJson)).not.toThrow()
+  })
+
+  test('Layer 2-3 Decision & BC case dosyalarını parse eder', () => {
+    expect(() => loadCase(decisionAndTrapJson)).not.toThrow()
+    expect(() => loadCase(bcOrThreeCondJson)).not.toThrow()
+    expect(() => loadCase(bcNegationMaskJson)).not.toThrow()
   })
 
   test('zenginleştirilmiş MCDC case dosyaları hala parse edilir', () => {

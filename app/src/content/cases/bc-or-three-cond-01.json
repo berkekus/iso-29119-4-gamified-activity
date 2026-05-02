@@ -1,0 +1,52 @@
+{
+  "id": "bc-or-three-cond-01",
+  "act": "DECISION_BC",
+  "difficulty": 2,
+  "iso_clauses": ["§5.3.4", "§6.3.4"],
+  "technique": "BC",
+  "layer": 3,
+  "question_type": "coverage_table",
+  "misconception_target": "DECISION-EQUALS-BC",
+  "concept_ref": "§2 Level 3b — 'Each condition T / F' / §3 row 3",
+  "estimated_time_sec": 240,
+  "scenario": {
+    "title": "Triple Alarm — One Trigger Is Enough",
+    "narrative": "An alarm fires when ANY of three independent sensors trips. Build the condition-coverage table for the four submitted tests and decide whether Branch Condition coverage is achieved.",
+    "code": "def alarm(a, b, c):\n    if a or b or c:\n        return execute()\n    return None",
+    "conditions": [
+      { "id": "A", "label": "sensor A" },
+      { "id": "B", "label": "sensor B" },
+      { "id": "C", "label": "sensor C" }
+    ],
+    "decision_expression": "A || B || C"
+  },
+  "claim": "Branch Condition coverage is 100% with the four tests below.",
+  "test_set": [
+    { "id": "T1", "inputs": { "A": true,  "B": false, "C": false }, "outcome": true  },
+    { "id": "T2", "inputs": { "A": false, "B": true,  "C": false }, "outcome": true  },
+    { "id": "T3", "inputs": { "A": false, "B": false, "C": true  }, "outcome": true  },
+    { "id": "T4", "inputs": { "A": false, "B": false, "C": false }, "outcome": false }
+  ],
+  "options": [
+    { "id": "opt-yes", "label": "Yes — every condition takes both T and F at least once.", "is_correct": true  },
+    { "id": "opt-no",  "label": "No — at least one condition is missing a T or F value.",  "is_correct": false }
+  ],
+  "hints": [
+    "Branch Condition coverage requires that EACH condition (A, B, C) be observed as TRUE in at least one test AND as FALSE in at least one test. Re-read Law Card 4.",
+    "Build the table column by column. A: T in T1, F in T2/T3/T4 ✓. B: T in T2, F in T1/T3/T4 ✓. C: T in T3, F in T1/T2/T4 ✓.",
+    "Solution — YES, BC is 100%. But notice: BCC would still need 2³=8 combinations (only 4 of 8 are present). BC ≠ BCC — that distinction is the next layer up (§5.3.5)."
+  ],
+  "seeded_faults": [
+    {
+      "id": "F1",
+      "description": "Sensor C is silently OR-ed in only when A is also true (a typo bug), but Branch Condition coverage cannot detect this.",
+      "trigger": { "condition": "C", "requiredDecisionFlip": true }
+    }
+  ],
+  "misconceptions": [
+    {
+      "id": "DECISION-EQUALS-BC",
+      "explanation_md": "BC coverage is achieved when each condition is observed as both T and F across the test set — independent of how many combinations are tested. This case does satisfy BC, but BC still does NOT detect interaction bugs between conditions: that requires BCC (Law Card 5) or MCDC (Law Card 6)."
+    }
+  ]
+}
