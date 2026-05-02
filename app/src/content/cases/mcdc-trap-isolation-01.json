@@ -3,6 +3,12 @@
   "act": "MCDC",
   "difficulty": 3,
   "iso_clauses": ["§5.3.6", "§5.3.6.2", "Annex C.2.3.6"],
+  "technique": "MCDC",
+  "layer": 4,
+  "question_type": "pair_selector",
+  "misconception_target": "MCDC-INDEP-AS-ISOLATION",
+  "concept_ref": "§3 row 5 — 'students routinely satisfy (1) while violating (2) or (3)'",
+  "estimated_time_sec": 240,
   "scenario": {
     "title": "Emergency Override",
     "narrative": "An emergency system triggers when alarm A fires, or when both backup sensor B and manual override C are active.",
@@ -14,6 +20,18 @@
     ],
     "decision_expression": "A || (B && C)"
   },
+  "claim": "Toggling each condition once in isolation is enough for MCDC.",
+  "test_set": [
+    { "id": "T1", "inputs": { "A": true,  "B": false, "C": false }, "outcome": true  },
+    { "id": "T2", "inputs": { "A": false, "B": false, "C": false }, "outcome": false },
+    { "id": "T3", "inputs": { "A": false, "B": true,  "C": false }, "outcome": false },
+    { "id": "T4", "inputs": { "A": false, "B": false, "C": true  }, "outcome": false }
+  ],
+  "hints": [
+    "Re-read Law Card 6. The trap: an 'isolation' test where you flip a condition is NOT a valid pair if the outcome doesn't actually flip.",
+    "Look at B: T2↔T3 only flips B, but the outcome stays false because A=false AND C=false make B's contribution zero. This is NOT a valid independence pair for B.",
+    "Solution — A: T1↔T2 valid. B: needs C=true so flipping B matters; e.g. add T5={A=F,B=T,C=T,out=T} and pair T4↔T5. C: similarly needs B=true. The given 4-test set FAILS MCDC for B and C."
+  ],
   "seeded_faults": [
     {
       "id": "F1",
