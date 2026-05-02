@@ -7,6 +7,9 @@ import branchLoopTrapJson from '../src/content/cases/branch-loop-trap-01.json'
 import decisionAndTrapJson from '../src/content/cases/decision-and-trap-01.json'
 import bcOrThreeCondJson from '../src/content/cases/bc-or-three-cond-01.json'
 import bcNegationMaskJson from '../src/content/cases/bc-negation-mask-01.json'
+import bccThreeAndJson from '../src/content/cases/bcc-three-and-01.json'
+import bccCostIntuitionJson from '../src/content/cases/bcc-cost-intuition-01.json'
+import mcdcVaultBossJson from '../src/content/cases/mcdc-vault-boss-01.json'
 import mcdcTutorialJson from '../src/content/cases/mcdc-tutorial-01.json'
 import mcdcTrapIsolationJson from '../src/content/cases/mcdc-trap-isolation-01.json'
 
@@ -51,6 +54,12 @@ describe('CaseFile schema', () => {
     expect(() => loadCase(decisionAndTrapJson)).not.toThrow()
     expect(() => loadCase(bcOrThreeCondJson)).not.toThrow()
     expect(() => loadCase(bcNegationMaskJson)).not.toThrow()
+  })
+
+  test('Layer 4 BCC ve MCDC vault-boss case dosyalarını parse eder', () => {
+    expect(() => loadCase(bccThreeAndJson)).not.toThrow()
+    expect(() => loadCase(bccCostIntuitionJson)).not.toThrow()
+    expect(() => loadCase(mcdcVaultBossJson)).not.toThrow()
   })
 
   test('zenginleştirilmiş MCDC case dosyaları hala parse edilir', () => {

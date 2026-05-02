@@ -53,6 +53,13 @@ const OptionSchema = z.object({
   is_correct: z.boolean(),
 })
 
+/** Numeric prompt used by numeric_input bridge quizzes. */
+const NumericPromptSchema = z.object({
+  question: z.string(),
+  answer: z.number(),
+  unit: z.string().optional(),
+})
+
 export const CaseFileSchema = z.object({
   id: z.string(),
   // 'act' is the campaign chapter; we keep legacy values + add hierarchy acts
@@ -84,6 +91,8 @@ export const CaseFileSchema = z.object({
   concept_ref: z.string().optional(),
   /** Multi-choice options for level_picker / similar question types. */
   options: z.array(OptionSchema).optional(),
+  /** One or more numeric prompts for numeric_input bridge quizzes. */
+  numeric_prompts: z.array(NumericPromptSchema).optional(),
 })
 
 export type CaseFile = z.infer<typeof CaseFileSchema>

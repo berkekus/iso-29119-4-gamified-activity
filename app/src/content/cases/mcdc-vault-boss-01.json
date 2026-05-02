@@ -1,0 +1,71 @@
+{
+  "id": "mcdc-vault-boss-01",
+  "act": "MCDC",
+  "difficulty": 3,
+  "iso_clauses": ["§5.3.6", "§5.3.6.2", "Annex C.2.3.6", "§3.36"],
+  "technique": "MCDC",
+  "layer": 4,
+  "question_type": "test_designer",
+  "misconception_target": "MCDC-INDEP-AS-ISOLATION",
+  "concept_ref": "§4 Level 4 — 'Four-conditional vault alarm. BCC requires 16 tests; MCDC requires 5.'",
+  "estimated_time_sec": 360,
+  "scenario": {
+    "title": "FINAL BOSS — Vault Authorization",
+    "narrative": "Access to a high-security vault requires a valid badge AND a non-expired PIN AND the request to fall within the time window AND a positive biometric scan. BCC would need 2^4 = 16 tests; certify the vault with the MCDC minimum of 5. Pick exactly 5 rows from the 16-row truth table that satisfy MCDC for ALL FOUR conditions.",
+    "code": "if (badge_valid and not pin_expired and time_window_ok and biometric_ok):\n    grant_access()",
+    "conditions": [
+      { "id": "A", "label": "badge_valid" },
+      { "id": "B", "label": "!pin_expired" },
+      { "id": "C", "label": "time_window_ok" },
+      { "id": "D", "label": "biometric_ok" }
+    ],
+    "decision_expression": "A && B && C && D"
+  },
+  "claim": "Choose exactly 5 of the 16 truth-table rows so that each of A, B, C, D has a valid MCDC independence pair.",
+  "test_set": [
+    { "id": "R1",  "inputs": { "A": true,  "B": true,  "C": true,  "D": true  }, "outcome": true  },
+    { "id": "R2",  "inputs": { "A": false, "B": true,  "C": true,  "D": true  }, "outcome": false },
+    { "id": "R3",  "inputs": { "A": true,  "B": false, "C": true,  "D": true  }, "outcome": false },
+    { "id": "R4",  "inputs": { "A": true,  "B": true,  "C": false, "D": true  }, "outcome": false },
+    { "id": "R5",  "inputs": { "A": true,  "B": true,  "C": true,  "D": false }, "outcome": false },
+    { "id": "R6",  "inputs": { "A": false, "B": false, "C": true,  "D": true  }, "outcome": false },
+    { "id": "R7",  "inputs": { "A": false, "B": true,  "C": false, "D": true  }, "outcome": false },
+    { "id": "R8",  "inputs": { "A": false, "B": true,  "C": true,  "D": false }, "outcome": false },
+    { "id": "R9",  "inputs": { "A": true,  "B": false, "C": false, "D": true  }, "outcome": false },
+    { "id": "R10", "inputs": { "A": true,  "B": false, "C": true,  "D": false }, "outcome": false },
+    { "id": "R11", "inputs": { "A": true,  "B": true,  "C": false, "D": false }, "outcome": false },
+    { "id": "R12", "inputs": { "A": false, "B": false, "C": false, "D": true  }, "outcome": false },
+    { "id": "R13", "inputs": { "A": false, "B": false, "C": true,  "D": false }, "outcome": false },
+    { "id": "R14", "inputs": { "A": false, "B": true,  "C": false, "D": false }, "outcome": false },
+    { "id": "R15", "inputs": { "A": true,  "B": false, "C": false, "D": false }, "outcome": false },
+    { "id": "R16", "inputs": { "A": false, "B": false, "C": false, "D": false }, "outcome": false }
+  ],
+  "options": [
+    { "id": "opt-r1",  "label": "R1  (T,T,T,T → grant)", "is_correct": true  },
+    { "id": "opt-r2",  "label": "R2  (F,T,T,T → deny)",  "is_correct": true  },
+    { "id": "opt-r3",  "label": "R3  (T,F,T,T → deny)",  "is_correct": true  },
+    { "id": "opt-r4",  "label": "R4  (T,T,F,T → deny)",  "is_correct": true  },
+    { "id": "opt-r5",  "label": "R5  (T,T,T,F → deny)",  "is_correct": true  },
+    { "id": "opt-r6",  "label": "R6  (F,F,T,T → deny)",  "is_correct": false },
+    { "id": "opt-r12", "label": "R12 (F,F,F,T → deny)",  "is_correct": false },
+    { "id": "opt-r16", "label": "R16 (F,F,F,F → deny)",  "is_correct": false }
+  ],
+  "hints": [
+    "MCDC needs, for each of A, B, C, D, two tests where ONLY that condition flips and the overall outcome flips. With AND-chains, the outcome flips only between TTTT and one-condition-false. Re-read Law Card 6.",
+    "Anchor on R1=(T,T,T,T) — the only TRUE outcome. The independence partner for each condition is the row where that single condition is flipped to F: R2 for A, R3 for B, R4 for C, R5 for D.",
+    "Solution — Pick {R1, R2, R3, R4, R5}. Each pair shares R1 as the baseline, flips exactly one condition, and flips the outcome from grant → deny. That's MCDC in 5 tests instead of BCC's 16. This is the canonical N+1 pattern from Annex C.2.3.6 and the cost-saving that DO-178C exploits."
+  ],
+  "seeded_faults": [
+    {
+      "id": "F1",
+      "description": "Biometric check D is silently bypassed when the badge is valid — the bug is invisible without an MCDC pair on D.",
+      "trigger": { "condition": "D", "requiredDecisionFlip": true }
+    }
+  ],
+  "misconceptions": [
+    {
+      "id": "MCDC-INDEP-AS-ISOLATION",
+      "explanation_md": "The 5-test MCDC solution is the canonical N+1 pattern: one shared 'all true' baseline plus one row per condition where that condition alone flips to false. The temptation is to add 'isolation' rows like R6=(F,F,T,T) — but these flip TWO conditions, which is not a valid independence pair for either. MCDC's power is precisely this discipline: each pair must change exactly one condition while the others stay fixed."
+    }
+  ]
+}

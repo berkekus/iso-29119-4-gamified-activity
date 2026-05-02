@@ -1,0 +1,55 @@
+{
+  "id": "bcc-three-and-01",
+  "act": "BCC",
+  "difficulty": 1,
+  "iso_clauses": ["§5.3.4", "§5.3.5", "§6.3.5"],
+  "technique": "BCC",
+  "layer": 4,
+  "question_type": "level_picker",
+  "misconception_target": "BCC-EQUALS-MCDC",
+  "concept_ref": "§2 Level 4a — 'All 2^N combinations' / §3 row 4 'BCC and MCDC are the same technique'",
+  "estimated_time_sec": 240,
+  "scenario": {
+    "title": "Triple Lock — Launch Sequence",
+    "narrative": "A launch sequence fires only when all three sensor checks pass. The QA engineer submits five tests and claims Branch Condition Combination coverage. How many of the 2^3 = 8 combinations are actually exercised?",
+    "code": "def launch(a, b, c):\n    if a and b and c:\n        return launch_now()\n    return None",
+    "conditions": [
+      { "id": "A", "label": "speed_ok" },
+      { "id": "B", "label": "brake_ok" },
+      { "id": "C", "label": "sensor_ok" }
+    ],
+    "decision_expression": "A && B && C"
+  },
+  "claim": "Branch Condition Combination coverage is satisfied with the 5 tests below.",
+  "test_set": [
+    { "id": "T1", "inputs": { "A": true,  "B": true,  "C": true  }, "outcome": true  },
+    { "id": "T2", "inputs": { "A": false, "B": false, "C": false }, "outcome": false },
+    { "id": "T3", "inputs": { "A": true,  "B": false, "C": false }, "outcome": false },
+    { "id": "T4", "inputs": { "A": false, "B": true,  "C": false }, "outcome": false },
+    { "id": "T5", "inputs": { "A": false, "B": false, "C": true  }, "outcome": false }
+  ],
+  "options": [
+    { "id": "opt-stmt",     "label": "Statement only",                                 "is_correct": false },
+    { "id": "opt-decision", "label": "Decision only",                                  "is_correct": false },
+    { "id": "opt-bc",       "label": "Branch Condition (each condition T and F)",     "is_correct": true  },
+    { "id": "opt-bcc",     "label": "BCC — all 2^N combinations covered",              "is_correct": false }
+  ],
+  "hints": [
+    "BCC requires every one of 2^N input combinations to be tested. With N=3 conditions, that means 8 distinct rows of the truth table. Re-read Law Card 5.",
+    "Tally the present combinations: TTT, FFF, TFF, FTT-no wait, FTF, FFT — that is 5 unique rows out of 8. Which 3 rows are missing? (TTF, TFT, FTT)",
+    "Solution — BC is satisfied (each of A, B, C is observed T and F). But BCC is NOT: only 5 of 8 combinations are tested. The 3 missing rows can hide an interaction bug. Strongest satisfied = BRANCH CONDITION."
+  ],
+  "seeded_faults": [
+    {
+      "id": "F1",
+      "description": "An operator typo in production reads `a and b or c` instead of `a and b and c`. This bug is invisible to BC but caught by BCC at row TTF.",
+      "trigger": { "condition": "B", "requiredDecisionFlip": true }
+    }
+  ],
+  "misconceptions": [
+    {
+      "id": "BCC-EQUALS-MCDC",
+      "explanation_md": "BCC and MCDC are NOT the same. BCC demands all 2^N combinations (here, 8 tests). MCDC demands only N+1 carefully engineered independence pairs (here, 4 tests). BCC is exhaustive but exponentially expensive; MCDC is targeted but conceptually harder. The next case will show the cost gap explicitly."
+    }
+  ]
+}
