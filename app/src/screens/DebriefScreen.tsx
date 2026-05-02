@@ -11,11 +11,17 @@ interface Props {
 }
 
 export default function DebriefScreen({ onNavigate, onBack }: Props) {
-  const { mcdc, resetMcdc } = useGameStore()
+  const { mcdc, resetMcdc, caseFile } = useGameStore()
   const { verdictResult, faultResults, triggeredMisconceptions } = {
     verdictResult: mcdc.verdictResult,
     faultResults: mcdc.faultResults,
     triggeredMisconceptions: useGameStore.getState().triggeredMisconceptions,
+  }
+  const seededFaultMap: Record<string, string> = {}
+  const misconceptionMap: Record<string, string> = {}
+  if (caseFile) {
+    for (const f of caseFile.seeded_faults) seededFaultMap[f.id] = f.description
+    for (const m of caseFile.misconceptions) misconceptionMap[m.id] = m.explanation_md
   }
 
   const isGuilty = verdictResult?.coverageAchieved && faultResults.every(f => f.detected)
@@ -97,8 +103,8 @@ export default function DebriefScreen({ onNavigate, onBack }: Props) {
                       {f.detected ? 'DETECTED' : 'ESCAPED'}
                     </div>
                     <div style={{ fontFamily: HAND_FONT, fontSize: 16, color: TC.ink, marginTop: 4 }}>
-                      Short-circuit evaluation skips C when B is true.
-                      {!f.detected && ' To detect this, include a test case where A=T, B=F, C=T — forcing C to be evaluated.'}
+                      {seededFaultMap[f.id] ?? 'Short-circuit evaluation skips C when B is true.'}
+                      {!f.detected && ' To detect this, construct a test that forces the masked condition to be evaluated.'}
                     </div>
                   </div>
                 </div>
@@ -133,7 +139,7 @@ export default function DebriefScreen({ onNavigate, onBack }: Props) {
                 <div key={m.id}>
                   <div style={{ fontFamily: PIXEL_FONT, fontSize: 7, color: TC.ink, marginBottom: 4 }}>{m.id}</div>
                   <div style={{ fontFamily: HAND_FONT, fontSize: 16, color: TC.ink, lineHeight: 1.5 }}>
-                    You tested each condition in isolation instead of constructing proper independence pairs where only one condition varies.
+                    {misconceptionMap[m.id] ?? m.explanation ?? 'You tested each condition in isolation instead of constructing proper independence pairs where only one condition varies.'}
                   </div>
                 </div>
               ))}

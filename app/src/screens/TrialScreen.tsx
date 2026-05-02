@@ -18,8 +18,12 @@ interface Props {
 }
 
 export default function TrialScreen({ onNavigate, onBack }: Props) {
-  const { mcdc, setVerdict } = useGameStore()
+  const { mcdc, setVerdict, caseFile } = useGameStore()
   const [phase, setPhase] = useState<Phase>('presenting')
+  const seededFaultMap: Record<string, string> = {}
+  if (caseFile) {
+    for (const f of caseFile.seeded_faults) seededFaultMap[f.id] = f.description
+  }
 
   useEffect(() => {
     if (phase === 'presenting') {
@@ -137,7 +141,7 @@ export default function TrialScreen({ onNavigate, onBack }: Props) {
                       {f.id}: {f.detected ? 'CAUGHT' : 'ESCAPED'}
                     </div>
                     <div style={{ fontFamily: MONO_FONT, fontSize: 10, color: TC.grey }}>
-                      Short-circuit evaluation skips C
+                      {seededFaultMap[f.id] ?? 'Short-circuit evaluation skips C'}
                     </div>
                   </div>
                 </div>

@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import type { CaseFile } from '../engine/caseLoader'
+import { loadCase as parseCaseFile } from '../engine/caseLoader'
 import type {
   TruthTableRow,
   IndependencePair,
@@ -9,6 +10,35 @@ import type {
 } from '../engine/types'
 import { generateTruthTable } from '../engine/coverage/mcdc'
 import { computeVerdict } from '../engine/verdict/index'
+
+// ── Case content registry — all 12 cases keyed by id ─────────────────────────
+import stmtTutorial01      from '../content/cases/stmt-tutorial-01.json'
+import stmtHiddenBranch01  from '../content/cases/stmt-hidden-branch-01.json'
+import branchLoopTrap01    from '../content/cases/branch-loop-trap-01.json'
+import decisionAndTrap01   from '../content/cases/decision-and-trap-01.json'
+import bcOrThreeCond01     from '../content/cases/bc-or-three-cond-01.json'
+import bcNegationMask01    from '../content/cases/bc-negation-mask-01.json'
+import bccThreeAnd01       from '../content/cases/bcc-three-and-01.json'
+import bccCostIntuition01  from '../content/cases/bcc-cost-intuition-01.json'
+import mcdcTutorial01      from '../content/cases/mcdc-tutorial-01.json'
+import mcdcAltitude01      from '../content/cases/mcdc-altitude-disengage-01.json'
+import mcdcTrapIsolation01 from '../content/cases/mcdc-trap-isolation-01.json'
+import mcdcVaultBoss01     from '../content/cases/mcdc-vault-boss-01.json'
+
+const CASE_REGISTRY: Record<string, unknown> = {
+  'stmt-tutorial-01':           stmtTutorial01,
+  'stmt-hidden-branch-01':      stmtHiddenBranch01,
+  'branch-loop-trap-01':        branchLoopTrap01,
+  'decision-and-trap-01':       decisionAndTrap01,
+  'bc-or-three-cond-01':        bcOrThreeCond01,
+  'bc-negation-mask-01':        bcNegationMask01,
+  'bcc-three-and-01':           bccThreeAnd01,
+  'bcc-cost-intuition-01':      bccCostIntuition01,
+  'mcdc-tutorial-01':           mcdcTutorial01,
+  'mcdc-altitude-disengage-01': mcdcAltitude01,
+  'mcdc-trap-isolation-01':     mcdcTrapIsolation01,
+  'mcdc-vault-boss-01':         mcdcVaultBoss01,
+}
 
 // ── Screen type — all navigable screens ──────────────────────────────────────
 
@@ -65,6 +95,7 @@ interface GameState {
   completedCases: string[]
 
   loadCase: (caseData: CaseFile) => void
+  loadCaseById: (caseId: string) => void
   addSubmissionPair: (pair: IndependencePair) => void
   removePair: (row1: number, row2: number) => void
   submitForVerdict: () => void
@@ -132,6 +163,16 @@ export const useGameStore = create<GameState>((set, get) => ({
       verdict: null,
       mcdc: initialMcdc,
     })
+  },
+
+  loadCaseById: (caseId) => {
+    const raw = CASE_REGISTRY[caseId]
+    if (!raw) {
+      console.error(`[gameStore] Unknown case id: ${caseId}`)
+      throw new Error(`Unknown case id: ${caseId}`)
+    }
+    const caseData = parseCaseFile(raw)
+    get().loadCase(caseData)
   },
 
   addSubmissionPair: (pair) => {

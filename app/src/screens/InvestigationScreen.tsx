@@ -24,9 +24,10 @@ const tdStyle = {
 }
 
 export default function InvestigationScreen({ onNavigate, onBack }: Props) {
-  const { mcdc, toggleRow } = useGameStore()
+  const { mcdc, toggleRow, caseFile } = useGameStore()
   const [validated, setValidated] = useState(false)
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; msg: string } | null>(null)
+  const decisionExpr = caseFile?.scenario.decision_expression || 'A && (B || C)'
 
   const selectedCount = mcdc.selectedRows.length
 
@@ -55,18 +56,16 @@ export default function InvestigationScreen({ onNavigate, onBack }: Props) {
         {/* Main: Truth Table */}
         <div style={{ flex: 1 }}>
           <div style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: TC.grey, marginBottom: 12 }}>
-            TRUTH TABLE — A {'&&'} (B || C)
+            TRUTH TABLE — {decisionExpr}
           </div>
 
           {/* Code reminder */}
           <div style={{
             background: '#1e1e2e', color: '#cdd6f4', fontFamily: MONO_FONT, fontSize: 12,
             padding: '10px 16px', border: `2px solid ${TC.ink}`, marginBottom: 16,
+            whiteSpace: 'pre-wrap',
           }}>
-            <span style={{ color: '#cba6f7' }}>if</span>{' '}(<span style={{ color: '#f9e2af' }}>A</span>{' '}
-            <span style={{ color: '#89b4fa' }}>{'&&'}</span>{' '}(<span style={{ color: '#f9e2af' }}>B</span>{' '}
-            <span style={{ color: '#89b4fa' }}>{'||'}</span>{' '}
-            <span style={{ color: '#f9e2af' }}>C</span>)) → Decision <span style={{ color: '#a6e3a1' }}>D</span>
+            <span style={{ color: '#cba6f7' }}>if</span>{' '}(<span style={{ color: '#f9e2af' }}>{decisionExpr}</span>) → Decision <span style={{ color: '#a6e3a1' }}>D</span>
           </div>
 
           {/* Table */}

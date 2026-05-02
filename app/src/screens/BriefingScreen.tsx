@@ -3,6 +3,7 @@ import { TC, PIXEL_FONT, HAND_FONT, MONO_FONT } from '../ui/tokens'
 import PixelButton from '../ui/PixelButton'
 import DialogBox from '../ui/DialogBox'
 import { JudgeSprite, ProsecutorSprite, BugSprite } from '../ui/CharacterSprites'
+import { useGameStore } from '../stores/gameStore'
 import type { Screen } from '../stores/gameStore'
 
 interface Props {
@@ -10,7 +11,7 @@ interface Props {
   onBack: () => void
 }
 
-const caseData = {
+const fallbackCaseData = {
   title: 'Altitude Hold Disengage',
   narrative:
     'A flight control system disengages altitude hold when certain conditions are met. The decision logic has been flagged for MC/DC coverage under ISO 26262 ASIL D.',
@@ -28,14 +29,60 @@ const caseData = {
   ],
 }
 
-const dialogs = [
+const fallbackDialogs = [
   { speaker: 'THE JUDGE',   text: 'Case #007 — "Altitude Hold Disengage". The court calls the prosecution to investigate.' },
   { speaker: 'PROSECUTOR',  text: 'Your Honor, I will demonstrate that each condition in this flight control decision independently affects the disengage outcome.' },
   { speaker: 'THE JUDGE',   text: 'The standard of proof is MC/DC — Modified Condition/Decision Coverage per §5.3.6. Anything weaker is inadmissible. Proceed.' },
 ]
 
+const TECHNIQUE_LABEL: Record<string, string> = {
+  STATEMENT: 'Statement coverage (ISO 29119-4 §5.3.1)',
+  BRANCH:    'Branch coverage (ISO 29119-4 §5.3.2)',
+  DECISION:  'Decision coverage (ISO 29119-4 §5.3.3)',
+  BC:        'Branch Condition coverage (ISO 29119-4 §5.3.4)',
+  BCC:       'Branch Condition Combination (ISO 29119-4 §5.3.5)',
+  MCDC:      'MC/DC (ISO 29119-4 §5.3.6, ISO 26262 ASIL D)',
+}
+
+const ACT_LABEL: Record<string, string> = {
+  STMT_BRANCH: 'ACT I',
+  DECISION_BC: 'ACT II',
+  BCC:         'ACT III',
+  MCDC:        'ACT IV',
+  Combinatorial: 'ACT III',
+  DataFlow:    'ACT V',
+}
+
 export default function BriefingScreen({ onNavigate, onBack }: Props) {
   const [dialogIdx, setDialogIdx] = useState(0)
+  const caseFile = useGameStore((s) => s.caseFile)
+
+  const caseData = caseFile
+    ? {
+        title:      caseFile.scenario.title,
+        narrative:  caseFile.scenario.narrative,
+        code:       caseFile.scenario.code,
+        conditions: caseFile.scenario.conditions,
+        expression: caseFile.scenario.decision_expression,
+        charges:    (caseFile.hints && caseFile.hints.length > 0)
+          ? caseFile.hints
+          : caseFile.claim
+            ? [caseFile.claim]
+            : fallbackCaseData.charges,
+      }
+    : fallbackCaseData
+
+  const techniqueLine = caseFile?.technique ? TECHNIQUE_LABEL[caseFile.technique] ?? `Technique: ${caseFile.technique}` : 'MC/DC (ISO 26262 ASIL D)'
+  const actLabel      = caseFile ? ACT_LABEL[caseFile.act] ?? 'ACT' : 'ACT III'
+  const caseFileNum   = caseFile ? `CASE FILE · ${caseFile.id.toUpperCase()}` : 'CASE FILE #007'
+
+  const dialogs = caseFile
+    ? [
+        { speaker: 'THE JUDGE',  text: `Case "${caseFile.scenario.title}". The court calls the prosecution to investigate.` },
+        { speaker: 'PROSECUTOR', text: `Your Honor, I will demonstrate the required coverage criterion for this decision logic.` },
+        { speaker: 'THE JUDGE',  text: `The standard of proof is ${techniqueLine}. Anything weaker is inadmissible. Proceed.` },
+      ]
+    : fallbackDialogs
 
   return (
     <div style={{ minHeight: '100vh', position: 'relative', zIndex: 1, padding: '30px 40px' }}>
@@ -43,7 +90,7 @@ export default function BriefingScreen({ onNavigate, onBack }: Props) {
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
         <PixelButton small variant="secondary" onClick={onBack}>← CAMPAIGN</PixelButton>
         <div style={{ display: 'flex', gap: 8 }}>
-          <span style={{ fontFamily: PIXEL_FONT, fontSize: 8, color: TC.magenta, padding: '4px 10px', border: `2px solid ${TC.magenta}` }}>ACT III</span>
+          <span style={{ fontFamily: PIXEL_FONT, fontSize: 8, color: TC.magenta, padding: '4px 10px', border: `2px solid ${TC.magenta}` }}>{actLabel}</span>
           <span style={{ fontFamily: PIXEL_FONT, fontSize: 8, color: TC.grey, padding: '4px 10px', border: `2px solid ${TC.grid}` }}>PHASE 1: BRIEFING</span>
         </div>
       </div>
@@ -61,7 +108,7 @@ export default function BriefingScreen({ onNavigate, onBack }: Props) {
               border: `2px solid ${TC.magenta}`, padding: '4px 8px', transform: 'rotate(3deg)',
             }}>CLASSIFIED</div>
 
-            <div style={{ fontFamily: PIXEL_FONT, fontSize: 8, color: TC.grey, marginBottom: 4 }}>CASE FILE #007</div>
+            <div style={{ fontFamily: PIXEL_FONT, fontSize: 8, color: TC.grey, marginBottom: 4 }}>{caseFileNum}</div>
             <h2 style={{ fontFamily: PIXEL_FONT, fontSize: 16, color: TC.ink, margin: '0 0 16px 0' }}>{caseData.title}</h2>
 
             <div style={{ fontFamily: HAND_FONT, fontSize: 20, color: TC.ink, lineHeight: 1.6, marginBottom: 20 }}>
@@ -74,16 +121,9 @@ export default function BriefingScreen({ onNavigate, onBack }: Props) {
               <div style={{
                 background: '#1e1e2e', color: '#cdd6f4', fontFamily: MONO_FONT, fontSize: 13,
                 padding: 16, border: `2px solid ${TC.ink}`, lineHeight: 1.6, overflow: 'auto',
+                whiteSpace: 'pre-wrap',
               }}>
-                <span style={{ color: '#cba6f7' }}>if</span>{' '}(
-                <span style={{ color: '#f9e2af' }}>verticalSpeed</span>{' '}
-                <span style={{ color: '#89b4fa' }}>{'>'}</span>{' '}
-                <span style={{ color: '#fab387' }}>LIMIT</span>{' '}
-                <span style={{ color: '#89b4fa' }}>{'&&'}</span>{' '}(
-                <span style={{ color: '#f9e2af' }}>autopilotEngaged</span>{' '}
-                <span style={{ color: '#89b4fa' }}>{'||'}</span>{' '}
-                <span style={{ color: '#f9e2af' }}>pilotOverride</span>)){' '}
-                <span style={{ color: '#a6e3a1' }}>disengage</span>();
+                {caseData.code}
               </div>
             </div>
 
@@ -129,7 +169,7 @@ export default function BriefingScreen({ onNavigate, onBack }: Props) {
               background: `${TC.magenta}15`, border: `2px solid ${TC.magenta}`, padding: '8px 14px',
             }}>
               <span style={{ fontFamily: PIXEL_FONT, fontSize: 7, color: TC.magenta }}>REQUIRED:</span>
-              <span style={{ fontFamily: MONO_FONT, fontSize: 11, color: TC.ink }}>MC/DC (ISO 26262 ASIL D)</span>
+              <span style={{ fontFamily: MONO_FONT, fontSize: 11, color: TC.ink }}>{techniqueLine}</span>
             </div>
           </div>
         </div>

@@ -12,7 +12,15 @@ import DesignSystemScreen  from './screens/DesignSystemScreen'
 import HowToPlayScreen     from './screens/HowToPlayScreen'
 
 export default function App() {
-  const { screen, navigate, goBack, completedCases } = useGameStore()
+  const { screen, navigate, goBack, completedCases, loadCaseById } = useGameStore()
+
+  const handleSelectCase = (caseId: string) => {
+    try {
+      loadCaseById(caseId)
+    } catch (err) {
+      console.error('[App] Failed to load case', caseId, err)
+    }
+  }
 
   const renderScreen = () => {
     const props = { onNavigate: navigate, onBack: goBack }
@@ -20,7 +28,7 @@ export default function App() {
       case 'menu':
         return <MainMenuScreen onNavigate={navigate} />
       case 'campaign':
-        return <CampaignMapScreen {...props} completedCases={completedCases} />
+        return <CampaignMapScreen {...props} completedCases={completedCases} onSelectCase={handleSelectCase} />
       case 'briefing':
         return <BriefingScreen {...props} />
       case 'investigation':
