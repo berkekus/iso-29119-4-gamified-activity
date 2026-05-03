@@ -115,9 +115,69 @@ interface GameState {
     faults: McdcFaultResult[],
     misconceptions: McdcMisconception[],
   ) => void
+
+  // Generic single-answer submission for non-pair_selector question types.
+  // Returns true on a passing answer (caller can navigate to debrief). Wires
+  // through setVerdict so DebriefScreen renders its banner unchanged.
+  submitAnswer: (payload: AnswerPayload) => boolean
 }
 
+// ── submitAnswer payload union — one variant per question_type ──────────────
+export type AnswerPayload =
+  | { kind: 'binary_verdict'; optionId: string }
+  | { kind: 'level_picker';   optionId: string }
+  | { kind: 'coverage_table'; selectedRowIds: string[] }
+  | { kind: 'numeric_input';  answers: number[] }
+  | { kind: 'test_designer';  selectedRowIds: string[] }
+
 const PHASES: GamePhase[] = ['briefing', 'investigation', 'evidence', 'trial', 'debrief']
+
+// ── Answer evaluation — pure, exported for tests ────────────────────────────
+//
+// Each branch resolves the case's correctness key for its question_type:
+//  • binary_verdict / level_picker  → caseFile.options[].is_correct
+//  • test_designer                  → caseFile.coverage_table[].required (set
+//                                     of required row ids) + required_pick_count
+//  • coverage_table                 → caseFile.coverage_table[].required
+//                                     (player must include all required rows;
+//                                     extras allowed)
+//  • numeric_input                  → caseFile.numeric_prompts[].answer
+//                                     (exact match; no tolerance)
+export function evaluateAnswer(caseData: CaseFile, payload: AnswerPayload): boolean {
+  switch (payload.kind) {
+    case 'binary_verdict':
+    case 'level_picker': {
+      const opt = (caseData.options ?? []).find((o) => o.id === payload.optionId)
+      return Boolean(opt?.is_correct)
+    }
+    case 'coverage_table': {
+      const rows = caseData.coverage_table ?? []
+      const requiredIds = new Set(rows.filter((r) => r.required).map((r) => r.id))
+      const selected = new Set(payload.selectedRowIds)
+      // Must include every required row; extras are allowed.
+      for (const id of requiredIds) if (!selected.has(id)) return false
+      // Must not select any unknown row id (defensive).
+      for (const id of selected) if (!rows.some((r) => r.id === id)) return false
+      return true
+    }
+    case 'numeric_input': {
+      const prompts = caseData.numeric_prompts ?? []
+      if (payload.answers.length !== prompts.length) return false
+      return prompts.every((p, i) => payload.answers[i] === p.answer)
+    }
+    case 'test_designer': {
+      const rows = caseData.coverage_table ?? []
+      const requiredIds = new Set(rows.filter((r) => r.required).map((r) => r.id))
+      const selected = new Set(payload.selectedRowIds)
+      const expectedCount = caseData.required_pick_count ?? requiredIds.size
+      if (selected.size !== expectedCount) return false
+      // Selection must equal the required-id set exactly.
+      if (selected.size !== requiredIds.size) return false
+      for (const id of requiredIds) if (!selected.has(id)) return false
+      return true
+    }
+  }
+}
 
 const initialMcdc: McdcState = {
   selectedRows: [],
@@ -276,6 +336,31 @@ export const useGameStore = create<GameState>()(
         misconceptions: miscList,
       },
     }))
+  },
+
+  // Validates the player's answer against the case's correctness key, writes
+  // a McdcVerdictResult so DebriefScreen renders unchanged, and returns true
+  // on pass. Idempotent: calling twice with the same payload yields the same
+  // result. Caller is responsible for navigating to debrief.
+  submitAnswer: (payload) => {
+    const { caseFile, setVerdict: writeVerdict } = get()
+    if (!caseFile) return false
+
+    const correct = evaluateAnswer(caseFile, payload)
+    writeVerdict(
+      {
+        coverageAchieved: correct,
+        coveragePercent: correct ? 100 : 0,
+        conditionsCovered: [],
+      },
+      (caseFile.seeded_faults ?? []).map((f) => ({ id: f.id, detected: correct })),
+      (caseFile.misconceptions ?? []).map((m) => ({
+        id: m.id,
+        triggered: !correct,
+        explanation: m.explanation_md,
+      })),
+    )
+    return correct
   },
     }),
     {

@@ -16,10 +16,26 @@
     "conditions": [],
     "decision_expression": ""
   },
-  "claim": "The single test T1 below achieves 100% Statement coverage.",
+  "claim": "Did the test set below execute every statement of greet() at least once?",
   "test_set": [
     { "id": "T1", "inputs": { "name_given": true }, "outcome": true }
   ],
+  "options": [
+    {
+      "id": "opt-yes",
+      "label": "Yes — both lines (the assignment and the return) run when T1 fires.",
+      "is_correct": true,
+      "explanation": "Correct. T1 calls greet('...'), which executes the assignment AND the return. With no decisions in this function, Statement coverage is the strongest applicable level."
+    },
+    {
+      "id": "opt-no",
+      "label": "No — the return statement is never reached by T1.",
+      "is_correct": false,
+      "explanation": "Incorrect. There are no early-exit branches in greet(); once the assignment runs, control falls straight into the return."
+    }
+  ],
+  "correct_answer_explanation": "Statement coverage = 100%. T1 hits both executable lines.",
+  "wrong_answer_explanation": "Statement coverage only asks whether each line ran at least once. Trace T1 line by line — both run.",
   "hints": [
     "Statement coverage only asks: did every line of code execute at least once? Re-read Law Card 1.",
     "There are 2 executable lines (the assignment and the return). Did T1 hit both?",

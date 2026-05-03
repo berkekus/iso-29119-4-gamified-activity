@@ -22,19 +22,41 @@
   "claim": "Which is the STRONGEST coverage level the test set below actually satisfies?",
   "test_set": [
     { "id": "T1", "inputs": { "A": false, "B": false }, "outcome": true  },
-    { "id": "T2", "inputs": { "A": true,  "B": true  }, "outcome": true  },
+    { "id": "T2", "inputs": { "A": false, "B": true  }, "outcome": true  },
     { "id": "T3", "inputs": { "A": true,  "B": false }, "outcome": false }
   ],
   "options": [
-    { "id": "opt-stmt",     "label": "Statement only",                                 "is_correct": false },
-    { "id": "opt-decision", "label": "Decision (and therefore Branch + Statement)",    "is_correct": false },
-    { "id": "opt-bc",       "label": "Branch Condition (each condition T and F)",      "is_correct": true  },
-    { "id": "opt-mcdc",     "label": "MCDC — independence pairs for both conditions",  "is_correct": false }
+    {
+      "id": "opt-stmt",
+      "label": "Statement only",
+      "is_correct": false,
+      "explanation": "Too weak. Statement is satisfied (every line runs), but so are Decision and BC — pick the strongest level that is actually met."
+    },
+    {
+      "id": "opt-decision",
+      "label": "Decision (and therefore Branch + Statement)",
+      "is_correct": false,
+      "explanation": "Decision IS satisfied — but so is Branch Condition. A is observed T (T3) and F (T1/T2); B is observed T (T2) and F (T1/T3). BC is also fully met, so Decision is not the STRONGEST level."
+    },
+    {
+      "id": "opt-bc",
+      "label": "Branch Condition (each condition T and F)",
+      "is_correct": true,
+      "explanation": "Correct. A observed T (T3) and F (T1/T2); B observed T (T2) and F (T1/T3) — BC ✓. MCDC fails for B: T1↔T2 flips only B but outcome stays T (because !A=T already covers the OR). No valid B-only-flip pair exists in T1..T3."
+    },
+    {
+      "id": "opt-mcdc",
+      "label": "MCDC — independence pairs for both conditions",
+      "is_correct": false,
+      "explanation": "TRAP. MCDC for A succeeds (T1↔T3 flips only A, outcome flips T→F). MCDC for B fails: T1↔T2 flips only B but the outcome stays T because !A=T already satisfies the OR. With short-circuit on (!A) when A=F, B is masked. To reach MCDC you would need (T,F,F)+(T,T,T) — neither (T,T,T) is in the set."
+    }
   ],
+  "correct_answer_explanation": "BC is the strongest level that holds. MCDC for A is reachable via T1↔T3, but MCDC for B is masked: T1↔T2 only flips B yet the outcome stays TRUE because !A=T already saturates the OR. You'd need (T,T,T) in the test set to surface a valid B independence pair — and it isn't there.",
+  "wrong_answer_explanation": "Read each condition at the SOURCE level: A is the literal `is_admin`, not `not is_admin`. Branch Condition coverage requires A and B each to be observed as T and F.",
   "hints": [
     "Read each condition at the SOURCE level: A is the literal 'is_admin', not 'not is_admin'. Branch Condition coverage requires A and B each to be observed as T and F. Re-read Law Card 4.",
-    "Tally for A and B independently. A: F in T1, T in T2 and T3 ✓. B: F in T1 and T3, T in T2 ✓. Both conditions are observed T and F — BC is satisfied. Now ask: is MCDC also satisfied? Try to build an independence pair for each condition.",
-    "Solution — Decision: T1+T2 give true, T3 gives false → ✓. BC: each of A and B observed T and F → ✓. MCDC for A: need a pair where ONLY A flips and outcome flips. T1↔T3 flips A and outcome → ✓ for A. MCDC for B: need only-B-flips with outcome flip. Short-circuit on (!A) when A=F masks B; no valid pair exists in T1..T3. Strongest satisfied = BRANCH CONDITION."
+    "Tally for A and B independently. A: F in T1/T2, T in T3 ✓. B: F in T1/T3, T in T2 ✓. Both conditions observed T and F — BC is satisfied. Now ask: is MCDC also satisfied?",
+    "Solution — Decision: T1/T2 give true, T3 gives false → ✓. BC: each of A and B observed T and F → ✓. MCDC for A: T1↔T3 flips only A and outcome flips → ✓. MCDC for B: T1↔T2 flips only B but outcome stays T (!A=T saturates the OR). No valid B-pair exists. Strongest satisfied = BRANCH CONDITION."
   ],
   "seeded_faults": [
     {

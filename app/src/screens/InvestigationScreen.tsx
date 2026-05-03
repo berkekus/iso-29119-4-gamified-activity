@@ -6,7 +6,13 @@ import CoverageMeter from '../ui/CoverageMeter'
 import { JudgeSprite } from '../ui/CharacterSprites'
 import { TRUTH_TABLE } from '../engine/coverage/mcdc'
 import { useGameStore } from '../stores/gameStore'
-import type { Screen } from '../stores/gameStore'
+import type { AnswerPayload, Screen } from '../stores/gameStore'
+import {
+  OptionListPicker,
+  CoverageTablePicker,
+  TestDesignerPicker,
+  NumericInputPicker,
+} from './QuestionRenderer'
 
 interface Props {
   onNavigate: (screen: Screen) => void
@@ -36,7 +42,7 @@ const tdStyle = {
 }
 
 export default function InvestigationScreen({ onNavigate, onBack }: Props) {
-  const { mcdc, toggleRow, caseFile, setVerdict } = useGameStore()
+  const { mcdc, toggleRow, caseFile, submitAnswer } = useGameStore()
   const [validated, setValidated] = useState(false)
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; msg: string } | null>(null)
   const decisionExpr = caseFile?.scenario.decision_expression || 'A && (B || C)'
@@ -45,26 +51,30 @@ export default function InvestigationScreen({ onNavigate, onBack }: Props) {
     (caseFile?.technique && TECHNIQUE_LABEL[caseFile.technique]) ?? 'CASE'
   const questionType = caseFile?.question_type ?? 'pair_selector'
 
-  // Heuristic for the "correct" verdict on a binary_verdict / level_picker /
-  // coverage_table case: if the JSON declares any seeded faults or
-  // misconceptions, the claim being shown is a trap, so the correct verdict
-  // is INVALID. Otherwise the claim holds. This avoids extending the schema.
-  const claimIsValid =
-    (caseFile?.seeded_faults?.length ?? 0) === 0 &&
-    (caseFile?.misconceptions?.length ?? 0) === 0
+  // Single dispatch point for all non-pair_selector question types. The child
+  // pickers build their own AnswerPayload; this handler validates via the
+  // store and either advances to debrief (correct) or shows inline feedback
+  // pulled from caseFile.options[].explanation / wrong_answer_explanation
+  // (incorrect — case stays on this screen, no progress recorded).
+  const handleAnswer = (payload: AnswerPayload) => {
+    if (!caseFile) return
+    const passed = submitAnswer(payload)
 
-  const submitSimpleVerdict = (playerSaidValid: boolean) => {
-    const correct = playerSaidValid === claimIsValid
-    setVerdict(
-      { coverageAchieved: correct, coveragePercent: correct ? 100 : 0, conditionsCovered: [] },
-      (caseFile?.seeded_faults ?? []).map((f) => ({ id: f.id, detected: correct })),
-      (caseFile?.misconceptions ?? []).map((m) => ({
-        id: m.id,
-        triggered: !correct,
-        explanation: m.explanation_md,
-      })),
-    )
-    onNavigate('debrief')
+    if (passed) {
+      const msg =
+        pickOptionExplanation(caseFile, payload, true) ??
+        caseFile.correct_answer_explanation ??
+        'Correct. The claim has been certified.'
+      setFeedback({ type: 'success', msg })
+      // Brief pause so the player can read the explanation, then advance.
+      setTimeout(() => onNavigate('debrief'), 900)
+    } else {
+      const msg =
+        pickOptionExplanation(caseFile, payload, false) ??
+        caseFile.wrong_answer_explanation ??
+        'Not quite. Re-read the hint and try again.'
+      setFeedback({ type: 'error', msg })
+    }
   }
 
   const selectedCount = mcdc.selectedRows.length
@@ -81,19 +91,16 @@ export default function InvestigationScreen({ onNavigate, onBack }: Props) {
     }
   }
 
-  // ─── Branch: simple, non-pair_selector question types ───────────────────────
-  // For these the player gives a single answer (verdict / level / row pick /
-  // numeric estimate). We reuse the existing card / button styling and feed
-  // the result through setVerdict so DebriefScreen can render its outcome
-  // banner unchanged. NOTE: level_picker / coverage_table / numeric_input /
-  // test_designer currently fall through to this same simple verdict UI as
-  // a TODO placeholder until their dedicated UIs exist — see the body text.
+  // ─── Branch: non-pair_selector question types ──────────────────────────────
+  // The player's answer is built by a per-type picker (binary_verdict /
+  // level_picker / coverage_table / numeric_input / test_designer) and
+  // submitted through submitAnswer in the store. The pair_selector flow
+  // (MC/DC truth-table → Evidence → Trial) is the original branch below.
   if (questionType !== 'pair_selector') {
     const claim = caseFile?.claim ?? ''
     const narrative = caseFile?.scenario.narrative ?? ''
     const code = caseFile?.scenario.code ?? ''
     const testSet = caseFile?.test_set ?? []
-    const isBinary = questionType === 'binary_verdict'
 
     return (
       <div style={{ minHeight: '100vh', position: 'relative', zIndex: 1, padding: '30px 40px' }}>
@@ -132,7 +139,7 @@ export default function InvestigationScreen({ onNavigate, onBack }: Props) {
                 </div>
               )}
 
-              {testSet.length > 0 && (
+              {testSet.length > 0 && questionType !== 'coverage_table' && questionType !== 'test_designer' && (
                 <div style={{ marginBottom: 16 }}>
                   <div style={{ fontFamily: PIXEL_FONT, fontSize: 7, color: TC.blue, marginBottom: 6 }}>TEST SET ON RECORD</div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
@@ -160,29 +167,35 @@ export default function InvestigationScreen({ onNavigate, onBack }: Props) {
                 </div>
               )}
 
-              {/* Verdict prompt */}
-              <div style={{ marginTop: 24, textAlign: 'center' }}>
-                <div style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: TC.grey, marginBottom: 12 }}>
-                  {isBinary ? 'YOUR VERDICT' : 'YOUR ANSWER'}
-                </div>
-                <div style={{ display: 'flex', gap: 16, justifyContent: 'center' }}>
-                  <PixelButton variant="success" onClick={() => submitSimpleVerdict(true)}>
-                    CLAIM IS VALID
-                  </PixelButton>
-                  <PixelButton variant="danger" onClick={() => submitSimpleVerdict(false)}>
-                    CLAIM IS INVALID
-                  </PixelButton>
-                </div>
-                {!isBinary && (
-                  // TODO(question_type): dedicated UIs for level_picker /
-                  // coverage_table / numeric_input / test_designer — for now
-                  // we fall through to a simple two-button verdict to avoid
-                  // forcing the player through the pair-selector flow.
-                  <div style={{ fontFamily: MONO_FONT, fontSize: 10, color: TC.grey, marginTop: 12 }}>
-                    (Specialised "{questionType}" UI is pending — answer with the closest verdict.)
-                  </div>
-                )}
-              </div>
+              {/* Question — dispatched on caseFile.question_type. */}
+              {caseFile && (questionType === 'binary_verdict' || questionType === 'level_picker') && (
+                <OptionListPicker
+                  caseFile={caseFile}
+                  feedback={feedback}
+                  onSubmit={handleAnswer}
+                />
+              )}
+              {caseFile && questionType === 'coverage_table' && (
+                <CoverageTablePicker
+                  caseFile={caseFile}
+                  feedback={feedback}
+                  onSubmit={handleAnswer}
+                />
+              )}
+              {caseFile && questionType === 'test_designer' && (
+                <TestDesignerPicker
+                  caseFile={caseFile}
+                  feedback={feedback}
+                  onSubmit={handleAnswer}
+                />
+              )}
+              {caseFile && questionType === 'numeric_input' && (
+                <NumericInputPicker
+                  caseFile={caseFile}
+                  feedback={feedback}
+                  onSubmit={handleAnswer}
+                />
+              )}
             </div>
           </div>
 
@@ -341,4 +354,23 @@ export default function InvestigationScreen({ onNavigate, onBack }: Props) {
       </div>
     </div>
   )
+}
+
+// Returns the per-option `explanation` for the selected option, when the
+// payload is an option pick. For correct payloads (test_designer / numeric /
+// coverage_table) we don't have a per-option explanation, so the caller falls
+// back to caseFile.correct_answer_explanation.
+function pickOptionExplanation(
+  caseFile: import('../engine/caseLoader').CaseFile,
+  payload: AnswerPayload,
+  isCorrect: boolean,
+): string | null {
+  if (payload.kind === 'binary_verdict' || payload.kind === 'level_picker') {
+    const opt = (caseFile.options ?? []).find((o) => o.id === payload.optionId)
+    return opt?.explanation ?? null
+  }
+  // For other types, prefer the case-level explanation.
+  return isCorrect
+    ? caseFile.correct_answer_explanation ?? null
+    : caseFile.wrong_answer_explanation ?? null
 }

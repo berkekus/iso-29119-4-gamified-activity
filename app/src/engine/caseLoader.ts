@@ -51,6 +51,8 @@ const OptionSchema = z.object({
   id: z.string(),
   label: z.string(),
   is_correct: z.boolean(),
+  /** Optional per-option explanation shown on submit (correct or wrong). */
+  explanation: z.string().optional(),
 })
 
 /** Numeric prompt used by numeric_input bridge quizzes. */
@@ -58,6 +60,15 @@ const NumericPromptSchema = z.object({
   question: z.string(),
   answer: z.number(),
   unit: z.string().optional(),
+})
+
+/** A row in a coverage_table interaction (toggle which test rows to include). */
+const CoverageTableRowSchema = z.object({
+  id: z.string(),
+  inputs: z.record(z.string(), z.boolean()),
+  outcome: z.boolean(),
+  /** True if the row MUST be included to satisfy the case correctness. */
+  required: z.boolean(),
 })
 
 export const CaseFileSchema = z.object({
@@ -89,10 +100,18 @@ export const CaseFileSchema = z.object({
   estimated_time_sec: z.number().int().positive().optional(),
   /** Concept Analysis cross-reference, e.g. §3 row index. */
   concept_ref: z.string().optional(),
-  /** Multi-choice options for level_picker / similar question types. */
+  /** Multi-choice options for level_picker / binary_verdict / test_designer. */
   options: z.array(OptionSchema).optional(),
   /** One or more numeric prompts for numeric_input bridge quizzes. */
   numeric_prompts: z.array(NumericPromptSchema).optional(),
+  /** Toggle-rows interaction for coverage_table cases. */
+  coverage_table: z.array(CoverageTableRowSchema).optional(),
+  /** Exact pick count required for test_designer cases (e.g. 5 rows of 16). */
+  required_pick_count: z.number().int().positive().optional(),
+  /** Short feedback shown when the player submits a wrong answer. */
+  wrong_answer_explanation: z.string().optional(),
+  /** Short feedback shown when the player submits the correct answer. */
+  correct_answer_explanation: z.string().optional(),
 })
 
 export type CaseFile = z.infer<typeof CaseFileSchema>

@@ -26,7 +26,7 @@
   "test_set": [],
   "numeric_prompts": [
     {
-      "question": "Number of tests required by BCC for N=5 conditions",
+      "question": "Number of tests required by BCC for N=5 conditions (2^N)",
       "answer": 32,
       "unit": "tests"
     },
@@ -36,6 +36,8 @@
       "unit": "tests"
     }
   ],
+  "correct_answer_explanation": "BCC is exhaustive: 2^5 = 32 tests. MCDC needs only N+1 = 6 carefully engineered independence pairs. The 32:6 ratio is exactly why DO-178C aviation software mandates MCDC, not BCC.",
+  "wrong_answer_explanation": "BCC = 2^N (every combination of T/F across the N conditions). MCDC's lower bound = N+1 (one shared baseline plus one row per condition). Plug in N=5.",
   "hints": [
     "BCC tests every combination of TRUE/FALSE for every condition. For N independent conditions, that is 2^N rows of the truth table.",
     "MCDC needs at most N+1 tests for N conditions (one carefully engineered test per condition for its independence pair, plus a shared baseline). Re-read Law Card 6.",

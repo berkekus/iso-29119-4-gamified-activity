@@ -18,10 +18,26 @@
     ],
     "decision_expression": "P"
   },
-  "claim": "T1 below achieves 100% Statement coverage, so the function is fully tested.",
+  "claim": "Does the team's claim — 'T1 achieves 100% Statement coverage, therefore the function is fully tested' — hold up?",
   "test_set": [
     { "id": "T1", "inputs": { "P": true }, "outcome": true }
   ],
+  "options": [
+    {
+      "id": "opt-fully-tested",
+      "label": "Yes — every line ran, so the function is fully tested.",
+      "is_correct": false,
+      "explanation": "Trap. Statement coverage IS 100% — but 'fully tested' also requires Branch coverage. The implicit FALSE edge of the if (is_premium=False) is NEVER taken, so an else-path bug stays hidden."
+    },
+    {
+      "id": "opt-not-fully-tested",
+      "label": "No — Statement is 100%, but the FALSE branch of the if is untested.",
+      "is_correct": true,
+      "explanation": "Correct. T1 only exercises is_premium=True. Statement coverage is satisfied (every line runs), but Branch coverage is 50% — the implicit else-path is never taken. 'Fully tested' is a misconception."
+    }
+  ],
+  "correct_answer_explanation": "Statement is 100% but Branch is 50%. A non-premium user could be mishandled and Statement testing would never catch it. This is the §3 row 1 misconception.",
+  "wrong_answer_explanation": "Re-read Law Card 1's Limitation field. An if-without-else creates a hidden branch that Statement coverage cannot see.",
   "hints": [
     "The first half of the claim is true; the second half is the trap. Re-read Law Card 1's Limitation field.",
     "Statement coverage only asks 'did each line execute?' — but what about the implicit FALSE branch of the if? Is there a test where is_premium=False?",
