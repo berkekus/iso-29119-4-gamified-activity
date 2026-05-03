@@ -5,6 +5,7 @@ import DialogBox from '../ui/DialogBox'
 import { JudgeSprite, ProsecutorSprite, BugSprite } from '../ui/CharacterSprites'
 import { useGameStore } from '../stores/gameStore'
 import type { Screen } from '../stores/gameStore'
+import { lawCardForCase } from '../content/lawCards'
 
 interface Props {
   onNavigate: (screen: Screen) => void
@@ -55,7 +56,9 @@ const ACT_LABEL: Record<string, string> = {
 
 export default function BriefingScreen({ onNavigate, onBack }: Props) {
   const [dialogIdx, setDialogIdx] = useState(0)
+  const [showLawCard, setShowLawCard] = useState(false)
   const caseFile = useGameStore((s) => s.caseFile)
+  const lawCard = lawCardForCase(caseFile?.id)
 
   const caseData = caseFile
     ? {
@@ -180,6 +183,46 @@ export default function BriefingScreen({ onNavigate, onBack }: Props) {
               <span style={{ fontFamily: PIXEL_FONT, fontSize: 7, color: TC.magenta }}>REQUIRED:</span>
               <span style={{ fontFamily: MONO_FONT, fontSize: 11, color: TC.ink }}>{techniqueLine}</span>
             </div>
+
+            {/* Law Reference toggle + panel — reuses the same cream/ink card
+                vocabulary used elsewhere on this screen. Only renders when a
+                law card is mapped for the active case. */}
+            {lawCard && (
+              <div style={{ marginTop: 16 }}>
+                <PixelButton small variant="secondary" onClick={() => setShowLawCard((v) => !v)}>
+                  {showLawCard ? '▲ HIDE LAW REFERENCE' : '▼ LAW REFERENCE'}
+                </PixelButton>
+                {showLawCard && (
+                  <div style={{
+                    marginTop: 10,
+                    background: `${TC.orange}08`,
+                    border: `2px solid ${TC.orange}`,
+                    padding: 16,
+                  }}>
+                    <div style={{ fontFamily: PIXEL_FONT, fontSize: 7, color: TC.orange, marginBottom: 6 }}>
+                      LAW CARD · {lawCard.iso_clause}
+                    </div>
+                    <div style={{ fontFamily: PIXEL_FONT, fontSize: 12, color: TC.ink, marginBottom: 10 }}>
+                      {lawCard.title}
+                    </div>
+                    <div style={{ fontFamily: HAND_FONT, fontSize: 18, color: TC.ink, lineHeight: 1.5, marginBottom: 10 }}>
+                      {lawCard.short_definition}
+                    </div>
+                    <div style={{ fontFamily: HAND_FONT, fontSize: 16, color: TC.ink, lineHeight: 1.5, marginBottom: 10 }}>
+                      {lawCard.long_description}
+                    </div>
+                    <div style={{
+                      fontFamily: PIXEL_FONT, fontSize: 7, color: TC.magenta, marginBottom: 4,
+                    }}>
+                      COMMON PITFALL
+                    </div>
+                    <div style={{ fontFamily: HAND_FONT, fontSize: 16, color: TC.ink, lineHeight: 1.5 }}>
+                      {lawCard.pitfall}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
 

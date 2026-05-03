@@ -10,6 +10,8 @@ import TrialScreen         from './screens/TrialScreen'
 import DebriefScreen       from './screens/DebriefScreen'
 import DesignSystemScreen  from './screens/DesignSystemScreen'
 import HowToPlayScreen     from './screens/HowToPlayScreen'
+import LawLibraryScreen    from './screens/LawLibraryScreen'
+import AchievementsScreen  from './screens/AchievementsScreen'
 
 export default function App() {
   const { screen, navigate, goBack, completedCases, loadCaseById } = useGameStore()
@@ -43,6 +45,10 @@ export default function App() {
         return <DesignSystemScreen onBack={goBack} />
       case 'how-to-play':
         return <HowToPlayScreen onBack={goBack} />
+      case 'law-library':
+        return <LawLibraryScreen onBack={goBack} />
+      case 'achievements':
+        return <AchievementsScreen onBack={goBack} />
       default:
         return <MainMenuScreen onNavigate={navigate} />
     }

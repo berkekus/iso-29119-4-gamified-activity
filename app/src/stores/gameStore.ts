@@ -11,6 +11,8 @@ import type {
 } from '../engine/types'
 import { generateTruthTable } from '../engine/coverage/mcdc'
 import { computeVerdict } from '../engine/verdict/index'
+import { CASE_TO_LAW } from '../content/lawCards'
+import { unlockedAchievementIds } from '../content/achievements'
 
 // ── Case content registry — all 12 cases keyed by id ─────────────────────────
 import stmtTutorial01      from '../content/cases/stmt-tutorial-01.json'
@@ -55,6 +57,7 @@ export type Screen =
   | 'design-system'
   | 'multiplayer'
   | 'achievements'
+  | 'law-library'
 
 // ── MCDC namespace types ──────────────────────────────────────────────────────
 
@@ -94,6 +97,12 @@ interface GameState {
   submission: McdcSubmission
   verdict: VerdictResult | null
   completedCases: string[]
+  collectedLawCards: string[]
+  unlockedAchievements: string[]
+  /** Set on a passing submitAnswer when a new achievement was just unlocked
+   *  by the case-completion side-effect. Read by DebriefScreen to show the
+   *  one-line "🏆 Achievement unlocked" notice. Cleared on every load/reset. */
+  newlyUnlockedAchievement: string | null
 
   loadCase: (caseData: CaseFile) => void
   loadCaseById: (caseId: string) => void
@@ -104,6 +113,7 @@ interface GameState {
   resetGame: () => void
   markCaseCompleted: (caseId: string) => void
   resetMcdc: () => void
+  clearNewlyUnlockedAchievement: () => void
 
   // MCDC namespace — B-UI actions
   mcdc: McdcState
@@ -214,6 +224,9 @@ export const useGameStore = create<GameState>()(
   submission: [],
   verdict: null,
   completedCases: [],
+  collectedLawCards: [],
+  unlockedAchievements: [],
+  newlyUnlockedAchievement: null,
 
   loadCase: (caseData) => {
     const truthTable = generateTruthTable(
@@ -282,15 +295,40 @@ export const useGameStore = create<GameState>()(
     })
   },
 
-  // Idempotent: a case id is added to completedCases at most once. Callers
+  // Idempotent: a case id is added to completedCases at most once. On the
+  // first add, also (a) push the case's mapped law-card id into
+  // collectedLawCards if not already present, and (b) recompute
+  // unlockedAchievements from the new completedCases set, recording the
+  // *first* newly-unlocked achievement id in newlyUnlockedAchievement so
+  // DebriefScreen can render its one-line notice. Callers
   // (currently DebriefScreen on a passing verdict) own the policy of when to
   // mark — this action simply records the fact.
   markCaseCompleted: (caseId) => {
-    set((state) =>
-      state.completedCases.includes(caseId)
-        ? state
-        : { completedCases: [...state.completedCases, caseId] },
-    )
+    set((state) => {
+      if (state.completedCases.includes(caseId)) return state
+      const completedCases = [...state.completedCases, caseId]
+
+      const lawId = CASE_TO_LAW[caseId]
+      const collectedLawCards =
+        lawId && !state.collectedLawCards.includes(lawId)
+          ? [...state.collectedLawCards, lawId]
+          : state.collectedLawCards
+
+      const nextUnlocked = unlockedAchievementIds(completedCases)
+      const prev = new Set(state.unlockedAchievements)
+      const newlyUnlocked = nextUnlocked.find((id) => !prev.has(id)) ?? null
+
+      return {
+        completedCases,
+        collectedLawCards,
+        unlockedAchievements: nextUnlocked,
+        newlyUnlockedAchievement: newlyUnlocked ?? state.newlyUnlockedAchievement,
+      }
+    })
+  },
+
+  clearNewlyUnlockedAchievement: () => {
+    set({ newlyUnlockedAchievement: null })
   },
 
   // Resets just the per-case run state so RETRY CASE can reuse the same
@@ -369,8 +407,27 @@ export const useGameStore = create<GameState>()(
       // Persist only campaign-level progress. Transient per-run state
       // (caseFile, truthTable, submission, verdict, mcdc, screen, phase)
       // must be rehydrated fresh on each session.
-      partialize: (state) => ({ completedCases: state.completedCases }),
+      partialize: (state) => ({
+        completedCases: state.completedCases,
+        collectedLawCards: state.collectedLawCards,
+        unlockedAchievements: state.unlockedAchievements,
+      }),
       version: 1,
+      // On rehydrate, recompute unlockedAchievements and backfill
+      // collectedLawCards from completedCases. This lets older saves (which
+      // only persisted completedCases) start showing achievements & laws
+      // immediately, and self-heals if the mapping ever evolves.
+      onRehydrateStorage: () => (state) => {
+        if (!state) return
+        const lawIds = new Set(state.collectedLawCards ?? [])
+        for (const caseId of state.completedCases) {
+          const lawId = CASE_TO_LAW[caseId]
+          if (lawId) lawIds.add(lawId)
+        }
+        state.collectedLawCards = Array.from(lawIds)
+        state.unlockedAchievements = unlockedAchievementIds(state.completedCases)
+        state.newlyUnlockedAchievement = null
+      },
     },
   ),
 )

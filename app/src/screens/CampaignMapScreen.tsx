@@ -125,7 +125,11 @@ export default function CampaignMapScreen({ onNavigate, onBack, completedCases, 
     <div style={{ minHeight: '100vh', position: 'relative', zIndex: 1, padding: '30px 40px' }}>
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 30 }}>
-        <PixelButton small variant="secondary" onClick={onBack}>← MENU</PixelButton>
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+          <PixelButton small variant="secondary" onClick={onBack}>← MENU</PixelButton>
+          <PixelButton small variant="secondary" onClick={() => onNavigate('law-library')}>LAW LIBRARY</PixelButton>
+          <PixelButton small variant="secondary" onClick={() => onNavigate('achievements')}>ACHIEVEMENTS</PixelButton>
+        </div>
         <h2 style={{ fontFamily: PIXEL_FONT, fontSize: 16, color: TC.ink, margin: 0 }}>
           COVERAGE HIERARCHY · ISO 29119-4
         </h2>

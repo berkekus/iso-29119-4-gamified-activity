@@ -6,6 +6,7 @@ import { JudgeSprite } from '../ui/CharacterSprites'
 import { useGameStore } from '../stores/gameStore'
 import type { Screen } from '../stores/gameStore'
 import { CASE_ORDER, nextCaseId } from '../content/caseOrder'
+import { achievementById } from '../content/achievements'
 
 interface Props {
   onNavigate: (screen: Screen) => void
@@ -42,8 +43,13 @@ const TECHNIQUE_TEXTBOOK: Record<string, string> = {
 }
 
 export default function DebriefScreen({ onNavigate, onBack }: Props) {
-  const { mcdc, caseFile, completedCases, loadCaseById, markCaseCompleted, resetMcdc } =
-    useGameStore()
+  const {
+    mcdc, caseFile, completedCases, loadCaseById, markCaseCompleted, resetMcdc,
+    newlyUnlockedAchievement, clearNewlyUnlockedAchievement,
+  } = useGameStore()
+  const newAchievement = newlyUnlockedAchievement
+    ? achievementById(newlyUnlockedAchievement)
+    : null
   const verdictResult = mcdc.verdictResult
   const faultResults = mcdc.faultResults ?? []
   const triggeredMisconceptions =
@@ -77,12 +83,14 @@ export default function DebriefScreen({ onNavigate, onBack }: Props) {
   const canAdvance = isGuilty
 
   const handleRetry = () => {
+    clearNewlyUnlockedAchievement()
     resetMcdc()
     onNavigate('briefing')
   }
 
   const handleNext = () => {
     if (!canAdvance) return
+    clearNewlyUnlockedAchievement()
     if (nextId) {
       try {
         loadCaseById(nextId)
@@ -140,6 +148,19 @@ export default function DebriefScreen({ onNavigate, onBack }: Props) {
                 </div>
               </div>
             </div>
+
+            {/* Achievement unlock — single line, reuses summary-card typography
+                and the existing green accent. Renders only when this debrief
+                run unlocked a new achievement. */}
+            {newAchievement && (
+              <div style={{
+                fontFamily: PIXEL_FONT, fontSize: 9, color: TC.green,
+                border: `2px solid ${TC.green}`, background: `${TC.green}10`,
+                padding: '8px 12px', marginBottom: 16,
+              }}>
+                🏆 ACHIEVEMENT UNLOCKED — {newAchievement.title.toUpperCase()}
+              </div>
+            )}
 
             {/* Textbook — per-technique paragraph driven by caseFile.technique */}
             <div style={{ background: `${TC.blue}08`, border: `2px solid ${TC.blue}`, padding: 16, marginBottom: 16 }}>
