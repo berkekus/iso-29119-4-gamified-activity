@@ -11,11 +11,15 @@ interface Props {
 }
 
 export default function DebriefScreen({ onNavigate, onBack }: Props) {
-  const { mcdc, resetMcdc, caseFile } = useGameStore()
+  const { mcdc, caseFile } = useGameStore()
+  const resetMcdc = (useGameStore.getState() as { resetMcdc?: () => void }).resetMcdc
+    ?? (() => useGameStore.getState().resetGame())
   const { verdictResult, faultResults, triggeredMisconceptions } = {
     verdictResult: mcdc.verdictResult,
-    faultResults: mcdc.faultResults,
-    triggeredMisconceptions: useGameStore.getState().triggeredMisconceptions,
+    faultResults: mcdc.faultResults ?? [],
+    triggeredMisconceptions:
+      (useGameStore.getState() as { triggeredMisconceptions?: unknown[] })
+        .triggeredMisconceptions ?? [],
   }
   const seededFaultMap: Record<string, string> = {}
   const misconceptionMap: Record<string, string> = {}
