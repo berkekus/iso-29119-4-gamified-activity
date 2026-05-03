@@ -17,8 +17,19 @@ interface Props {
   onBack: () => void
 }
 
+const TECHNIQUE_LABEL: Record<string, string> = {
+  STATEMENT: 'STATEMENT',
+  BRANCH:    'BRANCH',
+  DECISION:  'DECISION',
+  BC:        'BC',
+  BCC:       'BCC',
+  MCDC:      'MC/DC',
+}
+
 export default function TrialScreen({ onNavigate, onBack }: Props) {
   const { mcdc, setVerdict, caseFile } = useGameStore()
+  const techniqueLabel =
+    (caseFile?.technique && TECHNIQUE_LABEL[caseFile.technique]) ?? 'CASE'
   const [phase, setPhase] = useState<Phase>('presenting')
   const seededFaultMap: Record<string, string> = {}
   if (caseFile) {
@@ -53,7 +64,7 @@ export default function TrialScreen({ onNavigate, onBack }: Props) {
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
         <PixelButton small variant="secondary" onClick={onBack}>← EVIDENCE</PixelButton>
         <div style={{ display: 'flex', gap: 8 }}>
-          <span style={{ fontFamily: PIXEL_FONT, fontSize: 8, color: TC.magenta, padding: '4px 10px', border: `2px solid ${TC.magenta}` }}>MC/DC</span>
+          <span style={{ fontFamily: PIXEL_FONT, fontSize: 8, color: TC.magenta, padding: '4px 10px', border: `2px solid ${TC.magenta}` }}>{techniqueLabel}</span>
           <span style={{ fontFamily: PIXEL_FONT, fontSize: 8, color: TC.magenta, padding: '4px 10px', border: `2px solid ${TC.magenta}`, background: `${TC.magenta}15` }}>PHASE 4: TRIAL</span>
         </div>
         <ScoreChip label="PAIRS" value={mcdc.independencePairs.length} color={TC.blue} />
@@ -141,7 +152,7 @@ export default function TrialScreen({ onNavigate, onBack }: Props) {
                       {f.id}: {f.detected ? 'CAUGHT' : 'ESCAPED'}
                     </div>
                     <div style={{ fontFamily: MONO_FONT, fontSize: 10, color: TC.grey }}>
-                      {seededFaultMap[f.id] ?? 'Short-circuit evaluation skips C'}
+                      {seededFaultMap[f.id] ?? 'Seeded fault — see case file.'}
                     </div>
                   </div>
                 </div>
@@ -162,7 +173,7 @@ export default function TrialScreen({ onNavigate, onBack }: Props) {
                 </div>
               ))}
               <div style={{ fontFamily: MONO_FONT, fontSize: 11, color: TC.grey, marginTop: 10 }}>
-                See §5.3.6.2: "For each condition, show pairs where that condition's value changes while all other conditions are held fixed, and the decision value changes."
+                See ISO 29119-4 {(caseFile?.iso_clauses && caseFile.iso_clauses[0]) ?? '§5.3'} for the coverage criterion definition.
               </div>
             </div>
           )}

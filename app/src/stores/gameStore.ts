@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import { persist, createJSONStorage } from 'zustand/middleware'
 import type { CaseFile } from '../engine/caseLoader'
 import { loadCase as parseCaseFile } from '../engine/caseLoader'
 import type {
@@ -126,7 +127,9 @@ const initialMcdc: McdcState = {
   misconceptions: [],
 }
 
-export const useGameStore = create<GameState>((set, get) => ({
+export const useGameStore = create<GameState>()(
+  persist(
+    (set, get) => ({
   // Navigation
   screen: 'menu',
   screenHistory: [],
@@ -274,4 +277,15 @@ export const useGameStore = create<GameState>((set, get) => ({
       },
     }))
   },
-}))
+    }),
+    {
+      name: 'iso29119-game-progress',
+      storage: createJSONStorage(() => localStorage),
+      // Persist only campaign-level progress. Transient per-run state
+      // (caseFile, truthTable, submission, verdict, mcdc, screen, phase)
+      // must be rehydrated fresh on each session.
+      partialize: (state) => ({ completedCases: state.completedCases }),
+      version: 1,
+    },
+  ),
+)

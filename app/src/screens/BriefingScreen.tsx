@@ -11,28 +11,28 @@ interface Props {
   onBack: () => void
 }
 
+// Pre-load fallback used only when no caseFile is in the store (defensive —
+// in normal navigation the campaign map always loads a case first). It is
+// intentionally generic so it never bleeds technique-specific (e.g. MCDC)
+// language into a screen that is rendering, say, a Statement coverage case.
 const fallbackCaseData = {
-  title: 'Altitude Hold Disengage',
+  title: 'Case Brief',
   narrative:
-    'A flight control system disengages altitude hold when certain conditions are met. The decision logic has been flagged for MC/DC coverage under ISO 26262 ASIL D.',
-  code: 'if (verticalSpeed > LIMIT && (autopilotEngaged || pilotOverride)) disengage();',
-  conditions: [
-    { id: 'A', label: 'verticalSpeed > LIMIT' },
-    { id: 'B', label: 'autopilotEngaged' },
-    { id: 'C', label: 'pilotOverride' },
-  ],
-  expression: 'A && (B || C)',
+    'A claim about test coverage has been put before the court. Review the evidence and decide whether the claim is admissible.',
+  code: '',
+  conditions: [] as { id: string; label: string }[],
+  expression: '',
   charges: [
-    'Prove that each condition independently affects the decision outcome',
-    'Achieve MC/DC coverage (N+1 minimum test cases for N conditions)',
-    'Detect seeded fault F1: short-circuit evaluation skips condition C',
+    'Read the case briefing and the source code under review',
+    'Apply the required coverage technique for this act',
+    'Return a verdict that satisfies the standard of proof',
   ],
 }
 
 const fallbackDialogs = [
-  { speaker: 'THE JUDGE',   text: 'Case #007 — "Altitude Hold Disengage". The court calls the prosecution to investigate.' },
-  { speaker: 'PROSECUTOR',  text: 'Your Honor, I will demonstrate that each condition in this flight control decision independently affects the disengage outcome.' },
-  { speaker: 'THE JUDGE',   text: 'The standard of proof is MC/DC — Modified Condition/Decision Coverage per §5.3.6. Anything weaker is inadmissible. Proceed.' },
+  { speaker: 'THE JUDGE',   text: 'A new case has reached the bench. The court calls the prosecution to investigate.' },
+  { speaker: 'PROSECUTOR',  text: 'Your Honor, I will examine the claim under the required coverage standard.' },
+  { speaker: 'THE JUDGE',   text: 'Apply the standard of proof for this act. Anything weaker is inadmissible. Proceed.' },
 ]
 
 const TECHNIQUE_LABEL: Record<string, string> = {
@@ -72,9 +72,11 @@ export default function BriefingScreen({ onNavigate, onBack }: Props) {
       }
     : fallbackCaseData
 
-  const techniqueLine = caseFile?.technique ? TECHNIQUE_LABEL[caseFile.technique] ?? `Technique: ${caseFile.technique}` : 'MC/DC (ISO 26262 ASIL D)'
-  const actLabel      = caseFile ? ACT_LABEL[caseFile.act] ?? 'ACT' : 'ACT III'
-  const caseFileNum   = caseFile ? `CASE FILE · ${caseFile.id.toUpperCase()}` : 'CASE FILE #007'
+  const techniqueLine = caseFile?.technique
+    ? TECHNIQUE_LABEL[caseFile.technique] ?? `Technique: ${caseFile.technique}`
+    : 'Coverage standard pending'
+  const actLabel      = caseFile ? ACT_LABEL[caseFile.act] ?? 'ACT' : 'ACT'
+  const caseFileNum   = caseFile ? `CASE FILE · ${caseFile.id.toUpperCase()}` : 'CASE FILE'
 
   const dialogs = caseFile
     ? [
@@ -127,24 +129,31 @@ export default function BriefingScreen({ onNavigate, onBack }: Props) {
               </div>
             </div>
 
-            {/* Conditions */}
-            <div style={{ marginBottom: 20 }}>
-              <div style={{ fontFamily: PIXEL_FONT, fontSize: 7, color: TC.blue, marginBottom: 8 }}>CONDITIONS IDENTIFIED</div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                {caseData.conditions.map(c => (
-                  <div key={c.id} style={{
-                    display: 'flex', alignItems: 'center', gap: 10,
-                    padding: '8px 12px', background: `${TC.blue}10`, border: `1px solid ${TC.blue}`,
-                  }}>
-                    <span style={{ fontFamily: PIXEL_FONT, fontSize: 14, color: TC.blue, width: 28 }}>{c.id}</span>
-                    <span style={{ fontFamily: MONO_FONT, fontSize: 12, color: TC.ink }}>{c.label}</span>
+            {/* Conditions — only rendered when the case actually has decision
+                conditions to enumerate. ACT I Statement-coverage cases have
+                an empty conditions[] / decision_expression and shouldn't show
+                an empty truth-table-style block. */}
+            {caseData.conditions.length > 0 && (
+              <div style={{ marginBottom: 20 }}>
+                <div style={{ fontFamily: PIXEL_FONT, fontSize: 7, color: TC.blue, marginBottom: 8 }}>CONDITIONS IDENTIFIED</div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  {caseData.conditions.map(c => (
+                    <div key={c.id} style={{
+                      display: 'flex', alignItems: 'center', gap: 10,
+                      padding: '8px 12px', background: `${TC.blue}10`, border: `1px solid ${TC.blue}`,
+                    }}>
+                      <span style={{ fontFamily: PIXEL_FONT, fontSize: 14, color: TC.blue, width: 28 }}>{c.id}</span>
+                      <span style={{ fontFamily: MONO_FONT, fontSize: 12, color: TC.ink }}>{c.label}</span>
+                    </div>
+                  ))}
+                </div>
+                {caseData.expression && (
+                  <div style={{ fontFamily: MONO_FONT, fontSize: 12, color: TC.grey, marginTop: 8 }}>
+                    Decision expression: <strong style={{ color: TC.ink }}>{caseData.expression}</strong>
                   </div>
-                ))}
+                )}
               </div>
-              <div style={{ fontFamily: MONO_FONT, fontSize: 12, color: TC.grey, marginTop: 8 }}>
-                Decision expression: <strong style={{ color: TC.ink }}>{caseData.expression}</strong>
-              </div>
-            </div>
+            )}
 
             {/* Charges */}
             <div>
@@ -184,7 +193,7 @@ export default function BriefingScreen({ onNavigate, onBack }: Props) {
             <div style={{ fontFamily: PIXEL_FONT, fontSize: 7, color: TC.grey, marginBottom: 8 }}>THE DEFENDANT</div>
             <BugSprite size={90} type="mcdc" mood="nervous" />
             <div style={{ fontFamily: HAND_FONT, fontSize: 16, color: TC.grey, marginTop: 8, fontStyle: 'italic' }}>
-              "I... I'm sure it was just a short-circuit..."
+              "I... I'm sure my tests were enough..."
             </div>
           </div>
 

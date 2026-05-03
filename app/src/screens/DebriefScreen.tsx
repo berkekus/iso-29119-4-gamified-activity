@@ -23,6 +23,24 @@ const TECHNIQUE_LABEL: Record<string, string> = {
   MCDC:      'MC/DC',
 }
 
+// Per-technique textbook paragraph rendered in the "WHAT THE TEXTBOOK SAYS"
+// panel. Sourced from ISO/IEC/IEEE 29119-4 §5.3.x summaries — kept short
+// because the screen also shows the case-specific misconception text below.
+const TECHNIQUE_TEXTBOOK: Record<string, string> = {
+  STATEMENT:
+    'Statement coverage requires every executable line of code to run at least once across the test set. It is the weakest structural criterion: 100% statement coverage does NOT mean every branch or condition has been exercised.',
+  BRANCH:
+    'Branch coverage requires every edge of the control-flow graph to be taken at least once — including the implicit FALSE edge of an if without an else. Reaching every line is not enough; every decision outcome must occur.',
+  DECISION:
+    'Decision coverage requires every decision in the program to take both TRUE and FALSE outcomes. Stronger than branch coverage when there are short-circuit operators, because each whole decision (not each branch) must flip.',
+  BC:
+    'Branch Condition coverage requires each individual condition inside a compound decision to be observed as both TRUE and FALSE across the test set. It detects single-condition oversights but not interactions between conditions.',
+  BCC:
+    'Branch Condition Combination coverage requires every combination of TRUE/FALSE across all N conditions of a decision — i.e. all 2^N rows of the truth table. It is exhaustive but its cost grows exponentially with the number of conditions.',
+  MCDC:
+    "MC/DC requires that for each condition in a decision, there exist test cases that show the condition independently affects the decision's outcome. \"Independently\" means exactly one condition changes between two test cases while all others remain fixed, and the decision outcome changes.",
+}
+
 export default function DebriefScreen({ onNavigate, onBack }: Props) {
   const { mcdc, caseFile, completedCases, loadCaseById, markCaseCompleted, resetMcdc } =
     useGameStore()
@@ -112,26 +130,36 @@ export default function DebriefScreen({ onNavigate, onBack }: Props) {
                 <CoverageMeter value={coverageVal} max={100} color={isGuilty ? TC.green : TC.orange} width={140} />
               </div>
               <div style={{ flex: 1 }}>
-                <div style={{ fontFamily: PIXEL_FONT, fontSize: 7, color: TC.grey, marginBottom: 4 }}>PAIRS SUBMITTED</div>
-                <div style={{ fontFamily: PIXEL_FONT, fontSize: 14, color: TC.blue }}>{mcdc.independencePairs.length}/3</div>
+                <div style={{ fontFamily: PIXEL_FONT, fontSize: 7, color: TC.grey, marginBottom: 4 }}>
+                  {caseFile?.question_type === 'pair_selector' ? 'PAIRS SUBMITTED' : 'ANSWER'}
+                </div>
+                <div style={{ fontFamily: PIXEL_FONT, fontSize: 14, color: TC.blue }}>
+                  {caseFile?.question_type === 'pair_selector'
+                    ? `${mcdc.independencePairs.length}/3`
+                    : isGuilty ? 'CORRECT' : 'INCORRECT'}
+                </div>
               </div>
             </div>
 
-            {/* Textbook */}
+            {/* Textbook — per-technique paragraph driven by caseFile.technique */}
             <div style={{ background: `${TC.blue}08`, border: `2px solid ${TC.blue}`, padding: 16, marginBottom: 16 }}>
               <div style={{ fontFamily: PIXEL_FONT, fontSize: 7, color: TC.blue, marginBottom: 8 }}>WHAT THE TEXTBOOK SAYS</div>
               <div style={{ fontFamily: HAND_FONT, fontSize: 20, color: TC.ink, lineHeight: 1.6 }}>
-                MC/DC requires that for each condition in a decision, there exist test cases that show the condition independently affects the decision's outcome. "Independently" means exactly one condition changes between two test cases while all others remain fixed, and the decision outcome changes.
+                {(caseFile?.technique && TECHNIQUE_TEXTBOOK[caseFile.technique]) ??
+                  'Apply the coverage technique required for this act and confirm the claim against the standard of proof.'}
               </div>
             </div>
 
-            {/* ISO Reference */}
+            {/* ISO Reference — pulled from the case JSON's iso_clauses */}
             <div style={{ background: `${TC.orange}08`, border: `2px solid ${TC.orange}`, padding: 16 }}>
               <div style={{ fontFamily: PIXEL_FONT, fontSize: 7, color: TC.orange, marginBottom: 8 }}>ISO/IEC/IEEE 29119-4 REFERENCE</div>
               <div style={{ fontFamily: MONO_FONT, fontSize: 12, color: TC.ink, lineHeight: 1.6 }}>
-                <strong>§5.3.6</strong> Modified Condition/Decision Coverage (MC/DC)<br />
-                <strong>§5.3.6.2</strong> Independence criterion for paired test cases<br />
-                <strong>Annex C.2.3.6</strong> Worked example: MC/DC independence pairs<br />
+                {(caseFile?.iso_clauses ?? []).map((cl) => (
+                  <div key={cl}><strong>{cl}</strong></div>
+                ))}
+                {(caseFile?.iso_clauses?.length ?? 0) === 0 && (
+                  <div><strong>§5.3</strong> Test design techniques</div>
+                )}
               </div>
             </div>
           </div>
@@ -153,8 +181,8 @@ export default function DebriefScreen({ onNavigate, onBack }: Props) {
                       {f.detected ? 'DETECTED' : 'ESCAPED'}
                     </div>
                     <div style={{ fontFamily: HAND_FONT, fontSize: 16, color: TC.ink, marginTop: 4 }}>
-                      {seededFaultMap[f.id] ?? 'Short-circuit evaluation skips C when B is true.'}
-                      {!f.detected && ' To detect this, construct a test that forces the masked condition to be evaluated.'}
+                      {seededFaultMap[f.id] ?? 'Seeded fault — see case file for details.'}
+                      {!f.detected && ' To detect this, construct a test that exercises the masked path.'}
                     </div>
                   </div>
                 </div>
@@ -191,7 +219,7 @@ export default function DebriefScreen({ onNavigate, onBack }: Props) {
                 <div key={m.id}>
                   <div style={{ fontFamily: PIXEL_FONT, fontSize: 7, color: TC.ink, marginBottom: 4 }}>{m.id}</div>
                   <div style={{ fontFamily: HAND_FONT, fontSize: 16, color: TC.ink, lineHeight: 1.5 }}>
-                    {misconceptionMap[m.id] ?? m.explanation ?? 'You tested each condition in isolation instead of constructing proper independence pairs where only one condition varies.'}
+                    {misconceptionMap[m.id] ?? m.explanation ?? 'A reasoning trap was triggered — re-read the hint chain in the case file.'}
                   </div>
                 </div>
               ))}

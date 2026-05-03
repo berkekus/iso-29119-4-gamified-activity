@@ -13,6 +13,18 @@ interface Props {
   onBack: () => void
 }
 
+// Short label rendered in the top-right header chip. Falls back to act/CASE
+// for older content. Kept identical in shape to other screens to preserve
+// the existing layout and colour pattern.
+const TECHNIQUE_LABEL: Record<string, string> = {
+  STATEMENT: 'STATEMENT',
+  BRANCH:    'BRANCH',
+  DECISION:  'DECISION',
+  BC:        'BC',
+  BCC:       'BCC',
+  MCDC:      'MC/DC',
+}
+
 const thStyle = {
   padding: '10px 14px', textAlign: 'center' as const,
   fontFamily: PIXEL_FONT, fontSize: 8, color: TC.ink,
@@ -24,10 +36,36 @@ const tdStyle = {
 }
 
 export default function InvestigationScreen({ onNavigate, onBack }: Props) {
-  const { mcdc, toggleRow, caseFile } = useGameStore()
+  const { mcdc, toggleRow, caseFile, setVerdict } = useGameStore()
   const [validated, setValidated] = useState(false)
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; msg: string } | null>(null)
   const decisionExpr = caseFile?.scenario.decision_expression || 'A && (B || C)'
+
+  const techniqueLabel =
+    (caseFile?.technique && TECHNIQUE_LABEL[caseFile.technique]) ?? 'CASE'
+  const questionType = caseFile?.question_type ?? 'pair_selector'
+
+  // Heuristic for the "correct" verdict on a binary_verdict / level_picker /
+  // coverage_table case: if the JSON declares any seeded faults or
+  // misconceptions, the claim being shown is a trap, so the correct verdict
+  // is INVALID. Otherwise the claim holds. This avoids extending the schema.
+  const claimIsValid =
+    (caseFile?.seeded_faults?.length ?? 0) === 0 &&
+    (caseFile?.misconceptions?.length ?? 0) === 0
+
+  const submitSimpleVerdict = (playerSaidValid: boolean) => {
+    const correct = playerSaidValid === claimIsValid
+    setVerdict(
+      { coverageAchieved: correct, coveragePercent: correct ? 100 : 0, conditionsCovered: [] },
+      (caseFile?.seeded_faults ?? []).map((f) => ({ id: f.id, detected: correct })),
+      (caseFile?.misconceptions ?? []).map((m) => ({
+        id: m.id,
+        triggered: !correct,
+        explanation: m.explanation_md,
+      })),
+    )
+    onNavigate('debrief')
+  }
 
   const selectedCount = mcdc.selectedRows.length
 
@@ -36,17 +74,149 @@ export default function InvestigationScreen({ onNavigate, onBack }: Props) {
       setValidated(true)
       setFeedback({ type: 'success', msg: 'Model accepted. The judge approves your truth table construction. Proceed to evidence derivation.' })
     } else {
-      setFeedback({ type: 'error', msg: 'Insufficient rows selected. MC/DC requires at least N+1 = 4 test cases for 3 conditions. Review your selection.' })
+      setFeedback({
+        type: 'error',
+        msg: 'Insufficient rows selected. The required coverage standard needs at least N+1 = 4 test cases for 3 conditions. Review your selection.',
+      })
     }
   }
 
+  // ─── Branch: simple, non-pair_selector question types ───────────────────────
+  // For these the player gives a single answer (verdict / level / row pick /
+  // numeric estimate). We reuse the existing card / button styling and feed
+  // the result through setVerdict so DebriefScreen can render its outcome
+  // banner unchanged. NOTE: level_picker / coverage_table / numeric_input /
+  // test_designer currently fall through to this same simple verdict UI as
+  // a TODO placeholder until their dedicated UIs exist — see the body text.
+  if (questionType !== 'pair_selector') {
+    const claim = caseFile?.claim ?? ''
+    const narrative = caseFile?.scenario.narrative ?? ''
+    const code = caseFile?.scenario.code ?? ''
+    const testSet = caseFile?.test_set ?? []
+    const isBinary = questionType === 'binary_verdict'
+
+    return (
+      <div style={{ minHeight: '100vh', position: 'relative', zIndex: 1, padding: '30px 40px' }}>
+        {/* Header */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
+          <PixelButton small variant="secondary" onClick={onBack}>← BRIEFING</PixelButton>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <span style={{ fontFamily: PIXEL_FONT, fontSize: 8, color: TC.magenta, padding: '4px 10px', border: `2px solid ${TC.magenta}` }}>{techniqueLabel}</span>
+            <span style={{ fontFamily: PIXEL_FONT, fontSize: 8, color: TC.orange, padding: '4px 10px', border: `2px solid ${TC.orange}`, background: `${TC.orange}15` }}>PHASE 2: INVESTIGATION</span>
+          </div>
+          <div style={{ width: 60 }} />
+        </div>
+
+        <div style={{ display: 'flex', gap: 30, maxWidth: 1100 }}>
+          {/* Main: claim + code + tests */}
+          <div style={{ flex: 1 }}>
+            <div style={{
+              background: TC.cream, border: `3px solid ${TC.ink}`, boxShadow: `5px 5px 0 ${TC.ink}`,
+              padding: 24,
+            }}>
+              <div style={{ fontFamily: PIXEL_FONT, fontSize: 8, color: TC.grey, marginBottom: 4 }}>CASE BRIEF</div>
+              <div style={{ fontFamily: HAND_FONT, fontSize: 18, color: TC.ink, lineHeight: 1.6, marginBottom: 16 }}>
+                {narrative}
+              </div>
+
+              {code && (
+                <div style={{ marginBottom: 16 }}>
+                  <div style={{ fontFamily: PIXEL_FONT, fontSize: 7, color: TC.orange, marginBottom: 6 }}>EXHIBIT — SOURCE CODE</div>
+                  <div style={{
+                    background: '#1e1e2e', color: '#cdd6f4', fontFamily: MONO_FONT, fontSize: 13,
+                    padding: 16, border: `2px solid ${TC.ink}`, lineHeight: 1.6, overflow: 'auto',
+                    whiteSpace: 'pre-wrap',
+                  }}>
+                    {code}
+                  </div>
+                </div>
+              )}
+
+              {testSet.length > 0 && (
+                <div style={{ marginBottom: 16 }}>
+                  <div style={{ fontFamily: PIXEL_FONT, fontSize: 7, color: TC.blue, marginBottom: 6 }}>TEST SET ON RECORD</div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                    {testSet.map((t) => (
+                      <div key={t.id} style={{
+                        fontFamily: MONO_FONT, fontSize: 12, color: TC.ink,
+                        padding: '6px 10px', background: `${TC.blue}10`, border: `1px solid ${TC.blue}`,
+                      }}>
+                        <strong>{t.id}</strong>: inputs = {JSON.stringify(t.inputs)} → outcome = {String(t.outcome)}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {claim && (
+                <div style={{
+                  background: `${TC.magenta}10`, border: `2px solid ${TC.magenta}`, padding: 14,
+                  marginTop: 8,
+                }}>
+                  <div style={{ fontFamily: PIXEL_FONT, fontSize: 7, color: TC.magenta, marginBottom: 6 }}>THE CLAIM UNDER REVIEW</div>
+                  <div style={{ fontFamily: HAND_FONT, fontSize: 19, color: TC.ink, lineHeight: 1.5 }}>
+                    "{claim}"
+                  </div>
+                </div>
+              )}
+
+              {/* Verdict prompt */}
+              <div style={{ marginTop: 24, textAlign: 'center' }}>
+                <div style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: TC.grey, marginBottom: 12 }}>
+                  {isBinary ? 'YOUR VERDICT' : 'YOUR ANSWER'}
+                </div>
+                <div style={{ display: 'flex', gap: 16, justifyContent: 'center' }}>
+                  <PixelButton variant="success" onClick={() => submitSimpleVerdict(true)}>
+                    CLAIM IS VALID
+                  </PixelButton>
+                  <PixelButton variant="danger" onClick={() => submitSimpleVerdict(false)}>
+                    CLAIM IS INVALID
+                  </PixelButton>
+                </div>
+                {!isBinary && (
+                  // TODO(question_type): dedicated UIs for level_picker /
+                  // coverage_table / numeric_input / test_designer — for now
+                  // we fall through to a simple two-button verdict to avoid
+                  // forcing the player through the pair-selector flow.
+                  <div style={{ fontFamily: MONO_FONT, fontSize: 10, color: TC.grey, marginTop: 12 }}>
+                    (Specialised "{questionType}" UI is pending — answer with the closest verdict.)
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Side panel — judge nudge, technique-neutral */}
+          <div style={{ width: 280, display: 'flex', flexDirection: 'column', gap: 16 }}>
+            <div style={{ textAlign: 'center', padding: 16, border: `3px solid ${TC.ink}`, background: TC.cream, boxShadow: `4px 4px 0 ${TC.ink}` }}>
+              <JudgeSprite size={90} />
+              <div style={{ fontFamily: HAND_FONT, fontSize: 16, color: TC.ink, marginTop: 10, lineHeight: 1.5 }}>
+                "Read the claim carefully. Does the evidence support it under the required coverage standard?"
+              </div>
+            </div>
+
+            {(caseFile?.hints?.length ?? 0) > 0 && (
+              <div style={{ padding: 14, border: `2px solid ${TC.grid}`, background: TC.cream }}>
+                <div style={{ fontFamily: PIXEL_FONT, fontSize: 7, color: TC.blue, marginBottom: 8 }}>HINT</div>
+                <div style={{ fontFamily: MONO_FONT, fontSize: 10, color: TC.ink, lineHeight: 1.6 }}>
+                  {caseFile?.hints?.[0]}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // ─── Default branch: pair_selector (MC/DC truth-table flow, unchanged) ──────
   return (
     <div style={{ minHeight: '100vh', position: 'relative', zIndex: 1, padding: '30px 40px' }}>
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
         <PixelButton small variant="secondary" onClick={onBack}>← BRIEFING</PixelButton>
         <div style={{ display: 'flex', gap: 8 }}>
-          <span style={{ fontFamily: PIXEL_FONT, fontSize: 8, color: TC.magenta, padding: '4px 10px', border: `2px solid ${TC.magenta}` }}>MC/DC</span>
+          <span style={{ fontFamily: PIXEL_FONT, fontSize: 8, color: TC.magenta, padding: '4px 10px', border: `2px solid ${TC.magenta}` }}>{techniqueLabel}</span>
           <span style={{ fontFamily: PIXEL_FONT, fontSize: 8, color: TC.orange, padding: '4px 10px', border: `2px solid ${TC.orange}`, background: `${TC.orange}15` }}>PHASE 2: INVESTIGATION</span>
         </div>
         <ScoreChip label="SELECTED" value={selectedCount} color={TC.blue} />
@@ -121,7 +291,7 @@ export default function InvestigationScreen({ onNavigate, onBack }: Props) {
           {/* Info bar */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 16 }}>
             <div style={{ fontFamily: MONO_FONT, fontSize: 11, color: TC.grey }}>
-              Selected: <strong style={{ color: TC.blue }}>{selectedCount}</strong> / Required: <strong>≥ 4</strong> (N+1 for MC/DC)
+              Selected: <strong style={{ color: TC.blue }}>{selectedCount}</strong> / Required: <strong>≥ 4</strong> (N+1)
             </div>
             <PixelButton
               variant={validated ? 'success' : 'primary'}
@@ -154,7 +324,7 @@ export default function InvestigationScreen({ onNavigate, onBack }: Props) {
           </div>
 
           <div style={{ padding: 14, border: `2px solid ${TC.grid}`, background: TC.cream }}>
-            <div style={{ fontFamily: PIXEL_FONT, fontSize: 7, color: TC.blue, marginBottom: 8 }}>MC/DC QUICK REF</div>
+            <div style={{ fontFamily: PIXEL_FONT, fontSize: 7, color: TC.blue, marginBottom: 8 }}>QUICK REF</div>
             <div style={{ fontFamily: MONO_FONT, fontSize: 10, color: TC.ink, lineHeight: 1.6 }}>
               • N conditions → N+1 tests min<br />
               • Each condition must independently<br />
