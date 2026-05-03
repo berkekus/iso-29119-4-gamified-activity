@@ -1,26 +1,36 @@
+import { useEffect } from 'react'
 import { TC, PIXEL_FONT, HAND_FONT, MONO_FONT } from '../ui/tokens'
 import PixelButton from '../ui/PixelButton'
 import CoverageMeter from '../ui/CoverageMeter'
 import { JudgeSprite } from '../ui/CharacterSprites'
 import { useGameStore } from '../stores/gameStore'
 import type { Screen } from '../stores/gameStore'
+import { CASE_ORDER, nextCaseId } from '../content/caseOrder'
 
 interface Props {
   onNavigate: (screen: Screen) => void
   onBack: () => void
 }
 
+// Maps a CaseFile.technique value to the short label rendered in the
+// top-right header chip. Falls back to the act name for older content.
+const TECHNIQUE_LABEL: Record<string, string> = {
+  STATEMENT: 'STATEMENT',
+  BRANCH:    'BRANCH',
+  DECISION:  'DECISION',
+  BC:        'BC',
+  BCC:       'BCC',
+  MCDC:      'MC/DC',
+}
+
 export default function DebriefScreen({ onNavigate, onBack }: Props) {
-  const { mcdc, caseFile } = useGameStore()
-  const resetMcdc = (useGameStore.getState() as { resetMcdc?: () => void }).resetMcdc
-    ?? (() => useGameStore.getState().resetGame())
-  const { verdictResult, faultResults, triggeredMisconceptions } = {
-    verdictResult: mcdc.verdictResult,
-    faultResults: mcdc.faultResults ?? [],
-    triggeredMisconceptions:
-      (useGameStore.getState() as { triggeredMisconceptions?: unknown[] })
-        .triggeredMisconceptions ?? [],
-  }
+  const { mcdc, caseFile, completedCases, loadCaseById, markCaseCompleted, resetMcdc } =
+    useGameStore()
+  const verdictResult = mcdc.verdictResult
+  const faultResults = mcdc.faultResults ?? []
+  const triggeredMisconceptions =
+    (useGameStore.getState() as { triggeredMisconceptions?: unknown[] }).triggeredMisconceptions ??
+    []
   const seededFaultMap: Record<string, string> = {}
   const misconceptionMap: Record<string, string> = {}
   if (caseFile) {
@@ -28,13 +38,49 @@ export default function DebriefScreen({ onNavigate, onBack }: Props) {
     for (const m of caseFile.misconceptions) misconceptionMap[m.id] = m.explanation_md
   }
 
-  const isGuilty = verdictResult?.coverageAchieved && faultResults.every(f => f.detected)
+  const isGuilty = Boolean(
+    verdictResult?.coverageAchieved && faultResults.every((f) => f.detected),
+  )
   const coverageVal = verdictResult?.coveragePercent ?? 0
+
+  // Record campaign progress only on a passing verdict (GUILTY). MISTRIAL
+  // never unlocks the next case — the player must come back and pass.
+  useEffect(() => {
+    if (isGuilty && caseFile?.id) markCaseCompleted(caseFile.id)
+  }, [isGuilty, caseFile?.id, markCaseCompleted])
+
+  const techniqueLabel =
+    (caseFile?.technique && TECHNIQUE_LABEL[caseFile.technique]) ??
+    (caseFile?.act ? caseFile.act.replace(/_/g, ' ') : 'CASE')
+
+  const nextId = nextCaseId(caseFile?.id)
+  const isLastCase = caseFile?.id === CASE_ORDER[CASE_ORDER.length - 1]
+  // NEXT CASE only advances on a passing verdict; otherwise it is disabled.
+  const canAdvance = isGuilty
 
   const handleRetry = () => {
     resetMcdc()
     onNavigate('briefing')
   }
+
+  const handleNext = () => {
+    if (!canAdvance) return
+    if (nextId) {
+      try {
+        loadCaseById(nextId)
+        onNavigate('briefing')
+      } catch (err) {
+        console.error('[DebriefScreen] Failed to load next case', nextId, err)
+      }
+    } else {
+      // Last case cleared → return to the campaign map (end-of-campaign path).
+      onNavigate('campaign')
+    }
+  }
+
+  const totalCompleted = completedCases.filter((id) =>
+    (CASE_ORDER as readonly string[]).includes(id),
+  ).length
 
   return (
     <div style={{ minHeight: '100vh', position: 'relative', zIndex: 1, padding: '30px 40px' }}>
@@ -42,7 +88,7 @@ export default function DebriefScreen({ onNavigate, onBack }: Props) {
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
         <PixelButton small variant="secondary" onClick={onBack}>← TRIAL</PixelButton>
         <div style={{ display: 'flex', gap: 8 }}>
-          <span style={{ fontFamily: PIXEL_FONT, fontSize: 8, color: TC.magenta, padding: '4px 10px', border: `2px solid ${TC.magenta}` }}>MC/DC</span>
+          <span style={{ fontFamily: PIXEL_FONT, fontSize: 8, color: TC.magenta, padding: '4px 10px', border: `2px solid ${TC.magenta}` }}>{techniqueLabel}</span>
           <span style={{ fontFamily: PIXEL_FONT, fontSize: 8, color: TC.grey, padding: '4px 10px', border: `2px solid ${TC.grid}` }}>PHASE 5: DEBRIEF</span>
         </div>
       </div>
@@ -120,7 +166,9 @@ export default function DebriefScreen({ onNavigate, onBack }: Props) {
           <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
             <PixelButton variant="danger" onClick={handleRetry}>RETRY CASE</PixelButton>
             <PixelButton variant="secondary" onClick={() => {}}>OPEN ANNEX C</PixelButton>
-            <PixelButton variant="primary" onClick={() => onNavigate('campaign')}>NEXT CASE →</PixelButton>
+            <PixelButton variant="primary" onClick={handleNext} disabled={!canAdvance}>
+              {isLastCase ? 'CAMPAIGN MAP →' : 'NEXT CASE →'}
+            </PixelButton>
           </div>
         </div>
 
@@ -153,10 +201,7 @@ export default function DebriefScreen({ onNavigate, onBack }: Props) {
           {/* Progress */}
           <div style={{ padding: 14, border: `2px solid ${TC.grid}`, background: TC.cream }}>
             <div style={{ fontFamily: PIXEL_FONT, fontSize: 7, color: TC.grey, marginBottom: 8 }}>PROGRESS</div>
-            <CoverageMeter value={isGuilty ? 1 : 0} max={3} label="ACT III CASES" color={TC.magenta} width={220} />
-            <div style={{ marginTop: 10 }}>
-              <CoverageMeter value={isGuilty ? 3 : 2} max={12} label="TOTAL CASES" color={TC.blue} width={220} />
-            </div>
+            <CoverageMeter value={totalCompleted} max={CASE_ORDER.length} label="TOTAL CASES" color={TC.blue} width={220} />
           </div>
         </div>
       </div>

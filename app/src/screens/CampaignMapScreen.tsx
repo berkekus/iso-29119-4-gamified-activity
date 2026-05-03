@@ -4,6 +4,7 @@ import PixelButton from '../ui/PixelButton'
 import ScoreChip from '../ui/ScoreChip'
 import { BugSprite } from '../ui/CharacterSprites'
 import type { Screen } from '../stores/gameStore'
+import { CASE_ORDER } from '../content/caseOrder'
 
 interface Props {
   onNavigate: (screen: Screen) => void
@@ -101,22 +102,17 @@ const acts: ActEntry[] = [
 const TOTAL_CASES = acts.reduce((n, a) => n + a.cases.length, 0)
 
 /**
- * Returns true if a case is unlocked.
- *  - The very first case of ACT I is always unlocked.
- *  - Otherwise, a case is unlocked iff the previous case of the SAME act is
- *    completed.
- *  - The first case of any later act is unlocked iff the LAST case of the
- *    previous act is completed.
+ * Returns true if a case is unlocked. Gating follows the canonical CASE_ORDER:
+ * the first case is always unlocked, and every subsequent case is unlocked
+ * iff its predecessor in CASE_ORDER has been completed. ACT-boundary gating
+ * falls out automatically because the predecessor of the first case of a
+ * later act is the last case of the previous act.
  */
-function isCaseUnlocked(actIdx: number, caseIdx: number, completed: string[]): boolean {
-  if (actIdx === 0 && caseIdx === 0) return true
-  if (caseIdx > 0) {
-    const prev = acts[actIdx].cases[caseIdx - 1]
-    return completed.includes(prev.id)
-  }
-  // caseIdx === 0 and actIdx > 0 → require previous act fully completed
-  const prevAct = acts[actIdx - 1]
-  return prevAct.cases.every((c) => completed.includes(c.id))
+function isCaseUnlocked(caseId: string, completed: string[]): boolean {
+  const idx = CASE_ORDER.indexOf(caseId as (typeof CASE_ORDER)[number])
+  if (idx <= 0) return idx === 0
+  const prev = CASE_ORDER[idx - 1]
+  return prev !== undefined && completed.includes(prev)
 }
 
 export default function CampaignMapScreen({ onNavigate, onBack, completedCases, onSelectCase }: Props) {
@@ -141,7 +137,7 @@ export default function CampaignMapScreen({ onNavigate, onBack, completedCases, 
 
       {/* Act timeline */}
       <div style={{ display: 'flex', gap: 20, alignItems: 'stretch' }}>
-        {acts.map((act, actIdx) => (
+        {acts.map((act) => (
           <div key={act.id} style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
             {/* Act header card */}
             <button
@@ -167,9 +163,9 @@ export default function CampaignMapScreen({ onNavigate, onBack, completedCases, 
 
             {/* Cases list */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 12 }}>
-              {act.cases.map((c, caseIdx) => {
+              {act.cases.map((c) => {
                 const isComplete = completedCases.includes(c.id)
-                const isLocked = !isComplete && !isCaseUnlocked(actIdx, caseIdx, completedCases)
+                const isLocked = !isComplete && !isCaseUnlocked(c.id, completedCases)
                 const handleClick = () => {
                   if (isLocked) return
                   if (onSelectCase) onSelectCase(c.id)

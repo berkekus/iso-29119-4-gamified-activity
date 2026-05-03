@@ -101,6 +101,8 @@ interface GameState {
   submitForVerdict: () => void
   advancePhase: () => void
   resetGame: () => void
+  markCaseCompleted: (caseId: string) => void
+  resetMcdc: () => void
 
   // MCDC namespace — B-UI actions
   mcdc: McdcState
@@ -215,6 +217,30 @@ export const useGameStore = create<GameState>((set, get) => ({
       verdict: null,
       mcdc: initialMcdc,
     })
+  },
+
+  // Idempotent: a case id is added to completedCases at most once. Callers
+  // (currently DebriefScreen on a passing verdict) own the policy of when to
+  // mark — this action simply records the fact.
+  markCaseCompleted: (caseId) => {
+    set((state) =>
+      state.completedCases.includes(caseId)
+        ? state
+        : { completedCases: [...state.completedCases, caseId] },
+    )
+  },
+
+  // Resets just the per-case run state so RETRY CASE can reuse the same
+  // CaseFile without losing campaign-level progress (completedCases).
+  resetMcdc: () => {
+    set((state) => ({
+      phase: 'briefing',
+      submission: [],
+      verdict: null,
+      mcdc: initialMcdc,
+      truthTable: state.truthTable,
+      caseFile: state.caseFile,
+    }))
   },
 
   // MCDC namespace
