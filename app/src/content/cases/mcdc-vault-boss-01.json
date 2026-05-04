@@ -14,10 +14,10 @@
     "narrative": "Access to a high-security vault requires a valid badge AND a non-expired PIN AND the request to fall within the time window AND a positive biometric scan. BCC would need 2^4 = 16 tests; certify the vault with the MCDC minimum of 5. Pick exactly 5 rows from the 16-row truth table that satisfy MCDC for ALL FOUR conditions.",
     "code": "if (badge_valid and not pin_expired and time_window_ok and biometric_ok):\n    grant_access()",
     "conditions": [
-      { "id": "badge_valid", "label": "badge_valid" },
-      { "id": "pin_expired", "label": "pin_expired" },
-      { "id": "time_window_ok", "label": "time_window_ok" },
-      { "id": "biometric_ok", "label": "biometric_ok" }
+      { "id": "badge_valid", "label": "badge is valid" },
+      { "id": "pin_expired", "label": "PIN has expired" },
+      { "id": "time_window_ok", "label": "request is within the allowed time window" },
+      { "id": "biometric_ok", "label": "biometric scan succeeded" }
     ],
     "decision_expression": "badge_valid && !pin_expired && time_window_ok && biometric_ok"
   },

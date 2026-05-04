@@ -14,9 +14,9 @@
     "narrative": "An emergency system triggers when alarmA fires, or when both backupSensor and manualOverride are active.",
     "code": "if (alarmA || (backupSensor && manualOverride)) trigger();",
     "conditions": [
-      { "id": "alarmA", "label": "alarmA" },
-      { "id": "backupSensor", "label": "backupSensor" },
-      { "id": "manualOverride", "label": "manualOverride" }
+      { "id": "alarmA", "label": "primary alarm is firing" },
+      { "id": "backupSensor", "label": "backup sensor reports a fault" },
+      { "id": "manualOverride", "label": "manual override is asserted" }
     ],
     "decision_expression": "alarmA || (backupSensor && manualOverride)"
   },

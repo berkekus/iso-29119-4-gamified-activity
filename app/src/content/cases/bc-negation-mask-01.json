@@ -14,8 +14,8 @@
     "narrative": "A panel is shown when the user is NOT an admin or has an explicit override. The QA engineer claims Branch Condition coverage is met with three tests. Read carefully — the negation is the trap.",
     "code": "def show_panel(is_admin, has_override):\n    if (not is_admin) or has_override:\n        return show()\n    return hide()",
     "conditions": [
-      { "id": "is_admin", "label": "is_admin" },
-      { "id": "has_override", "label": "has_override" }
+      { "id": "is_admin", "label": "user has admin privileges" },
+      { "id": "has_override", "label": "override flag is set" }
     ],
     "decision_expression": "(!is_admin) || has_override"
   },

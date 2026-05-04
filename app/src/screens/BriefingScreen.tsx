@@ -21,8 +21,6 @@ const fallbackCaseData = {
   narrative:
     'A claim about test coverage has been put before the court. Review the evidence and decide whether the claim is admissible.',
   code: '',
-  conditions: [] as { id: string; label: string }[],
-  expression: '',
   charges: [
     'Read the case briefing and the source code under review',
     'Apply the required coverage technique for this act',
@@ -66,8 +64,6 @@ export default function BriefingScreen({ onNavigate, onBack }: Props) {
         title:      caseFile.scenario.title,
         narrative:  caseFile.scenario.narrative,
         code:       caseFile.scenario.code,
-        conditions: caseFile.scenario.conditions,
-        expression: caseFile.scenario.decision_expression,
         charges:    (caseFile.charges && caseFile.charges.length > 0)
           ? caseFile.charges
           : caseFile.claim
@@ -132,32 +128,6 @@ export default function BriefingScreen({ onNavigate, onBack }: Props) {
                 {caseData.code}
               </div>
             </div>
-
-            {/* Conditions — only rendered when the case actually has decision
-                conditions to enumerate. ACT I Statement-coverage cases have
-                an empty conditions[] / decision_expression and shouldn't show
-                an empty truth-table-style block. */}
-            {caseData.conditions.length > 0 && (
-              <div style={{ marginBottom: 20 }}>
-                <div style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: TC.blue, marginBottom: 10 }}>CONDITIONS IDENTIFIED</div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                  {caseData.conditions.map(c => (
-                    <div key={c.id} style={{
-                      display: 'flex', alignItems: 'center', gap: 10,
-                      padding: '8px 12px', background: `${TC.blue}10`, border: `1px solid ${TC.blue}`,
-                    }}>
-                      <span style={{ fontFamily: PIXEL_FONT, fontSize: 13, color: TC.blue, minWidth: 28, flexShrink: 0 }}>{c.id}</span>
-                      <span style={{ fontFamily: MONO_FONT, fontSize: 13, color: TC.ink }}>{c.label}</span>
-                    </div>
-                  ))}
-                </div>
-                {caseData.expression && (
-                  <div style={{ fontFamily: MONO_FONT, fontSize: 13, color: TC.grey, marginTop: 10, lineHeight: 1.5 }}>
-                    Decision expression: <strong style={{ color: TC.ink }}>{caseData.expression}</strong>
-                  </div>
-                )}
-              </div>
-            )}
 
             {/* Charges */}
             <div>

@@ -15,8 +15,8 @@
     "code": "if (verticalSpeedExceedsLimit && (autopilotEngaged || pilotOverride)) disengage();",
     "conditions": [
       { "id": "verticalSpeedExceedsLimit", "label": "verticalSpeed > LIMIT" },
-      { "id": "autopilotEngaged", "label": "autopilotEngaged" },
-      { "id": "pilotOverride", "label": "pilotOverride" }
+      { "id": "autopilotEngaged", "label": "autopilot is engaged" },
+      { "id": "pilotOverride", "label": "pilot override is active" }
     ],
     "decision_expression": "verticalSpeedExceedsLimit && (autopilotEngaged || pilotOverride)"
   },

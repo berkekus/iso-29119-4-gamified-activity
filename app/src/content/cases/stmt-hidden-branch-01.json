@@ -14,7 +14,7 @@
     "narrative": "A pricing function applies a discount only to premium users. The 'happy path' test was added; the team claims testing is complete.",
     "code": "def price(amount, is_premium):\n    if is_premium:\n        amount = amount * 0.9\n    return amount",
     "conditions": [
-      { "id": "is_premium", "label": "is_premium" }
+      { "id": "is_premium", "label": "customer is on the premium plan" }
     ],
     "decision_expression": "is_premium"
   },

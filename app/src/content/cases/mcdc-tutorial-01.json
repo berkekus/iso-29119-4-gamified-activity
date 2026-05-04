@@ -14,8 +14,8 @@
     "narrative": "A safety system activates when sensor sensorTriggered is triggered AND buttonPressed is pressed.",
     "code": "if (sensorTriggered && buttonPressed) activate();",
     "conditions": [
-      { "id": "sensorTriggered", "label": "sensorTriggered" },
-      { "id": "buttonPressed", "label": "buttonPressed" }
+      { "id": "sensorTriggered", "label": "sensor has been triggered" },
+      { "id": "buttonPressed", "label": "button is pressed" }
     ],
     "decision_expression": "sensorTriggered && buttonPressed"
   },
