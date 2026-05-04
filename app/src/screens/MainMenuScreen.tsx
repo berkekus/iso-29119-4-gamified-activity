@@ -56,30 +56,34 @@ export default function MainMenuScreen({ onNavigate }: Props) {
 
       {/* Menu Grid */}
       <div className="menu-grid">
-        {menuItems.map(item => (
-          <button
-            key={item.id}
-            onClick={() => onNavigate(item.id)}
-            onMouseEnter={() => setHover(item.id)}
-            onMouseLeave={() => setHover(null)}
-            style={{
-              background: hover === item.id ? `${item.color}15` : TC.cream,
-              border: `3px solid ${TC.ink}`,
-              boxShadow: hover === item.id ? `6px 6px 0 ${item.color}` : `4px 4px 0 ${TC.ink}`,
-              padding: 20,
-              cursor: 'pointer',
-              textAlign: 'left',
-              transition: 'all 0.06s steps(2)',
-              transform: hover === item.id ? 'translate(-2px, -2px)' : 'none',
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
-              <span style={{ fontSize: 24 }}>{item.icon}</span>
-              <span style={{ fontFamily: PIXEL_FONT, fontSize: 10, color: item.color }}>{item.label}</span>
-            </div>
-            <div style={{ fontFamily: HAND_FONT, fontSize: 17, color: TC.grey }}>{item.desc}</div>
-          </button>
-        ))}
+        {menuItems.map(item => {
+          const disabled = item.id === 'multiplayer'
+          return (
+            <button
+              key={item.id}
+              onClick={() => { if (!disabled) onNavigate(item.id) }}
+              onMouseEnter={() => { if (!disabled) setHover(item.id) }}
+              onMouseLeave={() => setHover(null)}
+              style={{
+                background: hover === item.id ? `${item.color}15` : TC.cream,
+                border: `3px solid ${disabled ? TC.greyLight : TC.ink}`,
+                boxShadow: hover === item.id ? `6px 6px 0 ${item.color}` : `4px 4px 0 ${disabled ? TC.greyLight : TC.ink}`,
+                padding: 20,
+                cursor: disabled ? 'not-allowed' : 'pointer',
+                textAlign: 'left',
+                transition: 'all 0.06s steps(2)',
+                transform: hover === item.id ? 'translate(-2px, -2px)' : 'none',
+                opacity: disabled ? 0.4 : 1,
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+                <span style={{ fontSize: 24 }}>{item.icon}</span>
+                <span style={{ fontFamily: PIXEL_FONT, fontSize: 10, color: item.color }}>{item.label}</span>
+              </div>
+              <div style={{ fontFamily: HAND_FONT, fontSize: 17, color: TC.grey }}>{item.desc}</div>
+            </button>
+          )
+        })}
       </div>
 
       {/* Footer */}
