@@ -116,6 +116,7 @@ button {
   gap: 16px;
   max-width: 560px;
   width: 100%;
+  margin: 0 auto;
 }
 @media (max-width: 500px) {
   .menu-grid {

@@ -95,7 +95,7 @@ export default function EvidenceScreen({ onNavigate, onBack }: Props) {
         <ScoreChip label="PAIRS" value={`${pairs.length}/3`} color={TC.blue} />
       </div>
 
-      <div className="responsive-row" style={{ gap: 30 }}>
+      <div className="responsive-row" style={{ gap: 30, maxWidth: 1100, margin: '0 auto' }}>
         {/* Main */}
         <div style={{ flex: 1 }}>
           <div style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: TC.grey, marginBottom: 6 }}>

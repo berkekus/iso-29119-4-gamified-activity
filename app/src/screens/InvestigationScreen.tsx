@@ -114,7 +114,7 @@ export default function InvestigationScreen({ onNavigate, onBack }: Props) {
           <div style={{ width: 60 }} />
         </div>
 
-        <div className="responsive-row" style={{ gap: 30, maxWidth: 1100 }}>
+        <div className="responsive-row" style={{ gap: 30, maxWidth: 1100, margin: '0 auto' }}>
           {/* Main: claim + code + tests */}
           <div style={{ flex: 1 }}>
             <div style={{
@@ -235,7 +235,7 @@ export default function InvestigationScreen({ onNavigate, onBack }: Props) {
         <ScoreChip label="SELECTED" value={selectedCount} color={TC.blue} />
       </div>
 
-      <div className="responsive-row" style={{ gap: 30 }}>
+      <div className="responsive-row" style={{ gap: 30, maxWidth: 1100, margin: '0 auto' }}>
         {/* Main: Truth Table */}
         <div style={{ flex: 1 }}>
           <div style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: TC.grey, marginBottom: 12 }}>

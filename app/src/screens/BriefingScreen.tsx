@@ -100,7 +100,7 @@ export default function BriefingScreen({ onNavigate, onBack }: Props) {
         </div>
       </div>
 
-      <div className="responsive-row" style={{ gap: 30, maxWidth: 1100 }}>
+      <div className="responsive-row" style={{ gap: 30, maxWidth: 1100, margin: '0 auto' }}>
         {/* Case File */}
         <div style={{ flex: 1 }}>
           <div style={{
