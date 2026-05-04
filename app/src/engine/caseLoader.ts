@@ -22,10 +22,19 @@ const MisconceptionSchema = z.object({
 })
 
 // ─── Single-player extension schemas ──────────────────────────────────
+// Inputs and outcomes are usually booleans (decision-coverage cases), but
+// some statement-coverage cases use strings/numbers because the function
+// under test takes string/number arguments and returns a string/number.
+// Permissive: a test row may carry any JSON value (boolean for decision
+// cases, string/number/list for statement cases that exercise non-boolean
+// signatures). Engine code that needs booleans casts at the use site.
+const InputValueSchema: z.ZodType<unknown> = z.unknown()
+const OutcomeValueSchema: z.ZodType<unknown> = z.unknown()
+
 const TestSetRowSchema = z.object({
   id: z.string(),
-  inputs: z.record(z.string(), z.boolean()),
-  outcome: z.boolean(),
+  inputs: z.record(z.string(), InputValueSchema),
+  outcome: OutcomeValueSchema,
 })
 
 const QuestionTypeEnum = z.enum([
@@ -65,8 +74,8 @@ const NumericPromptSchema = z.object({
 /** A row in a coverage_table interaction (toggle which test rows to include). */
 const CoverageTableRowSchema = z.object({
   id: z.string(),
-  inputs: z.record(z.string(), z.boolean()),
-  outcome: z.boolean(),
+  inputs: z.record(z.string(), InputValueSchema),
+  outcome: OutcomeValueSchema,
   /** True if the row MUST be included to satisfy the case correctness. */
   required: z.boolean(),
 })

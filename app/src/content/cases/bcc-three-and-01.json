@@ -14,11 +14,11 @@
     "narrative": "A launch sequence fires only when all three sensor checks pass. The QA engineer submits five tests and claims Branch Condition Combination coverage. How many of the 2^3 = 8 combinations are actually exercised?",
     "code": "def launch(a, b, c):\n    if a and b and c:\n        return launch_now()\n    return None",
     "conditions": [
-      { "id": "A", "label": "speed_ok" },
-      { "id": "B", "label": "brake_ok" },
-      { "id": "C", "label": "sensor_ok" }
+      { "id": "a", "label": "speed_ok" },
+      { "id": "b", "label": "brake_ok" },
+      { "id": "c", "label": "sensor_ok" }
     ],
-    "decision_expression": "A && B && C"
+    "decision_expression": "a && b && c"
   },
   "claim": "Which is the STRONGEST coverage level the test set below actually satisfies?",
   "charges": [
@@ -27,11 +27,11 @@
     "The prosecution alleges that three of the eight required combinations (TTF, TFT, FTT) are missing from the suite, leaving interaction faults among the conditions undetectable."
   ],
   "test_set": [
-    { "id": "T1", "inputs": { "A": true,  "B": true,  "C": true  }, "outcome": true  },
-    { "id": "T2", "inputs": { "A": false, "B": false, "C": false }, "outcome": false },
-    { "id": "T3", "inputs": { "A": true,  "B": false, "C": false }, "outcome": false },
-    { "id": "T4", "inputs": { "A": false, "B": true,  "C": false }, "outcome": false },
-    { "id": "T5", "inputs": { "A": false, "B": false, "C": true  }, "outcome": false }
+    { "id": "T1", "inputs": { "a": true,  "b": true,  "c": true  }, "outcome": true  },
+    { "id": "T2", "inputs": { "a": false, "b": false, "c": false }, "outcome": false },
+    { "id": "T3", "inputs": { "a": true,  "b": false, "c": false }, "outcome": false },
+    { "id": "T4", "inputs": { "a": false, "b": true,  "c": false }, "outcome": false },
+    { "id": "T5", "inputs": { "a": false, "b": false, "c": true  }, "outcome": false }
   ],
   "options": [
     {
@@ -50,7 +50,7 @@
       "id": "opt-bc",
       "label": "Branch Condition (each condition T and F)",
       "is_correct": true,
-      "explanation": "Correct. A: T (T1, T3) and F (T2, T4, T5). B: T (T1, T4) and F (T2, T3, T5). C: T (T1, T5) and F (T2, T3, T4). All three observed T and F → BC ✓. BCC requires ALL 2^3=8 combinations; only 5 of 8 are present (TTT, FFF, TFF, FTF, FFT). Missing: TTF, TFT, FTT."
+      "explanation": "Correct. a: T (T1, T3) and F (T2, T4, T5). b: T (T1, T4) and F (T2, T3, T5). c: T (T1, T5) and F (T2, T3, T4). All three observed T and F → BC ✓. BCC requires ALL 2^3=8 combinations; only 5 of 8 are present (TTT, FFF, TFF, FTF, FFT). Missing: TTF, TFT, FTT."
     },
     {
       "id": "opt-bcc",
@@ -62,15 +62,15 @@
   "correct_answer_explanation": "BC is satisfied (each condition observed T and F). BCC is NOT — only 5 of 8 combinations are tested, so an interaction bug in TTF, TFT, or FTT could escape.",
   "wrong_answer_explanation": "BCC requires all 2^N combinations. Count the rows present and compare against 2^3 = 8.",
   "hints": [
-    "BCC requires every one of 2^N input combinations to be tested. With N=3 conditions, that means 8 distinct rows of the truth table. Re-read Law Card 5.",
+    "BCC requires every one of 2^N input combinations to be tested. With N=3 conditions, that means 8 distinct rows of the truth table.",
     "Tally the present combinations: TTT, FFF, TFF, FTF, FFT — that is 5 unique rows out of 8. Which 3 rows are missing? (TTF, TFT, FTT)",
-    "Solution — BC is satisfied (each of A, B, C is observed T and F). But BCC is NOT: only 5 of 8 combinations are tested. The 3 missing rows can hide an interaction bug. Strongest satisfied = BRANCH CONDITION."
+    "BC is satisfied (each of a, b, c is observed T and F). But BCC is NOT: only 5 of 8 combinations are tested. The 3 missing rows can hide an interaction bug. Strongest satisfied = BRANCH CONDITION."
   ],
   "seeded_faults": [
     {
       "id": "F1",
       "description": "An operator typo in production reads `a and b or c` instead of `a and b and c`. This bug is invisible to BC but caught by BCC at row TTF.",
-      "trigger": { "condition": "B", "requiredDecisionFlip": true }
+      "trigger": { "condition": "b", "requiredDecisionFlip": true }
     }
   ],
   "misconceptions": [
