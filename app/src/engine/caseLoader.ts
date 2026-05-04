@@ -21,9 +21,60 @@ const MisconceptionSchema = z.object({
   explanation_md: z.string(),
 })
 
+// ─── Single-player extension schemas ──────────────────────────────────
+const TestSetRowSchema = z.object({
+  id: z.string(),
+  inputs: z.record(z.string(), z.boolean()),
+  outcome: z.boolean(),
+})
+
+const QuestionTypeEnum = z.enum([
+  'binary_verdict',
+  'level_picker',
+  'coverage_table',
+  'pair_selector',
+  'test_designer',
+  'numeric_input',
+])
+
+const TechniqueEnum = z.enum([
+  'STATEMENT',
+  'BRANCH',
+  'DECISION',
+  'BC',
+  'BCC',
+  'MCDC',
+])
+
+/** Multi-choice option used by level_picker (and other discrete-choice) cases. */
+const OptionSchema = z.object({
+  id: z.string(),
+  label: z.string(),
+  is_correct: z.boolean(),
+  /** Optional per-option explanation shown on submit (correct or wrong). */
+  explanation: z.string().optional(),
+})
+
+/** Numeric prompt used by numeric_input bridge quizzes. */
+const NumericPromptSchema = z.object({
+  question: z.string(),
+  answer: z.number(),
+  unit: z.string().optional(),
+})
+
+/** A row in a coverage_table interaction (toggle which test rows to include). */
+const CoverageTableRowSchema = z.object({
+  id: z.string(),
+  inputs: z.record(z.string(), z.boolean()),
+  outcome: z.boolean(),
+  /** True if the row MUST be included to satisfy the case correctness. */
+  required: z.boolean(),
+})
+
 export const CaseFileSchema = z.object({
   id: z.string(),
-  act: z.enum(['MCDC', 'BCC', 'Combinatorial', 'DataFlow']),
+  // 'act' is the campaign chapter; we keep legacy values + add hierarchy acts
+  act: z.enum(['MCDC', 'BCC', 'Combinatorial', 'DataFlow', 'STMT_BRANCH', 'DECISION_BC']),
   difficulty: z.number().int().min(1).max(3),
   iso_clauses: z.array(z.string()),
   scenario: z.object({
@@ -35,6 +86,32 @@ export const CaseFileSchema = z.object({
   }),
   seeded_faults: z.array(SeededFaultSchema),
   misconceptions: z.array(MisconceptionSchema),
+
+  // ─── NEW (optional, single-player) ────────────────────────────────
+  technique: TechniqueEnum.optional(),
+  layer: z.number().int().min(1).max(4).optional(),
+  question_type: QuestionTypeEnum.optional(),
+  misconception_target: z.string().optional(),
+  test_set: z.array(TestSetRowSchema).optional(),
+  claim: z.string().optional(),
+  /** 3-tier progressive hint chain: general → specific → worked solution. */
+  hints: z.array(z.string()).optional(),
+  /** Estimated time-to-solve in seconds (UX pacing). */
+  estimated_time_sec: z.number().int().positive().optional(),
+  /** Concept Analysis cross-reference, e.g. §3 row index. */
+  concept_ref: z.string().optional(),
+  /** Multi-choice options for level_picker / binary_verdict / test_designer. */
+  options: z.array(OptionSchema).optional(),
+  /** One or more numeric prompts for numeric_input bridge quizzes. */
+  numeric_prompts: z.array(NumericPromptSchema).optional(),
+  /** Toggle-rows interaction for coverage_table cases. */
+  coverage_table: z.array(CoverageTableRowSchema).optional(),
+  /** Exact pick count required for test_designer cases (e.g. 5 rows of 16). */
+  required_pick_count: z.number().int().positive().optional(),
+  /** Short feedback shown when the player submits a wrong answer. */
+  wrong_answer_explanation: z.string().optional(),
+  /** Short feedback shown when the player submits the correct answer. */
+  correct_answer_explanation: z.string().optional(),
 })
 
 export type CaseFile = z.infer<typeof CaseFileSchema>

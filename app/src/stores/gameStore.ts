@@ -1,5 +1,7 @@
 import { create } from 'zustand'
+import { persist, createJSONStorage } from 'zustand/middleware'
 import type { CaseFile } from '../engine/caseLoader'
+import { loadCase as parseCaseFile } from '../engine/caseLoader'
 import type {
   TruthTableRow,
   IndependencePair,
@@ -9,6 +11,37 @@ import type {
 } from '../engine/types'
 import { generateTruthTable } from '../engine/coverage/mcdc'
 import { computeVerdict } from '../engine/verdict/index'
+import { CASE_TO_LAW } from '../content/lawCards'
+import { unlockedAchievementIds } from '../content/achievements'
+
+// ── Case content registry — all 12 cases keyed by id ─────────────────────────
+import stmtTutorial01      from '../content/cases/stmt-tutorial-01.json'
+import stmtHiddenBranch01  from '../content/cases/stmt-hidden-branch-01.json'
+import branchLoopTrap01    from '../content/cases/branch-loop-trap-01.json'
+import decisionAndTrap01   from '../content/cases/decision-and-trap-01.json'
+import bcOrThreeCond01     from '../content/cases/bc-or-three-cond-01.json'
+import bcNegationMask01    from '../content/cases/bc-negation-mask-01.json'
+import bccThreeAnd01       from '../content/cases/bcc-three-and-01.json'
+import bccCostIntuition01  from '../content/cases/bcc-cost-intuition-01.json'
+import mcdcTutorial01      from '../content/cases/mcdc-tutorial-01.json'
+import mcdcAltitude01      from '../content/cases/mcdc-altitude-disengage-01.json'
+import mcdcTrapIsolation01 from '../content/cases/mcdc-trap-isolation-01.json'
+import mcdcVaultBoss01     from '../content/cases/mcdc-vault-boss-01.json'
+
+const CASE_REGISTRY: Record<string, unknown> = {
+  'stmt-tutorial-01':           stmtTutorial01,
+  'stmt-hidden-branch-01':      stmtHiddenBranch01,
+  'branch-loop-trap-01':        branchLoopTrap01,
+  'decision-and-trap-01':       decisionAndTrap01,
+  'bc-or-three-cond-01':        bcOrThreeCond01,
+  'bc-negation-mask-01':        bcNegationMask01,
+  'bcc-three-and-01':           bccThreeAnd01,
+  'bcc-cost-intuition-01':      bccCostIntuition01,
+  'mcdc-tutorial-01':           mcdcTutorial01,
+  'mcdc-altitude-disengage-01': mcdcAltitude01,
+  'mcdc-trap-isolation-01':     mcdcTrapIsolation01,
+  'mcdc-vault-boss-01':         mcdcVaultBoss01,
+}
 
 // ── Screen type — all navigable screens ──────────────────────────────────────
 
@@ -24,6 +57,7 @@ export type Screen =
   | 'design-system'
   | 'multiplayer'
   | 'achievements'
+  | 'law-library'
 
 // ── MCDC namespace types ──────────────────────────────────────────────────────
 
@@ -63,13 +97,23 @@ interface GameState {
   submission: McdcSubmission
   verdict: VerdictResult | null
   completedCases: string[]
+  collectedLawCards: string[]
+  unlockedAchievements: string[]
+  /** Set on a passing submitAnswer when a new achievement was just unlocked
+   *  by the case-completion side-effect. Read by DebriefScreen to show the
+   *  one-line "🏆 Achievement unlocked" notice. Cleared on every load/reset. */
+  newlyUnlockedAchievement: string | null
 
   loadCase: (caseData: CaseFile) => void
+  loadCaseById: (caseId: string) => void
   addSubmissionPair: (pair: IndependencePair) => void
   removePair: (row1: number, row2: number) => void
   submitForVerdict: () => void
   advancePhase: () => void
   resetGame: () => void
+  markCaseCompleted: (caseId: string) => void
+  resetMcdc: () => void
+  clearNewlyUnlockedAchievement: () => void
 
   // MCDC namespace — B-UI actions
   mcdc: McdcState
@@ -81,9 +125,69 @@ interface GameState {
     faults: McdcFaultResult[],
     misconceptions: McdcMisconception[],
   ) => void
+
+  // Generic single-answer submission for non-pair_selector question types.
+  // Returns true on a passing answer (caller can navigate to debrief). Wires
+  // through setVerdict so DebriefScreen renders its banner unchanged.
+  submitAnswer: (payload: AnswerPayload) => boolean
 }
 
+// ── submitAnswer payload union — one variant per question_type ──────────────
+export type AnswerPayload =
+  | { kind: 'binary_verdict'; optionId: string }
+  | { kind: 'level_picker';   optionId: string }
+  | { kind: 'coverage_table'; selectedRowIds: string[] }
+  | { kind: 'numeric_input';  answers: number[] }
+  | { kind: 'test_designer';  selectedRowIds: string[] }
+
 const PHASES: GamePhase[] = ['briefing', 'investigation', 'evidence', 'trial', 'debrief']
+
+// ── Answer evaluation — pure, exported for tests ────────────────────────────
+//
+// Each branch resolves the case's correctness key for its question_type:
+//  • binary_verdict / level_picker  → caseFile.options[].is_correct
+//  • test_designer                  → caseFile.coverage_table[].required (set
+//                                     of required row ids) + required_pick_count
+//  • coverage_table                 → caseFile.coverage_table[].required
+//                                     (player must include all required rows;
+//                                     extras allowed)
+//  • numeric_input                  → caseFile.numeric_prompts[].answer
+//                                     (exact match; no tolerance)
+export function evaluateAnswer(caseData: CaseFile, payload: AnswerPayload): boolean {
+  switch (payload.kind) {
+    case 'binary_verdict':
+    case 'level_picker': {
+      const opt = (caseData.options ?? []).find((o) => o.id === payload.optionId)
+      return Boolean(opt?.is_correct)
+    }
+    case 'coverage_table': {
+      const rows = caseData.coverage_table ?? []
+      const requiredIds = new Set(rows.filter((r) => r.required).map((r) => r.id))
+      const selected = new Set(payload.selectedRowIds)
+      // Must include every required row; extras are allowed.
+      for (const id of requiredIds) if (!selected.has(id)) return false
+      // Must not select any unknown row id (defensive).
+      for (const id of selected) if (!rows.some((r) => r.id === id)) return false
+      return true
+    }
+    case 'numeric_input': {
+      const prompts = caseData.numeric_prompts ?? []
+      if (payload.answers.length !== prompts.length) return false
+      return prompts.every((p, i) => payload.answers[i] === p.answer)
+    }
+    case 'test_designer': {
+      const rows = caseData.coverage_table ?? []
+      const requiredIds = new Set(rows.filter((r) => r.required).map((r) => r.id))
+      const selected = new Set(payload.selectedRowIds)
+      const expectedCount = caseData.required_pick_count ?? requiredIds.size
+      if (selected.size !== expectedCount) return false
+      // Selection must equal the required-id set exactly.
+      if (selected.size !== requiredIds.size) return false
+      for (const id of requiredIds) if (!selected.has(id)) return false
+      return true
+    }
+  }
+}
 
 const initialMcdc: McdcState = {
   selectedRows: [],
@@ -93,7 +197,9 @@ const initialMcdc: McdcState = {
   misconceptions: [],
 }
 
-export const useGameStore = create<GameState>((set, get) => ({
+export const useGameStore = create<GameState>()(
+  persist(
+    (set, get) => ({
   // Navigation
   screen: 'menu',
   screenHistory: [],
@@ -118,6 +224,9 @@ export const useGameStore = create<GameState>((set, get) => ({
   submission: [],
   verdict: null,
   completedCases: [],
+  collectedLawCards: [],
+  unlockedAchievements: [],
+  newlyUnlockedAchievement: null,
 
   loadCase: (caseData) => {
     const truthTable = generateTruthTable(
@@ -132,6 +241,16 @@ export const useGameStore = create<GameState>((set, get) => ({
       verdict: null,
       mcdc: initialMcdc,
     })
+  },
+
+  loadCaseById: (caseId) => {
+    const raw = CASE_REGISTRY[caseId]
+    if (!raw) {
+      console.error(`[gameStore] Unknown case id: ${caseId}`)
+      throw new Error(`Unknown case id: ${caseId}`)
+    }
+    const caseData = parseCaseFile(raw)
+    get().loadCase(caseData)
   },
 
   addSubmissionPair: (pair) => {
@@ -176,6 +295,55 @@ export const useGameStore = create<GameState>((set, get) => ({
     })
   },
 
+  // Idempotent: a case id is added to completedCases at most once. On the
+  // first add, also (a) push the case's mapped law-card id into
+  // collectedLawCards if not already present, and (b) recompute
+  // unlockedAchievements from the new completedCases set, recording the
+  // *first* newly-unlocked achievement id in newlyUnlockedAchievement so
+  // DebriefScreen can render its one-line notice. Callers
+  // (currently DebriefScreen on a passing verdict) own the policy of when to
+  // mark — this action simply records the fact.
+  markCaseCompleted: (caseId) => {
+    set((state) => {
+      if (state.completedCases.includes(caseId)) return state
+      const completedCases = [...state.completedCases, caseId]
+
+      const lawId = CASE_TO_LAW[caseId]
+      const collectedLawCards =
+        lawId && !state.collectedLawCards.includes(lawId)
+          ? [...state.collectedLawCards, lawId]
+          : state.collectedLawCards
+
+      const nextUnlocked = unlockedAchievementIds(completedCases)
+      const prev = new Set(state.unlockedAchievements)
+      const newlyUnlocked = nextUnlocked.find((id) => !prev.has(id)) ?? null
+
+      return {
+        completedCases,
+        collectedLawCards,
+        unlockedAchievements: nextUnlocked,
+        newlyUnlockedAchievement: newlyUnlocked ?? state.newlyUnlockedAchievement,
+      }
+    })
+  },
+
+  clearNewlyUnlockedAchievement: () => {
+    set({ newlyUnlockedAchievement: null })
+  },
+
+  // Resets just the per-case run state so RETRY CASE can reuse the same
+  // CaseFile without losing campaign-level progress (completedCases).
+  resetMcdc: () => {
+    set((state) => ({
+      phase: 'briefing',
+      submission: [],
+      verdict: null,
+      mcdc: initialMcdc,
+      truthTable: state.truthTable,
+      caseFile: state.caseFile,
+    }))
+  },
+
   // MCDC namespace
   mcdc: initialMcdc,
 
@@ -207,4 +375,59 @@ export const useGameStore = create<GameState>((set, get) => ({
       },
     }))
   },
-}))
+
+  // Validates the player's answer against the case's correctness key, writes
+  // a McdcVerdictResult so DebriefScreen renders unchanged, and returns true
+  // on pass. Idempotent: calling twice with the same payload yields the same
+  // result. Caller is responsible for navigating to debrief.
+  submitAnswer: (payload) => {
+    const { caseFile, setVerdict: writeVerdict } = get()
+    if (!caseFile) return false
+
+    const correct = evaluateAnswer(caseFile, payload)
+    writeVerdict(
+      {
+        coverageAchieved: correct,
+        coveragePercent: correct ? 100 : 0,
+        conditionsCovered: [],
+      },
+      (caseFile.seeded_faults ?? []).map((f) => ({ id: f.id, detected: correct })),
+      (caseFile.misconceptions ?? []).map((m) => ({
+        id: m.id,
+        triggered: !correct,
+        explanation: m.explanation_md,
+      })),
+    )
+    return correct
+  },
+    }),
+    {
+      name: 'iso29119-game-progress',
+      storage: createJSONStorage(() => localStorage),
+      // Persist only campaign-level progress. Transient per-run state
+      // (caseFile, truthTable, submission, verdict, mcdc, screen, phase)
+      // must be rehydrated fresh on each session.
+      partialize: (state) => ({
+        completedCases: state.completedCases,
+        collectedLawCards: state.collectedLawCards,
+        unlockedAchievements: state.unlockedAchievements,
+      }),
+      version: 1,
+      // On rehydrate, recompute unlockedAchievements and backfill
+      // collectedLawCards from completedCases. This lets older saves (which
+      // only persisted completedCases) start showing achievements & laws
+      // immediately, and self-heals if the mapping ever evolves.
+      onRehydrateStorage: () => (state) => {
+        if (!state) return
+        const lawIds = new Set(state.collectedLawCards ?? [])
+        for (const caseId of state.completedCases) {
+          const lawId = CASE_TO_LAW[caseId]
+          if (lawId) lawIds.add(lawId)
+        }
+        state.collectedLawCards = Array.from(lawIds)
+        state.unlockedAchievements = unlockedAchievementIds(state.completedCases)
+        state.newlyUnlockedAchievement = null
+      },
+    },
+  ),
+)

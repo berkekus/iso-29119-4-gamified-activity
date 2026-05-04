@@ -4,90 +4,144 @@ import PixelButton from '../ui/PixelButton'
 import ScoreChip from '../ui/ScoreChip'
 import { BugSprite } from '../ui/CharacterSprites'
 import type { Screen } from '../stores/gameStore'
+import { CASE_ORDER } from '../content/caseOrder'
 
 interface Props {
   onNavigate: (screen: Screen) => void
   onBack: () => void
   completedCases: string[]
+  onSelectCase?: (caseId: string) => void
 }
 
-const acts = [
+// ─── Coverage Hierarchy Campaign (Concept Analysis §2 chain) ────────────────
+// Each ACT corresponds to one or two ISO 29119-4 §5.3.x techniques.
+// Cases inside an ACT are ordered easy → hard and gated sequentially: a case
+// is unlocked only when the previous case in the same act has been completed,
+// or when the previous act has been fully completed (for the first case of
+// the next act). This implements the "misconception-driven progression" laid
+// out in Concept Analysis §4: each level defeats the player's previous
+// strategy and forces adoption of the next technique.
+
+type CaseEntry = {
+  id: string
+  name: string
+  difficulty: 1 | 2 | 3
+  isBoss?: boolean
+}
+
+type ActEntry = {
+  id: string
+  name: string
+  title: string
+  subtitle: string
+  color: string
+  bugType: 'combinatorial' | 'bcc' | 'mcdc' | 'dataflow'
+  clauses: string
+  cases: CaseEntry[]
+}
+
+const acts: ActEntry[] = [
   {
-    id: 'combinatorial',
+    id: 'stmt-branch',
     name: 'ACT I',
-    title: 'Combinatorial',
-    subtitle: 'Forensic Combinatorics',
+    title: 'Statement & Branch',
+    subtitle: 'Recognition',
     color: TC.orange,
-    bugType: 'combinatorial' as const,
-    clauses: '§5.2.5',
+    bugType: 'combinatorial',
+    clauses: '§5.3.1 – §5.3.2',
     cases: [
-      { id: 'combo-01', name: 'The Parameter Matrix',   difficulty: 1, status: 'complete'   },
-      { id: 'combo-02', name: 'Pair-wise Pursuit',      difficulty: 2, status: 'available'  },
-      { id: 'combo-03', name: 'Base Choice Betrayal',   difficulty: 3, status: 'locked'     },
+      { id: 'stmt-tutorial-01',      name: 'First Trial',      difficulty: 1 },
+      { id: 'stmt-hidden-branch-01', name: 'The Missing Else', difficulty: 2 },
+      { id: 'branch-loop-trap-01',   name: 'The Empty Loop',   difficulty: 3 },
+    ],
+  },
+  {
+    id: 'decision-bc',
+    name: 'ACT II',
+    title: 'Decision & BC',
+    subtitle: 'Discrimination',
+    color: TC.green,
+    bugType: 'bcc',
+    clauses: '§5.3.3 – §5.3.4',
+    cases: [
+      { id: 'decision-and-trap-01', name: 'Two-Factor Login',     difficulty: 1 },
+      { id: 'bc-or-three-cond-01',  name: 'Triple Alarm',          difficulty: 2 },
+      { id: 'bc-negation-mask-01',  name: 'Negation Mask',         difficulty: 3 },
     ],
   },
   {
     id: 'bcc',
-    name: 'ACT II',
+    name: 'ACT III',
     title: 'BCC',
-    subtitle: 'Compound Testimony',
-    color: TC.green,
-    bugType: 'bcc' as const,
+    subtitle: 'Combinatorial Cost',
+    color: TC.blue,
+    bugType: 'bcc',
     clauses: '§5.3.5',
     cases: [
-      { id: 'bcc-01', name: 'The Boolean Witness',  difficulty: 1, status: 'locked' },
-      { id: 'bcc-02', name: 'Condition Cascade',    difficulty: 2, status: 'locked' },
-      { id: 'bcc-03', name: 'Exhaustive Evidence',  difficulty: 3, status: 'locked' },
+      { id: 'bcc-three-and-01',      name: 'Triple Lock',         difficulty: 1 },
+      { id: 'bcc-cost-intuition-01', name: 'The Cost Calculator', difficulty: 2 },
     ],
   },
   {
     id: 'mcdc',
-    name: 'ACT III',
+    name: 'ACT IV',
     title: 'MC/DC',
-    subtitle: 'Cross-Examination',
+    subtitle: 'Independence Pairs',
     color: TC.magenta,
-    bugType: 'mcdc' as const,
+    bugType: 'mcdc',
     clauses: '§5.3.6',
     cases: [
-      { id: 'mcdc-altitude-disengage-01', name: 'Altitude Hold Disengage', difficulty: 1, status: 'available' },
-      { id: 'mcdc-02',                   name: 'Independence Inquisition', difficulty: 2, status: 'locked'    },
-      { id: 'mcdc-03',                   name: 'The Paired Verdict',       difficulty: 3, status: 'locked'    },
-    ],
-  },
-  {
-    id: 'dataflow',
-    name: 'ACT IV',
-    title: 'Data Flow',
-    subtitle: 'Chain of Custody',
-    color: TC.blue,
-    bugType: 'dataflow' as const,
-    clauses: '§5.3.7',
-    cases: [
-      { id: 'df-01', name: 'Define & Use',       difficulty: 1, status: 'locked' },
-      { id: 'df-02', name: 'The Path Divergence', difficulty: 2, status: 'locked' },
-      { id: 'df-03', name: 'All-Uses Acquittal',  difficulty: 3, status: 'locked' },
+      { id: 'mcdc-tutorial-01',           name: 'Simple Safety Gate',     difficulty: 1 },
+      { id: 'mcdc-altitude-disengage-01', name: 'Altitude Hold Disengage', difficulty: 2 },
+      { id: 'mcdc-trap-isolation-01',     name: 'Emergency Override',     difficulty: 3 },
+      { id: 'mcdc-vault-boss-01',         name: 'Vault Authorization',    difficulty: 3, isBoss: true },
     ],
   },
 ]
 
-export default function CampaignMapScreen({ onNavigate, onBack, completedCases }: Props) {
+const TOTAL_CASES = acts.reduce((n, a) => n + a.cases.length, 0)
+
+/**
+ * Returns true if a case is unlocked. Gating follows the canonical CASE_ORDER:
+ * the first case is always unlocked, and every subsequent case is unlocked
+ * iff its predecessor in CASE_ORDER has been completed. ACT-boundary gating
+ * falls out automatically because the predecessor of the first case of a
+ * later act is the last case of the previous act.
+ */
+function isCaseUnlocked(caseId: string, completed: string[]): boolean {
+  const idx = CASE_ORDER.indexOf(caseId as (typeof CASE_ORDER)[number])
+  if (idx <= 0) return idx === 0
+  const prev = CASE_ORDER[idx - 1]
+  return prev !== undefined && completed.includes(prev)
+}
+
+export default function CampaignMapScreen({ onNavigate, onBack, completedCases, onSelectCase }: Props) {
   const [selectedAct, setSelectedAct] = useState<string | null>(null)
+  const completedCount = completedCases.filter((id) =>
+    acts.some((a) => a.cases.some((c) => c.id === id)),
+  ).length
 
   return (
     <div style={{ minHeight: '100vh', position: 'relative', zIndex: 1, padding: '30px 40px' }}>
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 30 }}>
-        <PixelButton small variant="secondary" onClick={onBack}>← MENU</PixelButton>
-        <h2 style={{ fontFamily: PIXEL_FONT, fontSize: 16, color: TC.ink, margin: 0 }}>CAMPAIGN</h2>
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+          <PixelButton small variant="secondary" onClick={onBack}>← MENU</PixelButton>
+          <PixelButton small variant="secondary" onClick={() => onNavigate('law-library')}>LAW LIBRARY</PixelButton>
+          <PixelButton small variant="secondary" onClick={() => onNavigate('achievements')}>ACHIEVEMENTS</PixelButton>
+        </div>
+        <h2 style={{ fontFamily: PIXEL_FONT, fontSize: 16, color: TC.ink, margin: 0 }}>
+          COVERAGE HIERARCHY · ISO 29119-4
+        </h2>
         <div style={{ display: 'flex', gap: 10 }}>
-          <ScoreChip label="CASES" value={`${completedCases.length}/12`} color={TC.blue} />
-          <ScoreChip label="BADGES" value="1/8" color={TC.green} />
+          <ScoreChip label="CASES" value={`${completedCount}/${TOTAL_CASES}`} color={TC.blue} />
+          <ScoreChip label="ACTS" value={`${acts.filter((a) => a.cases.every((c) => completedCases.includes(c.id))).length}/${acts.length}`} color={TC.green} />
         </div>
       </div>
 
       {/* Act timeline */}
       <div style={{ display: 'flex', gap: 20, alignItems: 'stretch' }}>
-        {acts.map(act => (
+        {acts.map((act) => (
           <div key={act.id} style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
             {/* Act header card */}
             <button
@@ -113,16 +167,27 @@ export default function CampaignMapScreen({ onNavigate, onBack, completedCases }
 
             {/* Cases list */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 12 }}>
-              {act.cases.map(c => {
-                const isComplete = completedCases.includes(c.id) || c.status === 'complete'
-                const isLocked = c.status === 'locked' && !completedCases.includes(c.id)
+              {act.cases.map((c) => {
+                const isComplete = completedCases.includes(c.id)
+                const isLocked = !isComplete && !isCaseUnlocked(c.id, completedCases)
+                const handleClick = () => {
+                  if (isLocked) return
+                  if (onSelectCase) onSelectCase(c.id)
+                  onNavigate('briefing')
+                }
+                const prefix = isComplete ? '✓ ' : isLocked ? '🔒 ' : c.isBoss ? '★ ' : '▶ '
                 return (
                   <button
                     key={c.id}
-                    onClick={() => !isLocked && onNavigate('briefing')}
+                    onClick={handleClick}
+                    title={isLocked ? 'Complete the previous case to unlock' : c.isBoss ? 'FINAL BOSS' : c.name}
                     style={{
-                      background: isComplete ? `${TC.green}15` : TC.cream,
-                      border: `2px solid ${isLocked ? TC.greyLight : TC.ink}`,
+                      background: isComplete
+                        ? `${TC.green}15`
+                        : c.isBoss && !isLocked
+                          ? `${TC.magenta}10`
+                          : TC.cream,
+                      border: `2px solid ${isLocked ? TC.greyLight : c.isBoss ? TC.magenta : TC.ink}`,
                       boxShadow: !isLocked ? `3px 3px 0 ${TC.ink}` : 'none',
                       padding: '10px 12px',
                       cursor: isLocked ? 'not-allowed' : 'pointer',
@@ -133,11 +198,25 @@ export default function CampaignMapScreen({ onNavigate, onBack, completedCases }
                       justifyContent: 'space-between',
                     }}
                   >
-                    <div style={{ fontFamily: PIXEL_FONT, fontSize: 7, color: isComplete ? TC.green : TC.ink }}>
-                      {isComplete ? '✓ ' : isLocked ? '🔒 ' : '▶ '}{c.name}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                      <div
+                        style={{
+                          fontFamily: PIXEL_FONT,
+                          fontSize: 7,
+                          color: isComplete ? TC.green : c.isBoss ? TC.magenta : TC.ink,
+                        }}
+                      >
+                        {prefix}
+                        {c.name}
+                      </div>
+                      {c.isBoss && (
+                        <div style={{ fontFamily: PIXEL_FONT, fontSize: 6, color: TC.magenta }}>
+                          ★ FINAL BOSS
+                        </div>
+                      )}
                     </div>
                     <div style={{ display: 'flex', gap: 3 }}>
-                      {[1, 2, 3].map(d => (
+                      {[1, 2, 3].map((d) => (
                         <div
                           key={d}
                           style={{
@@ -155,6 +234,22 @@ export default function CampaignMapScreen({ onNavigate, onBack, completedCases }
             </div>
           </div>
         ))}
+      </div>
+
+      {/* Legend / hint footer */}
+      <div
+        style={{
+          marginTop: 24,
+          padding: 12,
+          border: `2px dashed ${TC.greyLight}`,
+          fontFamily: HAND_FONT,
+          fontSize: 13,
+          color: TC.grey,
+          textAlign: 'center',
+        }}
+      >
+        Each act builds on the last: the case you just solved planted the very misconception the
+        next case will defeat. Complete an act to unlock the next.
       </div>
     </div>
   )

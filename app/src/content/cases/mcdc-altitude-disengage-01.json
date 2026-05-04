@@ -3,6 +3,12 @@
   "act": "MCDC",
   "difficulty": 2,
   "iso_clauses": ["§5.3.6", "§3.36", "Annex C.2.3.6"],
+  "technique": "MCDC",
+  "layer": 4,
+  "question_type": "pair_selector",
+  "misconception_target": "MCDC-INDEP-AS-ISOLATION",
+  "concept_ref": "§3 row 5 + §4 'Short-circuit evaluation demonstrated'",
+  "estimated_time_sec": 180,
   "scenario": {
     "title": "Altitude Hold Disengage",
     "narrative": "A flight control law disengages altitude hold when vertical speed exceeds the limit and either the autopilot is engaged or the pilot has override active.",
@@ -14,6 +20,18 @@
     ],
     "decision_expression": "A && (B || C)"
   },
+  "claim": "This 4-test set satisfies MCDC for A, B, and C.",
+  "test_set": [
+    { "id": "T1", "inputs": { "A": true,  "B": true,  "C": false }, "outcome": true  },
+    { "id": "T2", "inputs": { "A": false, "B": true,  "C": false }, "outcome": false },
+    { "id": "T3", "inputs": { "A": true,  "B": false, "C": false }, "outcome": false },
+    { "id": "T4", "inputs": { "A": true,  "B": false, "C": true  }, "outcome": true  }
+  ],
+  "hints": [
+    "Re-read Law Card 6. For each condition, find a pair of tests where only that condition changes AND the decision flips.",
+    "For C: notice that when B is true, short-circuit evaluation makes C irrelevant. Find pairs where B is FALSE so C actually controls the outcome.",
+    "Solution — A: T1↔T2 (only A flips, outcome flips). B: T1↔T3 (only B flips, outcome flips). C: T3↔T4 (only C flips, outcome flips). Note: short-circuiting forces C's pair to use B=false."
+  ],
   "seeded_faults": [
     {
       "id": "F1",

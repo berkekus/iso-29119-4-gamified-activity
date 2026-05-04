@@ -1,0 +1,71 @@
+{
+  "id": "branch-loop-trap-01",
+  "act": "STMT_BRANCH",
+  "difficulty": 3,
+  "iso_clauses": ["§5.3.2", "§6.3.2"],
+  "technique": "BRANCH",
+  "layer": 1,
+  "question_type": "level_picker",
+  "misconception_target": "STMT-GUARANTEES-BRANCH",
+  "concept_ref": "§3 row 2 — 'Statement coverage guarantees branch coverage' (corrected by Branch testing)",
+  "estimated_time_sec": 150,
+  "scenario": {
+    "title": "The Empty Loop",
+    "narrative": "A batch processor walks through a list of items. A `for` loop has a TRUE edge (items present, body runs) and a FALSE edge (empty list, body skipped). Pick the candidate test set that achieves 100% BRANCH coverage of the loop guard.",
+    "code": "def process_all(items):\n    count = 0\n    for item in items:\n        handle(item)\n        count += 1\n    return count",
+    "conditions": [
+      { "id": "L", "label": "items is non-empty (loop body executed at least once)" }
+    ],
+    "decision_expression": "L"
+  },
+  "claim": "Which candidate test set achieves 100% BRANCH coverage of the loop guard in process_all()?",
+  "test_set": [
+    { "id": "T1", "inputs": { "L": true }, "outcome": true }
+  ],
+  "options": [
+    {
+      "id": "opt-set-a",
+      "label": "Set A — { items=[1,2,3] }",
+      "is_correct": false,
+      "explanation": "Statement coverage only. The loop body runs (TRUE edge), but the FALSE edge (empty list, body skipped) is never exercised. A bug on the empty-list path stays hidden."
+    },
+    {
+      "id": "opt-set-b",
+      "label": "Set B — { items=[1,2,3], items=['x'] }",
+      "is_correct": false,
+      "explanation": "Both tests take the SAME loop edge (TRUE). Adding more non-empty inputs doesn't help — Branch coverage requires a different edge of the predicate, not more variety on the same edge."
+    },
+    {
+      "id": "opt-set-c",
+      "label": "Set C — { items=[1,2,3], items=[] }",
+      "is_correct": true,
+      "explanation": "Correct. The non-empty list takes the TRUE edge of the `for` guard; the empty list takes the FALSE edge (body skipped). Both edges are exercised — Branch coverage is 100%."
+    },
+    {
+      "id": "opt-set-d",
+      "label": "Set D — { items=[] }",
+      "is_correct": false,
+      "explanation": "Only the FALSE edge of the loop is taken. The TRUE edge (loop body running) is never reached, so Statement coverage drops to ~50% and Branch is also incomplete."
+    }
+  ],
+  "correct_answer_explanation": "Branch coverage of a loop requires BOTH a non-empty input (body executes) AND an empty input (body skipped). One alone leaves the other edge untested.",
+  "wrong_answer_explanation": "A `for` loop has two edges: enter the body, skip the body. Branch coverage demands both. Re-read Law Card 2.",
+  "hints": [
+    "A `for` (or `while`) loop has a TRUE edge (enter the body) and a FALSE edge (skip the body / exit immediately). Re-read Law Card 2.",
+    "T1=[1,2,3] enters the loop body — so the TRUE edge is covered. Which test set ALSO covers the FALSE edge?",
+    "Solution — Set C is the only candidate that includes both items=[non-empty] (TRUE edge) AND items=[] (FALSE edge). That's 100% Branch coverage."
+  ],
+  "seeded_faults": [
+    {
+      "id": "F1",
+      "description": "process_all returns the wrong default (e.g. None) when items is empty.",
+      "trigger": { "condition": "L", "requiredDecisionFlip": true }
+    }
+  ],
+  "misconceptions": [
+    {
+      "id": "STMT-GUARANTEES-BRANCH",
+      "explanation_md": "Statement coverage does NOT guarantee Branch coverage. A loop that is entered at least once executes every line, satisfying Statement testing — but the implicit 'skip the loop' edge stays untested. To detect empty-list bugs you must add a test that exercises the FALSE edge of the loop predicate."
+    }
+  ]
+}

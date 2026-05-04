@@ -10,9 +10,19 @@ import TrialScreen         from './screens/TrialScreen'
 import DebriefScreen       from './screens/DebriefScreen'
 import DesignSystemScreen  from './screens/DesignSystemScreen'
 import HowToPlayScreen     from './screens/HowToPlayScreen'
+import LawLibraryScreen    from './screens/LawLibraryScreen'
+import AchievementsScreen  from './screens/AchievementsScreen'
 
 export default function App() {
-  const { screen, navigate, goBack, completedCases } = useGameStore()
+  const { screen, navigate, goBack, completedCases, loadCaseById } = useGameStore()
+
+  const handleSelectCase = (caseId: string) => {
+    try {
+      loadCaseById(caseId)
+    } catch (err) {
+      console.error('[App] Failed to load case', caseId, err)
+    }
+  }
 
   const renderScreen = () => {
     const props = { onNavigate: navigate, onBack: goBack }
@@ -20,7 +30,7 @@ export default function App() {
       case 'menu':
         return <MainMenuScreen onNavigate={navigate} />
       case 'campaign':
-        return <CampaignMapScreen {...props} completedCases={completedCases} />
+        return <CampaignMapScreen {...props} completedCases={completedCases} onSelectCase={handleSelectCase} />
       case 'briefing':
         return <BriefingScreen {...props} />
       case 'investigation':
@@ -35,6 +45,10 @@ export default function App() {
         return <DesignSystemScreen onBack={goBack} />
       case 'how-to-play':
         return <HowToPlayScreen onBack={goBack} />
+      case 'law-library':
+        return <LawLibraryScreen onBack={goBack} />
+      case 'achievements':
+        return <AchievementsScreen onBack={goBack} />
       default:
         return <MainMenuScreen onNavigate={navigate} />
     }

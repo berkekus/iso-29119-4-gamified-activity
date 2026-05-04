@@ -1,0 +1,53 @@
+{
+  "id": "bcc-cost-intuition-01",
+  "act": "BCC",
+  "difficulty": 2,
+  "iso_clauses": ["§5.3.5", "§5.3.6", "§6.3.5", "§6.3.6"],
+  "technique": "BCC",
+  "layer": 4,
+  "question_type": "numeric_input",
+  "misconception_target": "BCC-EQUALS-MCDC",
+  "concept_ref": "§2 Levels 4a/4b — 'Exponential test explosion' vs 'N+1 tests' / §3 row 4",
+  "estimated_time_sec": 90,
+  "scenario": {
+    "title": "The Cost of Exhaustiveness",
+    "narrative": "Before you sign off on a 5-condition safety-critical predicate, your project manager asks for the test budget. Compute the test counts for both BCC and MCDC at N=5.",
+    "code": "if a and b and c and d and e:\n    detonate()",
+    "conditions": [
+      { "id": "A", "label": "a" },
+      { "id": "B", "label": "b" },
+      { "id": "C", "label": "c" },
+      { "id": "D", "label": "d" },
+      { "id": "E", "label": "e" }
+    ],
+    "decision_expression": "A && B && C && D && E"
+  },
+  "claim": "Quick budget check before the next case: how many tests does each technique require?",
+  "test_set": [],
+  "numeric_prompts": [
+    {
+      "question": "Number of tests required by BCC for N=5 conditions (2^N)",
+      "answer": 32,
+      "unit": "tests"
+    },
+    {
+      "question": "Minimum number of tests required by MCDC for N=5 conditions (N+1)",
+      "answer": 6,
+      "unit": "tests"
+    }
+  ],
+  "correct_answer_explanation": "BCC is exhaustive: 2^5 = 32 tests. MCDC needs only N+1 = 6 carefully engineered independence pairs. The 32:6 ratio is exactly why DO-178C aviation software mandates MCDC, not BCC.",
+  "wrong_answer_explanation": "BCC = 2^N (every combination of T/F across the N conditions). MCDC's lower bound = N+1 (one shared baseline plus one row per condition). Plug in N=5.",
+  "hints": [
+    "BCC tests every combination of TRUE/FALSE for every condition. For N independent conditions, that is 2^N rows of the truth table.",
+    "MCDC needs at most N+1 tests for N conditions (one carefully engineered test per condition for its independence pair, plus a shared baseline). Re-read Law Card 6.",
+    "Solution — BCC: 2^5 = 32. MCDC: 5 + 1 = 6. The cost ratio (32/6 ≈ 5.3×) explains why DO-178C aviation software mandates MCDC, not BCC. As N grows, BCC becomes infeasible: at N=10 the ratio is 1024/11 ≈ 93×."
+  ],
+  "seeded_faults": [],
+  "misconceptions": [
+    {
+      "id": "BCC-EQUALS-MCDC",
+      "explanation_md": "BCC and MCDC have very different test budgets. BCC = 2^N (exponential, infeasible at scale). MCDC = N+1 (linear, feasible). They also differ in *guarantee*: BCC catches every interaction; MCDC catches only those where each condition can independently change the outcome. For safety-critical software, MCDC is the practical sweet spot — strong enough to detect masking bugs, cheap enough to actually run."
+    }
+  ]
+}

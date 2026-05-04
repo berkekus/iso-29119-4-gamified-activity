@@ -25,10 +25,21 @@ const tdStyle = {
   fontFamily: MONO_FONT, fontSize: 13,
 }
 
+const TECHNIQUE_LABEL: Record<string, string> = {
+  STATEMENT: 'STATEMENT',
+  BRANCH:    'BRANCH',
+  DECISION:  'DECISION',
+  BC:        'BC',
+  BCC:       'BCC',
+  MCDC:      'MC/DC',
+}
+
 export default function EvidenceScreen({ onNavigate, onBack }: Props) {
-  const { mcdc, addPair, clearPairs } = useGameStore()
+  const { mcdc, addPair, clearPairs, caseFile } = useGameStore()
   const [selecting, setSelecting] = useState<number | null>(null)
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; msg: string } | null>(null)
+  const techniqueLabel =
+    (caseFile?.technique && TECHNIQUE_LABEL[caseFile.technique]) ?? 'CASE'
 
   const handleRowClick = (rowId: number) => {
     if (selecting === null) {
@@ -78,7 +89,7 @@ export default function EvidenceScreen({ onNavigate, onBack }: Props) {
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
         <PixelButton small variant="secondary" onClick={onBack}>← INVESTIGATION</PixelButton>
         <div style={{ display: 'flex', gap: 8 }}>
-          <span style={{ fontFamily: PIXEL_FONT, fontSize: 8, color: TC.magenta, padding: '4px 10px', border: `2px solid ${TC.magenta}` }}>MC/DC</span>
+          <span style={{ fontFamily: PIXEL_FONT, fontSize: 8, color: TC.magenta, padding: '4px 10px', border: `2px solid ${TC.magenta}` }}>{techniqueLabel}</span>
           <span style={{ fontFamily: PIXEL_FONT, fontSize: 8, color: TC.green, padding: '4px 10px', border: `2px solid ${TC.green}`, background: `${TC.green}15` }}>PHASE 3: EVIDENCE</span>
         </div>
         <ScoreChip label="PAIRS" value={`${pairs.length}/3`} color={TC.blue} />
@@ -225,7 +236,7 @@ export default function EvidenceScreen({ onNavigate, onBack }: Props) {
             )}
           </div>
 
-          <CoverageMeter value={Math.round((pairs.length / 3) * 100)} max={100} label="MC/DC COVERAGE" color={TC.green} width={250} />
+          <CoverageMeter value={Math.round((pairs.length / 3) * 100)} max={100} label={`${techniqueLabel} COVERAGE`} color={TC.green} width={250} />
 
           <div style={{ textAlign: 'center' }}>
             <ProsecutorSprite size={90} pose={pairs.length >= 2 ? 'pointing' : 'idle'} />
