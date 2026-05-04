@@ -280,6 +280,37 @@ describe('content audit — all 12 cases', () => {
         const correct = opts.filter((o) => o.is_correct)
         expect(correct.length, `Case ${name}: must have at least one correct option`).toBeGreaterThan(0)
       })
+
+      // The condition id is rendered as a badge next to its label in the
+      // CONDITIONS IDENTIFIED panel. If the label also begins with the id
+      // (exact, prefix, or id-followed-by-separator) the id appears twice in
+      // the same row. Keep the label a self-contained description that does
+      // not restate the id.
+      test('condition labels do not duplicate the condition id', () => {
+        cf = loadCase(raw)
+        for (const c of cf.scenario.conditions) {
+          const id = c.id
+          const label = c.label
+          const idLower = id.toLowerCase()
+          const labelLower = label.toLowerCase()
+          // Exact match — label is just the id repeated.
+          expect(
+            labelLower === idLower,
+            `Case ${name}: condition "${id}" label is identical to its id ("${label}")`,
+          ).toBe(false)
+          // Id-prefix match where the id is followed by a word boundary
+          // (space, colon, punctuation, end-of-string). A label like
+          // "items is non-empty" duplicates the id "items".
+          if (labelLower.startsWith(idLower)) {
+            const next = labelLower.charAt(idLower.length)
+            const isBoundary = next === '' || /[\s:.,;_-]/.test(next)
+            expect(
+              isBoundary,
+              `Case ${name}: condition "${id}" label starts with the id followed by a boundary ("${label}")`,
+            ).toBe(false)
+          }
+        }
+      })
     })
   }
 })

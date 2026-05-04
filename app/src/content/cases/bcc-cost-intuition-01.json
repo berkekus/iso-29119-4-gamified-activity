@@ -14,11 +14,11 @@
     "narrative": "Before you sign off on a 5-condition safety-critical predicate, your project manager asks for the test budget. Compute the test counts for both BCC and MCDC at N=5.",
     "code": "if a and b and c and d and e:\n    detonate()",
     "conditions": [
-      { "id": "a", "label": "a" },
-      { "id": "b", "label": "b" },
-      { "id": "c", "label": "c" },
-      { "id": "d", "label": "d" },
-      { "id": "e", "label": "e" }
+      { "id": "a", "label": "first boolean condition" },
+      { "id": "b", "label": "second boolean condition" },
+      { "id": "c", "label": "third boolean condition" },
+      { "id": "d", "label": "fourth boolean condition" },
+      { "id": "e", "label": "fifth boolean condition" }
     ],
     "decision_expression": "a && b && c && d && e"
   },

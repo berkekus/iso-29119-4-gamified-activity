@@ -14,7 +14,7 @@
     "narrative": "A batch processor walks through a list of items. A `for` loop has a TRUE edge (items present, body runs) and a FALSE edge (empty list, body skipped). Pick the candidate test set that achieves 100% BRANCH coverage of the loop guard.",
     "code": "def process_all(items):\n    count = 0\n    for item in items:\n        handle(item)\n        count += 1\n    return count",
     "conditions": [
-      { "id": "items", "label": "items is non-empty (loop body executed at least once)" }
+      { "id": "items", "label": "input list is non-empty (loop body executes at least once)" }
     ],
     "decision_expression": "items"
   },
