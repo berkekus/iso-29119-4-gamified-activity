@@ -281,11 +281,10 @@ describe('content audit — all 12 cases', () => {
         expect(correct.length, `Case ${name}: must have at least one correct option`).toBeGreaterThan(0)
       })
 
-      // The condition id is rendered as a badge next to its label in the
-      // CONDITIONS IDENTIFIED panel. If the label also begins with the id
-      // (exact, prefix, or id-followed-by-separator) the id appears twice in
-      // the same row. Keep the label a self-contained description that does
-      // not restate the id.
+      // Condition ids and labels are surfaced together wherever conditions
+      // are listed. If the label also begins with the id (exact, prefix, or
+      // id-followed-by-separator) the id appears twice. Keep the label a
+      // self-contained description that does not restate the id.
       test('condition labels do not duplicate the condition id', () => {
         cf = loadCase(raw)
         for (const c of cf.scenario.conditions) {
