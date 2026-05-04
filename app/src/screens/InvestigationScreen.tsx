@@ -66,14 +66,14 @@ export default function InvestigationScreen({ onNavigate, onBack }: Props) {
         caseFile.correct_answer_explanation ??
         'Correct. The claim has been certified.'
       setFeedback({ type: 'success', msg })
-      // Brief pause so the player can read the explanation, then advance.
-      setTimeout(() => onNavigate('debrief'), 900)
+      setTimeout(() => onNavigate('trial'), 900)
     } else {
       const msg =
         pickOptionExplanation(caseFile, payload, false) ??
         caseFile.wrong_answer_explanation ??
-        'Not quite. Re-read the hint and try again.'
+        'Not quite. The court will now convene.'
       setFeedback({ type: 'error', msg })
+      setTimeout(() => onNavigate('trial'), 1500)
     }
   }
 

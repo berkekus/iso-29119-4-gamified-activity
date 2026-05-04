@@ -8,11 +8,16 @@ interface Props {
   portrait?: ReactNode
   onNext: () => void
   isLast?: boolean
+  onTypingChange?: (isTyping: boolean) => void
 }
 
-export default function DialogBox({ speaker, text, portrait, onNext, isLast }: Props) {
+export default function DialogBox({ speaker, text, portrait, onNext, isLast, onTypingChange }: Props) {
   const [displayed, setDisplayed] = useState('')
   const [done, setDone] = useState(false)
+
+  useEffect(() => {
+    onTypingChange?.(!done)
+  }, [done, onTypingChange])
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect

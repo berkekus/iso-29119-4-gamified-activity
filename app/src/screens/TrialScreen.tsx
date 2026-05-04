@@ -43,10 +43,12 @@ export default function TrialScreen({ onNavigate, onBack }: Props) {
     }
     if (phase === 'deliberating') {
       const t = setTimeout(() => {
-        const result    = validateMcdcCoverage({ selectedRows: mcdc.selectedRows, independencePairs: mcdc.independencePairs })
-        const faults    = simulateFaults({ selectedRows: mcdc.selectedRows, independencePairs: mcdc.independencePairs })
-        const miscList  = detectMisconceptions({ selectedRows: mcdc.selectedRows, independencePairs: mcdc.independencePairs })
-        setVerdict(result, faults, miscList)
+        if (caseFile?.question_type === 'pair_selector') {
+          const result    = validateMcdcCoverage({ selectedRows: mcdc.selectedRows, independencePairs: mcdc.independencePairs })
+          const faults    = simulateFaults({ selectedRows: mcdc.selectedRows, independencePairs: mcdc.independencePairs })
+          const miscList  = detectMisconceptions({ selectedRows: mcdc.selectedRows, independencePairs: mcdc.independencePairs })
+          setVerdict(result, faults, miscList)
+        }
         setPhase('verdict')
       }, 2000)
       return () => clearTimeout(t)
@@ -67,15 +69,19 @@ export default function TrialScreen({ onNavigate, onBack }: Props) {
           <span style={{ fontFamily: PIXEL_FONT, fontSize: 8, color: TC.magenta, padding: '4px 10px', border: `2px solid ${TC.magenta}` }}>{techniqueLabel}</span>
           <span style={{ fontFamily: PIXEL_FONT, fontSize: 8, color: TC.magenta, padding: '4px 10px', border: `2px solid ${TC.magenta}`, background: `${TC.magenta}15` }}>PHASE 4: TRIAL</span>
         </div>
-        <ScoreChip label="PAIRS" value={mcdc.independencePairs.length} color={TC.blue} />
+        {caseFile?.question_type === 'pair_selector' ? (
+          <ScoreChip label="PAIRS" value={mcdc.independencePairs.length} color={TC.blue} />
+        ) : (
+          <div style={{ width: 60 }} />
+        )}
       </div>
 
       {/* Courtroom scene */}
       <div style={{ textAlign: 'center', marginBottom: 30 }}>
         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'flex-end', gap: 40 }}>
-          <ProsecutorSprite size={110} pose="pointing" />
-          <JudgeSprite size={140} pose={phase === 'verdict' ? 'verdict' : 'idle'} />
-          <DefenseSprite size={110} pose={phase === 'verdict' && !isGuilty ? 'objecting' : 'idle'} />
+          <ProsecutorSprite size={110} pose="pointing" isTalking={phase === 'presenting'} />
+          <JudgeSprite size={140} pose={phase === 'verdict' ? 'verdict' : 'idle'} isTalking={phase === 'verdict'} />
+          <DefenseSprite size={110} pose={phase === 'verdict' && !isGuilty ? 'objecting' : 'idle'} isTalking={phase === 'deliberating'} />
         </div>
       </div>
 
@@ -121,42 +127,50 @@ export default function TrialScreen({ onNavigate, onBack }: Props) {
             <div style={{ flex: 1, background: TC.cream, border: `3px solid ${TC.ink}`, boxShadow: `4px 4px 0 ${TC.ink}`, padding: 16 }}>
               <div style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: TC.blue, marginBottom: 12 }}>COVERAGE ACHIEVED</div>
               <CoverageMeter value={verdictResult.coveragePercent} max={100} color={TC.green} width={200} />
-              <div style={{ marginTop: 10, display: 'flex', flexDirection: 'column', gap: 6 }}>
-                {(['A', 'B', 'C'] as const).map(cond => {
-                  const hit = verdictResult.conditionsCovered.includes(cond)
-                  return (
-                    <div key={cond} style={{ display: 'flex', alignItems: 'center', gap: 8, fontFamily: MONO_FONT, fontSize: 12 }}>
-                      <span style={{ color: hit ? TC.green : TC.magenta, fontFamily: PIXEL_FONT, fontSize: 10 }}>
-                        {hit ? '✓' : '✗'}
-                      </span>
-                      <span style={{ color: TC.ink }}>Condition {cond} independence</span>
-                    </div>
-                  )
-                })}
-              </div>
+              {caseFile?.question_type === 'pair_selector' && (
+                <div style={{ marginTop: 10, display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  {(['A', 'B', 'C'] as const).map(cond => {
+                    const hit = verdictResult.conditionsCovered.includes(cond)
+                    return (
+                      <div key={cond} style={{ display: 'flex', alignItems: 'center', gap: 8, fontFamily: MONO_FONT, fontSize: 12 }}>
+                        <span style={{ color: hit ? TC.green : TC.magenta, fontFamily: PIXEL_FONT, fontSize: 10 }}>
+                          {hit ? '✓' : '✗'}
+                        </span>
+                        <span style={{ color: TC.ink }}>Condition {cond} independence</span>
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
             </div>
 
             {/* Faults */}
             <div style={{ flex: 1, background: TC.cream, border: `3px solid ${TC.ink}`, boxShadow: `4px 4px 0 ${TC.ink}`, padding: 16 }}>
               <div style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: TC.magenta, marginBottom: 12 }}>FAULTS DETECTED</div>
-              {faultResults.map(f => (
-                <div key={f.id} style={{
-                  display: 'flex', alignItems: 'center', gap: 8,
-                  padding: '8px 10px',
-                  background: f.detected ? `${TC.green}10` : `${TC.magenta}10`,
-                  border: `1px solid ${f.detected ? TC.green : TC.magenta}`,
-                }}>
-                  <BugSprite size={30} type="mcdc" mood={f.detected ? 'caught' : 'nervous'} />
-                  <div>
-                    <div style={{ fontFamily: PIXEL_FONT, fontSize: 8, color: f.detected ? TC.green : TC.magenta }}>
-                      {f.id}: {f.detected ? 'CAUGHT' : 'ESCAPED'}
-                    </div>
-                    <div style={{ fontFamily: MONO_FONT, fontSize: 11, color: TC.grey, marginTop: 3, lineHeight: 1.5 }}>
-                      {seededFaultMap[f.id] ?? 'Seeded fault — see case file.'}
+              {faultResults.length > 0 ? (
+                faultResults.map(f => (
+                  <div key={f.id} style={{
+                    display: 'flex', alignItems: 'center', gap: 8,
+                    padding: '8px 10px',
+                    background: f.detected ? `${TC.green}10` : `${TC.magenta}10`,
+                    border: `1px solid ${f.detected ? TC.green : TC.magenta}`,
+                  }}>
+                    <BugSprite size={30} type="mcdc" mood={f.detected ? 'caught' : 'nervous'} />
+                    <div>
+                      <div style={{ fontFamily: PIXEL_FONT, fontSize: 8, color: f.detected ? TC.green : TC.magenta }}>
+                        {f.id}: {f.detected ? 'CAUGHT' : 'ESCAPED'}
+                      </div>
+                      <div style={{ fontFamily: MONO_FONT, fontSize: 11, color: TC.grey, marginTop: 3, lineHeight: 1.5 }}>
+                        {seededFaultMap[f.id] ?? 'Seeded fault — see case file.'}
+                      </div>
                     </div>
                   </div>
+                ))
+              ) : (
+                <div style={{ fontFamily: MONO_FONT, fontSize: 12, color: TC.grey }}>
+                  {isGuilty ? 'No faults escaped.' : 'No fault detection data on record.'}
                 </div>
-              ))}
+              )}
             </div>
           </div>
 
@@ -181,6 +195,15 @@ export default function TrialScreen({ onNavigate, onBack }: Props) {
           <div style={{ textAlign: 'center' }}>
             <PixelButton variant="primary" onClick={() => onNavigate('debrief')}>VIEW DEBRIEF →</PixelButton>
           </div>
+
+          {isGuilty && (
+            <div style={{ display: 'flex', justifyContent: 'center', marginTop: 40, paddingBottom: 40, animation: 'fadeIn 1s ease-in' }}>
+              <BugSprite 
+                mood="prisoned" 
+                className="!w-full !h-auto max-w-[240px] sm:max-w-[300px] md:max-w-[380px] opacity-90 transition-all" 
+              />
+            </div>
+          )}
         </div>
       )}
     </div>
