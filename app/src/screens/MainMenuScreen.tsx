@@ -48,10 +48,19 @@ export default function MainMenuScreen({ onNavigate }: Props) {
       </div>
 
       {/* Characters */}
-      <div style={{ display: 'flex', gap: 32, marginBottom: 40, alignItems: 'flex-end', flexWrap: 'wrap', justifyContent: 'center' }}>
-        <ProsecutorSprite size={100} />
-        <JudgeSprite size={130} />
-        <DefenseSprite size={100} />
+      <div style={{ display: 'flex', gap: 40, marginBottom: 40, alignItems: 'flex-end', flexWrap: 'wrap', justifyContent: 'center' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
+          <ProsecutorSprite />
+          <div style={{ fontFamily: PIXEL_FONT, fontSize: 12, color: TC.ink, textShadow: `1px 1px 0 ${TC.cream}` }}>PROSECUTOR</div>
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
+          <JudgeSprite />
+          <div style={{ fontFamily: PIXEL_FONT, fontSize: 14, color: TC.ink, textShadow: `1px 1px 0 ${TC.cream}` }}>JUDGE</div>
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
+          <DefenseSprite />
+          <div style={{ fontFamily: PIXEL_FONT, fontSize: 12, color: TC.ink, textShadow: `1px 1px 0 ${TC.cream}` }}>DEFENSE</div>
+        </div>
       </div>
 
       {/* Menu Grid */}
