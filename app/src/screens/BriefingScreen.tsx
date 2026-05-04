@@ -116,7 +116,7 @@ export default function BriefingScreen({ onNavigate, onBack }: Props) {
             <div style={{ fontFamily: PIXEL_FONT, fontSize: 8, color: TC.grey, marginBottom: 4 }}>{caseFileNum}</div>
             <h2 style={{ fontFamily: PIXEL_FONT, fontSize: 16, color: TC.ink, margin: '0 0 16px 0' }}>{caseData.title}</h2>
 
-            <div style={{ fontFamily: HAND_FONT, fontSize: 20, color: TC.ink, lineHeight: 1.6, marginBottom: 20 }}>
+            <div style={{ fontFamily: HAND_FONT, fontSize: 16, color: TC.ink, lineHeight: 1.6, marginBottom: 20 }}>
               {caseData.narrative}
             </div>
 
@@ -165,7 +165,7 @@ export default function BriefingScreen({ onNavigate, onBack }: Props) {
                 {caseData.charges.map((ch, i) => (
                   <div key={i} style={{
                     display: 'flex', gap: 8, alignItems: 'flex-start',
-                    fontFamily: HAND_FONT, fontSize: 18, color: TC.ink,
+                    fontFamily: HAND_FONT, fontSize: 16, color: TC.ink,
                     padding: '6px 0', borderBottom: `1px solid ${TC.grid}`,
                   }}>
                     <span style={{ fontFamily: PIXEL_FONT, fontSize: 8, color: TC.magenta, marginTop: 4 }}>{i + 1}.</span>
