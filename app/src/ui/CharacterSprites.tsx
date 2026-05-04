@@ -50,15 +50,22 @@ export function DefenseSprite({ size, pose = 'idle', className = '', isTalking }
 interface BugProps {
   size?: number | string
   type?: 'mcdc' | 'combinatorial' | 'dataflow' | 'bcc'
-  mood?: 'nervous' | 'caught'
+  mood?: 'nervous' | 'caught' | 'prisoned'
   className?: string
   isTalking?: boolean
 }
 
 export function BugSprite({ size, type = 'mcdc', mood = 'nervous', className = '', isTalking }: BugProps) {
+  let src = "/assets/bug-defendant.png"
+  if (mood === 'prisoned') {
+    src = "/assets/bug-defendant-prisoned.png"
+  } else if (isTalking) {
+    src = "/assets/bug-defendant-talk.png"
+  }
+
   return (
     <img
-      src={isTalking ? "/assets/bug-defendant-talk.png" : "/assets/bug-defendant.png"}
+      src={src}
       alt="Bug Defendant"
       className={`w-48 h-48 object-contain ${className}`}
       style={{
