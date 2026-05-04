@@ -11,59 +11,59 @@
   "estimated_time_sec": 240,
   "scenario": {
     "title": "Triple Alarm — One Trigger Is Enough",
-    "narrative": "An alarm fires when ANY of three independent sensors trips. Toggle test rows ON to include them in your test suite. Branch Condition coverage requires that EACH of A, B, C is observed as TRUE in at least one selected test AND as FALSE in at least one selected test.",
+    "narrative": "An alarm fires when ANY of three independent sensors trips. Toggle test rows ON to include them in your test suite. Branch Condition coverage requires that EACH of a, b, c is observed as TRUE in at least one selected test AND as FALSE in at least one selected test.",
     "code": "def alarm(a, b, c):\n    if a or b or c:\n        return execute()\n    return None",
     "conditions": [
-      { "id": "A", "label": "sensor A" },
-      { "id": "B", "label": "sensor B" },
-      { "id": "C", "label": "sensor C" }
+      { "id": "a", "label": "sensor a" },
+      { "id": "b", "label": "sensor b" },
+      { "id": "c", "label": "sensor c" }
     ],
-    "decision_expression": "A || B || C"
+    "decision_expression": "a || b || c"
   },
-  "claim": "Toggle the rows in your test suite so that Branch Condition coverage is achieved (each of A, B, C must be observed both T and F).",
+  "claim": "Toggle the rows in your test suite so that Branch Condition coverage is achieved (each of a, b, c must be observed both T and F).",
   "charges": [
     "The alarm function alarm(a, b, c) fires whenever any of three sensor inputs is true and otherwise returns None.",
     "The defendant test suite must demonstrate Branch Condition coverage of the predicate `a or b or c`.",
     "The prosecution alleges a candidate selection of test rows fails to observe each of a, b, c as both TRUE and FALSE."
   ],
   "test_set": [
-    { "id": "T1", "inputs": { "A": true,  "B": false, "C": false }, "outcome": true  },
-    { "id": "T2", "inputs": { "A": false, "B": true,  "C": false }, "outcome": true  },
-    { "id": "T3", "inputs": { "A": false, "B": false, "C": true  }, "outcome": true  },
-    { "id": "T4", "inputs": { "A": false, "B": false, "C": false }, "outcome": false }
+    { "id": "T1", "inputs": { "a": true,  "b": false, "c": false }, "outcome": true  },
+    { "id": "T2", "inputs": { "a": false, "b": true,  "c": false }, "outcome": true  },
+    { "id": "T3", "inputs": { "a": false, "b": false, "c": true  }, "outcome": true  },
+    { "id": "T4", "inputs": { "a": false, "b": false, "c": false }, "outcome": false }
   ],
   "coverage_table": [
-    { "id": "T1", "inputs": { "A": true,  "B": false, "C": false }, "outcome": true,  "required": true  },
-    { "id": "T2", "inputs": { "A": false, "B": true,  "C": false }, "outcome": true,  "required": true  },
-    { "id": "T3", "inputs": { "A": false, "B": false, "C": true  }, "outcome": true,  "required": true  },
-    { "id": "T4", "inputs": { "A": false, "B": false, "C": false }, "outcome": false, "required": true  },
-    { "id": "T5", "inputs": { "A": true,  "B": true,  "C": false }, "outcome": true,  "required": false },
-    { "id": "T6", "inputs": { "A": true,  "B": true,  "C": true  }, "outcome": true,  "required": false },
-    { "id": "T7", "inputs": { "A": false, "B": true,  "C": true  }, "outcome": true,  "required": false },
-    { "id": "T8", "inputs": { "A": true,  "B": false, "C": true  }, "outcome": true,  "required": false }
+    { "id": "T1", "inputs": { "a": true,  "b": false, "c": false }, "outcome": true,  "required": true  },
+    { "id": "T2", "inputs": { "a": false, "b": true,  "c": false }, "outcome": true,  "required": true  },
+    { "id": "T3", "inputs": { "a": false, "b": false, "c": true  }, "outcome": true,  "required": true  },
+    { "id": "T4", "inputs": { "a": false, "b": false, "c": false }, "outcome": false, "required": true  },
+    { "id": "T5", "inputs": { "a": true,  "b": true,  "c": false }, "outcome": true,  "required": false },
+    { "id": "T6", "inputs": { "a": true,  "b": true,  "c": true  }, "outcome": true,  "required": false },
+    { "id": "T7", "inputs": { "a": false, "b": true,  "c": true  }, "outcome": true,  "required": false },
+    { "id": "T8", "inputs": { "a": true,  "b": false, "c": true  }, "outcome": true,  "required": false }
   ],
   "options": [
     { "id": "opt-yes", "label": "Yes — every condition takes both T and F at least once.", "is_correct": true  },
     { "id": "opt-no",  "label": "No — at least one condition is missing a T or F value.",  "is_correct": false }
   ],
-  "correct_answer_explanation": "T1, T2, T3 each take exactly one of A, B, C as TRUE; T4 takes all three as FALSE. Each condition is observed T at least once AND F at least once. Branch Condition coverage = 100%.",
-  "wrong_answer_explanation": "Branch Condition demands that each condition (A, B, C) is observed BOTH true AND false across the SELECTED tests. If you missed any of T1..T4, at least one condition loses one of its observations.",
+  "correct_answer_explanation": "T1, T2, T3 each take exactly one of a, b, c as TRUE; T4 takes all three as FALSE. Each condition is observed T at least once AND F at least once. Branch Condition coverage = 100%.",
+  "wrong_answer_explanation": "Branch Condition demands that each condition (a, b, c) is observed BOTH true AND false across the SELECTED tests. If you missed any of T1..T4, at least one condition loses one of its observations.",
   "hints": [
-    "Branch Condition coverage requires that EACH condition (A, B, C) be observed as TRUE in at least one test AND as FALSE in at least one test. Re-read Law Card 4.",
-    "Build the tally column by column. Which condition is missing a TRUE or FALSE if you drop a row?",
-    "Solution — Select T1, T2, T3, T4. T1: A=T, B=F, C=F. T2: A=F, B=T, C=F. T3: A=F, B=F, C=T. T4: A=F, B=F, C=F. Tally: A=T (T1) and F (others). B=T (T2) and F (others). C=T (T3) and F (others). All three observed T and F. ✓"
+    "Branch Condition coverage requires that EACH condition (a, b, c) be observed as TRUE in at least one test AND as FALSE in at least one test.",
+    "Tally each condition column by column. Which condition is missing a TRUE or FALSE if you drop a row?",
+    "Select T1, T2, T3, T4. T1: a=T, b=F, c=F. T2: a=F, b=T, c=F. T3: a=F, b=F, c=T. T4: a=F, b=F, c=F. Tally: a=T (T1) and F (others). b=T (T2) and F (others). c=T (T3) and F (others). All three observed T and F. ✓"
   ],
   "seeded_faults": [
     {
       "id": "F1",
-      "description": "Sensor C is silently OR-ed in only when A is also true (a typo bug), but Branch Condition coverage cannot detect this.",
-      "trigger": { "condition": "C", "requiredDecisionFlip": true }
+      "description": "Sensor c is silently OR-ed in only when a is also true (a typo bug), but Branch Condition coverage cannot detect this.",
+      "trigger": { "condition": "c", "requiredDecisionFlip": true }
     }
   ],
   "misconceptions": [
     {
       "id": "DECISION-EQUALS-BC",
-      "explanation_md": "BC coverage is achieved when each condition is observed as both T and F across the test set — independent of how many combinations are tested. This case does satisfy BC, but BC still does NOT detect interaction bugs between conditions: that requires BCC (Law Card 5) or MCDC (Law Card 6)."
+      "explanation_md": "BC coverage is achieved when each condition is observed as both T and F across the test set — independent of how many combinations are tested. This case does satisfy BC, but BC still does NOT detect interaction bugs between conditions: that requires BCC or MCDC."
     }
   ]
 }

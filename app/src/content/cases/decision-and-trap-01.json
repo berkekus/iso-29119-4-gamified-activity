@@ -14,30 +14,30 @@
     "narrative": "A login function admits a user only when they are logged in AND have permission. Pick the test set that satisfies BOTH 100% Decision coverage (overall outcome flips T and F) AND 100% Branch Condition coverage (each individual condition observed T and F).",
     "code": "def show_page(is_logged_in, has_permission):\n    if is_logged_in and has_permission:\n        return show()\n    return show_error()",
     "conditions": [
-      { "id": "A", "label": "is_logged_in" },
-      { "id": "B", "label": "has_permission" }
+      { "id": "is_logged_in", "label": "is_logged_in" },
+      { "id": "has_permission", "label": "has_permission" }
     ],
-    "decision_expression": "A && B"
+    "decision_expression": "is_logged_in && has_permission"
   },
   "claim": "Which candidate test set satisfies BOTH Decision coverage AND Branch Condition coverage for `is_logged_in AND has_permission`?",
   "test_set": [],
   "charges": [
     "The defendant function show_page(is_logged_in, has_permission) admits a user only when both conditions are true and shows an error otherwise.",
     "The prosecution alleges that several candidate test sets falsely claim Decision-and-Branch-Condition coverage while leaving one or both criteria unmet.",
-    "The court must identify which candidate set genuinely satisfies both Decision coverage and Branch Condition coverage for the predicate `A && B`."
+    "The court must identify which candidate set genuinely satisfies both Decision coverage and Branch Condition coverage for the predicate `is_logged_in && has_permission`."
   ],
   "options": [
     {
       "id": "opt-only-false",
       "label": "Set A — { (T,F) → error, (F,T) → error }",
       "is_correct": false,
-      "explanation": "Decision is NOT satisfied — both tests produce the FALSE outcome, so the if-statement never evaluates to TRUE. Branch Condition for A and B individually is fine, but Decision coverage requires both T and F outcomes overall."
+      "explanation": "Decision is NOT satisfied — both tests produce the FALSE outcome, so the if-statement never evaluates to TRUE. Branch Condition for is_logged_in and has_permission individually is fine, but Decision coverage requires both T and F outcomes overall."
     },
     {
       "id": "opt-bc-correct",
       "label": "Set B — { (T,T) → show, (T,F) → error, (F,T) → error }",
       "is_correct": true,
-      "explanation": "Correct. (T,T) gives the TRUE outcome, (T,F) and (F,T) give FALSE outcomes — Decision is covered. A is observed T (in T,T and T,F) and F (in F,T); B is observed T (in T,T and F,T) and F (in T,F). Both Decision AND Branch Condition coverage are satisfied."
+      "explanation": "Correct. (T,T) gives the TRUE outcome, (T,F) and (F,T) give FALSE outcomes — Decision is covered. is_logged_in is observed T (in T,T and T,F) and F (in F,T); has_permission is observed T (in T,T and F,T) and F (in T,F). Both Decision AND Branch Condition coverage are satisfied."
     },
     {
       "id": "opt-only-true",
@@ -49,27 +49,27 @@
       "id": "opt-only-a-flips",
       "label": "Set D — { (T,T) → show, (F,T) → error }",
       "is_correct": false,
-      "explanation": "Decision is satisfied (T then F outcome), and A flips T→F. But B is stuck at TRUE in both tests — Branch Condition for B is NOT satisfied (no F observation)."
+      "explanation": "Decision is satisfied (T then F outcome), and is_logged_in flips T→F. But has_permission is stuck at TRUE in both tests — Branch Condition for has_permission is NOT satisfied (no F observation)."
     }
   ],
-  "correct_answer_explanation": "Decision coverage requires the overall if-statement to produce both T and F outcomes. Branch Condition is stricter: each condition must appear as T and F across the test set. Set B is the smallest set that satisfies both for `A && B`.",
-  "wrong_answer_explanation": "Check Decision and Branch Condition independently. Decision needs at least one TRUE outcome and one FALSE outcome overall. Branch Condition needs each of A and B to be observed as TRUE and as FALSE.",
+  "correct_answer_explanation": "Decision coverage requires the overall if-statement to produce both T and F outcomes. Branch Condition is stricter: each condition must appear as T and F across the test set. Set B is the smallest set that satisfies both for `is_logged_in && has_permission`.",
+  "wrong_answer_explanation": "Check Decision and Branch Condition independently. Decision needs at least one TRUE outcome and one FALSE outcome overall. Branch Condition needs each of is_logged_in and has_permission to be observed as TRUE and as FALSE.",
   "hints": [
-    "Decision testing asks: did the if-statement produce both TRUE and FALSE outcomes overall? Branch Condition asks something stricter — re-read Law Card 4.",
-    "Look at A and B separately. Did A appear as both TRUE and FALSE across the tests? What about B? Are any of them stuck on a single value? And does the decision overall produce both T and F?",
-    "Solution — Set B uses three tests. (T,T) gives T outcome; (T,F) and (F,T) give F outcomes (Decision ✓); A and B each appear T and F (BC ✓)."
+    "Decision testing asks: did the if-statement produce both TRUE and FALSE outcomes overall? Branch Condition asks something stricter — each individual condition must also appear as both T and F.",
+    "Look at is_logged_in and has_permission separately. Did each appear as both TRUE and FALSE across the tests? Are any of them stuck on a single value? And does the decision overall produce both T and F?",
+    "Set B uses three tests. (T,T) gives T outcome; (T,F) and (F,T) give F outcomes (Decision ✓); is_logged_in and has_permission each appear T and F (BC ✓)."
   ],
   "seeded_faults": [
     {
       "id": "F1",
       "description": "Permission check is silently skipped — a user with is_logged_in=True is granted access regardless of has_permission.",
-      "trigger": { "condition": "B", "requiredDecisionFlip": true }
+      "trigger": { "condition": "has_permission", "requiredDecisionFlip": true }
     }
   ],
   "misconceptions": [
     {
       "id": "DECISION-EQUALS-BC",
-      "explanation_md": "Decision coverage tests only the overall outcome of the predicate (T/F at the if-statement). Branch Condition coverage requires *each individual condition* to take both TRUE and FALSE across the test set. A test set whose outcomes are all FALSE may exercise both A and B as T/F individually yet still fail Decision coverage; a test set that pins one of A or B to a single value satisfies Decision but fails Branch Condition."
+      "explanation_md": "Decision coverage tests only the overall outcome of the predicate (T/F at the if-statement). Branch Condition coverage requires *each individual condition* to take both TRUE and FALSE across the test set. A test set whose outcomes are all FALSE may exercise both conditions as T/F individually yet still fail Decision coverage; a test set that pins one of the two conditions to a single value satisfies Decision but fails Branch Condition."
     }
   ]
 }
