@@ -156,13 +156,13 @@ export default function CampaignMapScreen({ onNavigate, onBack, completedCases, 
                 transition: 'all 0.06s steps(2)',
               }}
             >
-              <div style={{ fontFamily: PIXEL_FONT, fontSize: 8, color: TC.grey }}>{act.name}</div>
-              <div style={{ fontFamily: PIXEL_FONT, fontSize: 14, color: act.color, margin: '8px 0' }}>{act.title}</div>
-              <div style={{ fontFamily: HAND_FONT, fontSize: 16, color: TC.ink }}>{act.subtitle}</div>
+              <div style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: TC.grey }}>{act.name}</div>
+              <div style={{ fontFamily: PIXEL_FONT, fontSize: 14, color: act.color, margin: '10px 0 6px', lineHeight: 1.4 }}>{act.title}</div>
+              <div style={{ fontFamily: HAND_FONT, fontSize: 15, color: TC.ink, lineHeight: 1.4 }}>{act.subtitle}</div>
               <div style={{ margin: '10px auto 0' }}>
                 <BugSprite size={50} type={act.bugType} />
               </div>
-              <div style={{ fontFamily: MONO_FONT, fontSize: 8, color: TC.grey, marginTop: 6 }}>{act.clauses}</div>
+              <div style={{ fontFamily: MONO_FONT, fontSize: 11, color: TC.grey, marginTop: 8, letterSpacing: 0.3 }}>{act.clauses}</div>
             </button>
 
             {/* Cases list */}
@@ -175,7 +175,7 @@ export default function CampaignMapScreen({ onNavigate, onBack, completedCases, 
                   if (onSelectCase) onSelectCase(c.id)
                   onNavigate('briefing')
                 }
-                const prefix = isComplete ? '✓ ' : isLocked ? '🔒 ' : c.isBoss ? '★ ' : '▶ '
+                const prefix = isComplete ? '✓ ' : isLocked ? '🔒 ' : c.isBoss ? '★ ' : '> '
                 return (
                   <button
                     key={c.id}
@@ -202,15 +202,16 @@ export default function CampaignMapScreen({ onNavigate, onBack, completedCases, 
                       <div
                         style={{
                           fontFamily: PIXEL_FONT,
-                          fontSize: 7,
+                          fontSize: 9,
                           color: isComplete ? TC.green : c.isBoss ? TC.magenta : TC.ink,
+                          lineHeight: 1.4,
                         }}
                       >
                         {prefix}
                         {c.name}
                       </div>
                       {c.isBoss && (
-                        <div style={{ fontFamily: PIXEL_FONT, fontSize: 6, color: TC.magenta }}>
+                        <div style={{ fontFamily: PIXEL_FONT, fontSize: 7, color: TC.magenta }}>
                           ★ FINAL BOSS
                         </div>
                       )}
@@ -240,10 +241,11 @@ export default function CampaignMapScreen({ onNavigate, onBack, completedCases, 
       <div
         style={{
           marginTop: 24,
-          padding: 12,
+          padding: '14px 18px',
           border: `2px dashed ${TC.greyLight}`,
           fontFamily: HAND_FONT,
-          fontSize: 13,
+          fontSize: 15,
+          lineHeight: 1.55,
           color: TC.grey,
           textAlign: 'center',
         }}

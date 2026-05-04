@@ -65,16 +65,16 @@ export default function AchievementsScreen({ onBack }: Props) {
                 {isUnlocked ? '🏆' : '🔒'}
               </div>
               <div style={{ flex: 1 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
-                  <div style={{ fontFamily: PIXEL_FONT, fontSize: 8, color: TC.magenta }}>{ach.act}</div>
-                  <div style={{ fontFamily: PIXEL_FONT, fontSize: 7, color: TC.grey }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+                  <div style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: TC.magenta }}>{ach.act}</div>
+                  <div style={{ fontFamily: PIXEL_FONT, fontSize: 8, color: TC.grey }}>
                     {isUnlocked ? 'UNLOCKED' : `${doneCount}/${ach.required_cases.length} · [LOCKED]`}
                   </div>
                 </div>
-                <div style={{ fontFamily: PIXEL_FONT, fontSize: 11, color: isUnlocked ? TC.ink : TC.grey, marginBottom: 6 }}>
+                <div style={{ fontFamily: PIXEL_FONT, fontSize: 12, color: isUnlocked ? TC.ink : TC.grey, marginBottom: 8, lineHeight: 1.4 }}>
                   {ach.title}
                 </div>
-                <div style={{ fontFamily: HAND_FONT, fontSize: 16, color: TC.ink, lineHeight: 1.5 }}>
+                <div style={{ fontFamily: HAND_FONT, fontSize: 16, color: TC.ink, lineHeight: 1.55 }}>
                   {ach.description}
                 </div>
               </div>
@@ -86,10 +86,11 @@ export default function AchievementsScreen({ onBack }: Props) {
       <div
         style={{
           marginTop: 24,
-          padding: 12,
+          padding: '14px 18px',
           border: `2px dashed ${TC.greyLight}`,
           fontFamily: HAND_FONT,
-          fontSize: 13,
+          fontSize: 15,
+          lineHeight: 1.55,
           color: TC.grey,
           textAlign: 'center',
         }}

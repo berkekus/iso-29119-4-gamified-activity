@@ -53,9 +53,9 @@ export default function DialogBox({ speaker, text, portrait, onNext, isLast }: P
         <div
           style={{
             fontFamily: HAND_FONT,
-            fontSize: 20,
+            fontSize: 18,
             color: TC.ink,
-            lineHeight: 1.5,
+            lineHeight: 1.55,
             minHeight: 50,
           }}
         >

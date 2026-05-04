@@ -104,11 +104,11 @@ export default function TrialScreen({ onNavigate, onBack }: Props) {
             border: `4px solid ${isGuilty ? TC.green : TC.magenta}`,
             boxShadow: `6px 6px 0 ${TC.ink}`,
           }}>
-            <div style={{ fontFamily: PIXEL_FONT, fontSize: 10, color: TC.grey, marginBottom: 8 }}>THE VERDICT IS</div>
-            <div style={{ fontFamily: PIXEL_FONT, fontSize: 28, color: isGuilty ? TC.green : TC.magenta }}>
+            <div style={{ fontFamily: PIXEL_FONT, fontSize: 10, color: TC.grey, marginBottom: 10 }}>THE VERDICT IS</div>
+            <div style={{ fontFamily: PIXEL_FONT, fontSize: 26, color: isGuilty ? TC.green : TC.magenta, lineHeight: 1.2 }}>
               {isGuilty ? 'GUILTY' : 'MISTRIAL'}
             </div>
-            <div style={{ fontFamily: HAND_FONT, fontSize: 20, color: TC.ink, marginTop: 10 }}>
+            <div style={{ fontFamily: HAND_FONT, fontSize: 18, color: TC.ink, marginTop: 12, lineHeight: 1.55 }}>
               {isGuilty
                 ? 'The defendant has been found guilty. All faults detected.'
                 : 'The defendant walks free. Your evidence was incomplete — the bug escapes.'}
@@ -119,13 +119,13 @@ export default function TrialScreen({ onNavigate, onBack }: Props) {
           <div style={{ display: 'flex', gap: 16, marginBottom: 20 }}>
             {/* Coverage */}
             <div style={{ flex: 1, background: TC.cream, border: `3px solid ${TC.ink}`, boxShadow: `4px 4px 0 ${TC.ink}`, padding: 16 }}>
-              <div style={{ fontFamily: PIXEL_FONT, fontSize: 8, color: TC.blue, marginBottom: 10 }}>COVERAGE ACHIEVED</div>
+              <div style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: TC.blue, marginBottom: 12 }}>COVERAGE ACHIEVED</div>
               <CoverageMeter value={verdictResult.coveragePercent} max={100} color={TC.green} width={200} />
               <div style={{ marginTop: 10, display: 'flex', flexDirection: 'column', gap: 6 }}>
                 {(['A', 'B', 'C'] as const).map(cond => {
                   const hit = verdictResult.conditionsCovered.includes(cond)
                   return (
-                    <div key={cond} style={{ display: 'flex', alignItems: 'center', gap: 8, fontFamily: MONO_FONT, fontSize: 11 }}>
+                    <div key={cond} style={{ display: 'flex', alignItems: 'center', gap: 8, fontFamily: MONO_FONT, fontSize: 12 }}>
                       <span style={{ color: hit ? TC.green : TC.magenta, fontFamily: PIXEL_FONT, fontSize: 10 }}>
                         {hit ? '✓' : '✗'}
                       </span>
@@ -138,7 +138,7 @@ export default function TrialScreen({ onNavigate, onBack }: Props) {
 
             {/* Faults */}
             <div style={{ flex: 1, background: TC.cream, border: `3px solid ${TC.ink}`, boxShadow: `4px 4px 0 ${TC.ink}`, padding: 16 }}>
-              <div style={{ fontFamily: PIXEL_FONT, fontSize: 8, color: TC.magenta, marginBottom: 10 }}>FAULTS DETECTED</div>
+              <div style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: TC.magenta, marginBottom: 12 }}>FAULTS DETECTED</div>
               {faultResults.map(f => (
                 <div key={f.id} style={{
                   display: 'flex', alignItems: 'center', gap: 8,
@@ -148,10 +148,10 @@ export default function TrialScreen({ onNavigate, onBack }: Props) {
                 }}>
                   <BugSprite size={30} type="mcdc" mood={f.detected ? 'caught' : 'nervous'} />
                   <div>
-                    <div style={{ fontFamily: PIXEL_FONT, fontSize: 7, color: f.detected ? TC.green : TC.magenta }}>
+                    <div style={{ fontFamily: PIXEL_FONT, fontSize: 8, color: f.detected ? TC.green : TC.magenta }}>
                       {f.id}: {f.detected ? 'CAUGHT' : 'ESCAPED'}
                     </div>
-                    <div style={{ fontFamily: MONO_FONT, fontSize: 10, color: TC.grey }}>
+                    <div style={{ fontFamily: MONO_FONT, fontSize: 11, color: TC.grey, marginTop: 3, lineHeight: 1.5 }}>
                       {seededFaultMap[f.id] ?? 'Seeded fault — see case file.'}
                     </div>
                   </div>
@@ -166,13 +166,13 @@ export default function TrialScreen({ onNavigate, onBack }: Props) {
               background: `${TC.magenta}10`, border: `3px solid ${TC.magenta}`,
               boxShadow: `4px 4px 0 ${TC.ink}`, padding: 16, marginBottom: 20,
             }}>
-              <div style={{ fontFamily: PIXEL_FONT, fontSize: 8, color: TC.magenta, marginBottom: 8 }}>MISCONCEPTION DETECTED</div>
+              <div style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: TC.magenta, marginBottom: 10 }}>MISCONCEPTION DETECTED</div>
               {misconceptions.filter(m => m.triggered).map(m => (
-                <div key={m.id} style={{ fontFamily: HAND_FONT, fontSize: 20, color: TC.ink, lineHeight: 1.5, marginBottom: 8 }}>
+                <div key={m.id} style={{ fontFamily: HAND_FONT, fontSize: 18, color: TC.ink, lineHeight: 1.55, marginBottom: 8 }}>
                   {m.explanation}
                 </div>
               ))}
-              <div style={{ fontFamily: MONO_FONT, fontSize: 11, color: TC.grey, marginTop: 10 }}>
+              <div style={{ fontFamily: MONO_FONT, fontSize: 12, color: TC.grey, marginTop: 10 }}>
                 See ISO 29119-4 {(caseFile?.iso_clauses && caseFile.iso_clauses[0]) ?? '§5.3'} for the coverage criterion definition.
               </div>
             </div>
