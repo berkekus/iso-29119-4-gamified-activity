@@ -214,7 +214,7 @@ export default function DebriefScreen({ onNavigate, onBack }: Props) {
           {/* Action buttons */}
           <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
             <PixelButton variant="danger" onClick={handleRetry}>RETRY CASE</PixelButton>
-            <PixelButton variant="secondary" onClick={() => {}}>OPEN ANNEX C</PixelButton>
+            <PixelButton variant="secondary" onClick={() => onNavigate('law-library')}>OPEN ANNEX C</PixelButton>
             <PixelButton variant="primary" onClick={handleNext} disabled={!canAdvance}>
               {isLastCase ? 'CAMPAIGN MAP →' : 'NEXT CASE →'}
             </PixelButton>
