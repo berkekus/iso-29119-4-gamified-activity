@@ -42,3 +42,84 @@ button {
   50%  { transform: rotate(-30deg); }
   100% { transform: rotate(0deg); }
 }
+
+/* ── Responsive layout helpers ─────────────────────────────── */
+
+.app-center {
+  max-width: 1400px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* Two-column layouts that stack vertically on tablet/mobile */
+.responsive-row {
+  display: flex;
+}
+@media (max-width: 900px) {
+  .responsive-row {
+    flex-direction: column;
+  }
+  .responsive-row > * {
+    width: 100% !important;
+    max-width: 100% !important;
+    flex-shrink: 1 !important;
+  }
+}
+
+/* Campaign map acts — 2×2 on tablet, stack on mobile */
+.acts-row {
+  display: flex;
+  align-items: stretch;
+}
+@media (max-width: 900px) {
+  .acts-row {
+    flex-wrap: wrap;
+  }
+  .acts-row > * {
+    flex: 1 1 calc(50% - 10px) !important;
+    min-width: 160px;
+  }
+}
+@media (max-width: 600px) {
+  .acts-row {
+    flex-direction: column;
+  }
+  .acts-row > * {
+    flex: 1 1 auto !important;
+    min-width: auto;
+  }
+}
+
+/* Law library grid — 3 → 2 → 1 columns */
+.law-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+@media (max-width: 900px) {
+  .law-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (max-width: 600px) {
+  .law-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Main menu items grid — 2 → 1 column on small screens */
+.menu-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  max-width: 560px;
+  width: 100%;
+  margin: 0 auto;
+}
+@media (max-width: 500px) {
+  .menu-grid {
+    grid-template-columns: 1fr;
+  }
+}

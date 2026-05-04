@@ -28,7 +28,7 @@ export default function MainMenuScreen({ onNavigate }: Props) {
         justifyContent: 'center',
         position: 'relative',
         zIndex: 1,
-        padding: 40,
+        padding: 'clamp(16px, 4vw, 40px)',
       }}
     >
       {/* Title Block */}
@@ -48,14 +48,14 @@ export default function MainMenuScreen({ onNavigate }: Props) {
       </div>
 
       {/* Characters */}
-      <div style={{ display: 'flex', gap: 32, marginBottom: 40, alignItems: 'flex-end' }}>
+      <div style={{ display: 'flex', gap: 32, marginBottom: 40, alignItems: 'flex-end', flexWrap: 'wrap', justifyContent: 'center' }}>
         <ProsecutorSprite size={100} />
         <JudgeSprite size={130} />
         <DefenseSprite size={100} />
       </div>
 
       {/* Menu Grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, maxWidth: 560 }}>
+      <div className="menu-grid">
         {menuItems.map(item => (
           <button
             key={item.id}

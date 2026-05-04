@@ -23,7 +23,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 
 export default function DesignSystemScreen({ onBack }: Props) {
   return (
-    <div style={{ minHeight: '100vh', position: 'relative', zIndex: 1, padding: '30px 40px', maxWidth: 1000, margin: '0 auto' }}>
+    <div style={{ minHeight: '100vh', position: 'relative', zIndex: 1, padding: 'clamp(16px, 3vw, 30px) clamp(16px, 4vw, 40px)', maxWidth: 1000, margin: '0 auto' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 30 }}>
         <PixelButton small variant="secondary" onClick={onBack}>← MENU</PixelButton>
         <h2 style={{ fontFamily: PIXEL_FONT, fontSize: 16, color: TC.ink, margin: 0 }}>DESIGN SYSTEM</h2>

@@ -122,7 +122,8 @@ export default function CampaignMapScreen({ onNavigate, onBack, completedCases, 
   ).length
 
   return (
-    <div style={{ minHeight: '100vh', position: 'relative', zIndex: 1, padding: '30px 40px' }}>
+    <div style={{ minHeight: '100vh', position: 'relative', zIndex: 1, padding: 'clamp(16px, 3vw, 30px) clamp(16px, 4vw, 40px)' }}>
+      <div style={{ maxWidth: 1300, margin: '0 auto' }}>
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 30 }}>
         <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
@@ -140,7 +141,7 @@ export default function CampaignMapScreen({ onNavigate, onBack, completedCases, 
       </div>
 
       {/* Act timeline */}
-      <div style={{ display: 'flex', gap: 20, alignItems: 'stretch' }}>
+      <div className="acts-row" style={{ gap: 20 }}>
         {acts.map((act) => (
           <div key={act.id} style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
             {/* Act header card */}
@@ -252,6 +253,7 @@ export default function CampaignMapScreen({ onNavigate, onBack, completedCases, 
       >
         Each act builds on the last: the case you just solved planted the very misconception the
         next case will defeat. Complete an act to unlock the next.
+      </div>
       </div>
     </div>
   )

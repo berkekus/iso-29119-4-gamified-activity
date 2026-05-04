@@ -16,7 +16,7 @@ export default function LawLibraryScreen({ onBack }: Props) {
   const collectedSet = new Set(collected)
 
   return (
-    <div style={{ minHeight: '100vh', position: 'relative', zIndex: 1, padding: '30px 40px' }}>
+    <div style={{ minHeight: '100vh', position: 'relative', zIndex: 1, padding: 'clamp(16px, 3vw, 30px) clamp(16px, 4vw, 40px)' }}>
       {/* Header — same pattern as CampaignMapScreen */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 30 }}>
         <PixelButton small variant="secondary" onClick={onBack}>← CAMPAIGN</PixelButton>
@@ -27,15 +27,7 @@ export default function LawLibraryScreen({ onBack }: Props) {
       </div>
 
       {/* 6-card grid — same row gap & card frame as the act timeline */}
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(3, 1fr)',
-          gap: 20,
-          maxWidth: 1100,
-          margin: '0 auto',
-        }}
-      >
+      <div className="law-grid">
         {LAW_CARDS.map((law) => {
           const unlocked = collectedSet.has(law.id)
           return (

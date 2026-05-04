@@ -90,7 +90,7 @@ export default function BriefingScreen({ onNavigate, onBack }: Props) {
     : fallbackDialogs
 
   return (
-    <div style={{ minHeight: '100vh', position: 'relative', zIndex: 1, padding: '30px 40px' }}>
+    <div style={{ minHeight: '100vh', position: 'relative', zIndex: 1, padding: 'clamp(16px, 3vw, 30px) clamp(16px, 4vw, 40px)' }}>
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
         <PixelButton small variant="secondary" onClick={onBack}>← CAMPAIGN</PixelButton>
@@ -100,7 +100,7 @@ export default function BriefingScreen({ onNavigate, onBack }: Props) {
         </div>
       </div>
 
-      <div style={{ display: 'flex', gap: 30, maxWidth: 1100 }}>
+      <div className="responsive-row" style={{ gap: 30, maxWidth: 1100, margin: '0 auto' }}>
         {/* Case File */}
         <div style={{ flex: 1 }}>
           <div style={{
