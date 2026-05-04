@@ -109,7 +109,7 @@ export default function DebriefScreen({ onNavigate, onBack }: Props) {
   ).length
 
   return (
-    <div style={{ minHeight: '100vh', position: 'relative', zIndex: 1, padding: '30px 40px' }}>
+    <div style={{ minHeight: '100vh', position: 'relative', zIndex: 1, padding: 'clamp(16px, 3vw, 30px) clamp(16px, 4vw, 40px)' }}>
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
         <PixelButton small variant="secondary" onClick={onBack}>← TRIAL</PixelButton>
@@ -119,7 +119,7 @@ export default function DebriefScreen({ onNavigate, onBack }: Props) {
         </div>
       </div>
 
-      <div style={{ maxWidth: 900, margin: '0 auto', display: 'flex', gap: 30 }}>
+      <div className="responsive-row" style={{ maxWidth: 900, margin: '0 auto', gap: 30 }}>
         {/* Main content */}
         <div style={{ flex: 1 }}>
           {/* Summary card */}

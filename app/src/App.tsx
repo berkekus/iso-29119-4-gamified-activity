@@ -57,7 +57,9 @@ export default function App() {
   return (
     <div style={{ minHeight: '100vh' }}>
       <GraphPaperBg />
-      {renderScreen()}
+      <div className="app-center">
+        {renderScreen()}
+      </div>
     </div>
   )
 }

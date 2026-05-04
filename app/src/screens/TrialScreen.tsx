@@ -59,7 +59,7 @@ export default function TrialScreen({ onNavigate, onBack }: Props) {
   const phaseLabels: Phase[] = ['presenting', 'deliberating', 'verdict']
 
   return (
-    <div style={{ minHeight: '100vh', position: 'relative', zIndex: 1, padding: '30px 40px' }}>
+    <div style={{ minHeight: '100vh', position: 'relative', zIndex: 1, padding: 'clamp(16px, 3vw, 30px) clamp(16px, 4vw, 40px)' }}>
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
         <PixelButton small variant="secondary" onClick={onBack}>← EVIDENCE</PixelButton>

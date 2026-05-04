@@ -13,5 +13,5 @@ export const TC = {
 export type TCKey = keyof typeof TC
 
 export const PIXEL_FONT = "'Press Start 2P', cursive"
-export const HAND_FONT  = "'Caveat', cursive"
+export const HAND_FONT  = "'Press Start 2P', cursive"
 export const MONO_FONT  = "'JetBrains Mono', monospace"

@@ -103,7 +103,7 @@ export default function InvestigationScreen({ onNavigate, onBack }: Props) {
     const testSet = caseFile?.test_set ?? []
 
     return (
-      <div style={{ minHeight: '100vh', position: 'relative', zIndex: 1, padding: '30px 40px' }}>
+      <div style={{ minHeight: '100vh', position: 'relative', zIndex: 1, padding: 'clamp(16px, 3vw, 30px) clamp(16px, 4vw, 40px)' }}>
         {/* Header */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
           <PixelButton small variant="secondary" onClick={onBack}>← BRIEFING</PixelButton>
@@ -114,7 +114,7 @@ export default function InvestigationScreen({ onNavigate, onBack }: Props) {
           <div style={{ width: 60 }} />
         </div>
 
-        <div style={{ display: 'flex', gap: 30, maxWidth: 1100 }}>
+        <div className="responsive-row" style={{ gap: 30, maxWidth: 1100 }}>
           {/* Main: claim + code + tests */}
           <div style={{ flex: 1 }}>
             <div style={{
@@ -203,7 +203,7 @@ export default function InvestigationScreen({ onNavigate, onBack }: Props) {
           <div style={{ width: 280, display: 'flex', flexDirection: 'column', gap: 16 }}>
             <div style={{ textAlign: 'center', padding: 16, border: `3px solid ${TC.ink}`, background: TC.cream, boxShadow: `4px 4px 0 ${TC.ink}` }}>
               <JudgeSprite size={90} />
-              <div style={{ fontFamily: HAND_FONT, fontSize: 16, color: TC.ink, marginTop: 10, lineHeight: 1.5 }}>
+              <div style={{ fontFamily: HAND_FONT, fontSize: 9, color: TC.ink, marginTop: 10, lineHeight: 1.9, overflowWrap: 'break-word' }}>
                 "Read the claim carefully. Does the evidence support it under the required coverage standard?"
               </div>
             </div>
@@ -224,7 +224,7 @@ export default function InvestigationScreen({ onNavigate, onBack }: Props) {
 
   // ─── Default branch: pair_selector (MC/DC truth-table flow, unchanged) ──────
   return (
-    <div style={{ minHeight: '100vh', position: 'relative', zIndex: 1, padding: '30px 40px' }}>
+    <div style={{ minHeight: '100vh', position: 'relative', zIndex: 1, padding: 'clamp(16px, 3vw, 30px) clamp(16px, 4vw, 40px)' }}>
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
         <PixelButton small variant="secondary" onClick={onBack}>← BRIEFING</PixelButton>
@@ -235,7 +235,7 @@ export default function InvestigationScreen({ onNavigate, onBack }: Props) {
         <ScoreChip label="SELECTED" value={selectedCount} color={TC.blue} />
       </div>
 
-      <div style={{ display: 'flex', gap: 30 }}>
+      <div className="responsive-row" style={{ gap: 30 }}>
         {/* Main: Truth Table */}
         <div style={{ flex: 1 }}>
           <div style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: TC.grey, marginBottom: 12 }}>
@@ -331,7 +331,7 @@ export default function InvestigationScreen({ onNavigate, onBack }: Props) {
         <div style={{ width: 280, display: 'flex', flexDirection: 'column', gap: 16 }}>
           <div style={{ textAlign: 'center', padding: 16, border: `3px solid ${TC.ink}`, background: TC.cream, boxShadow: `4px 4px 0 ${TC.ink}` }}>
             <JudgeSprite size={90} />
-            <div style={{ fontFamily: HAND_FONT, fontSize: 16, color: TC.ink, marginTop: 10, lineHeight: 1.5 }}>
+            <div style={{ fontFamily: HAND_FONT, fontSize: 9, color: TC.ink, marginTop: 10, lineHeight: 1.9, overflowWrap: 'break-word' }}>
               "Build the truth table first. Identify which rows you'll need for your independence pairs."
             </div>
           </div>
