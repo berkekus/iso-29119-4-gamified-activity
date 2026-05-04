@@ -55,7 +55,7 @@ export function OptionListPicker({ caseFile, feedback, onSubmit }: BaseProps) {
                 lineHeight: 1.5,
               }}
             >
-              <span style={{ fontFamily: PIXEL_FONT, fontSize: 8, color: TC.magenta, marginRight: 10 }}>
+              <span style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: TC.magenta, marginRight: 10 }}>
                 {opt.id.replace(/^opt-/, '').toUpperCase()}
               </span>
               {opt.label}

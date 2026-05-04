@@ -39,14 +39,25 @@ export default function DialogBox({ speaker, text, portrait, onNext, isLast }: P
         padding: 16,
       }}
     >
-      {/* Portrait + speaker row */}
-      {(portrait || speaker) && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
-          {portrait && <div style={{ flexShrink: 0 }}>{portrait}</div>}
-          {speaker && (
-            <div style={{ fontFamily: PIXEL_FONT, fontSize: 8, color: TC.blue }}>
-              {speaker}
-            </div>
+      {portrait && <div style={{ flexShrink: 0 }}>{portrait}</div>}
+      <div style={{ flex: 1 }}>
+        {speaker && (
+          <div style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: TC.blue, marginBottom: 8 }}>
+            {speaker}
+          </div>
+        )}
+        <div
+          style={{
+            fontFamily: HAND_FONT,
+            fontSize: 18,
+            color: TC.ink,
+            lineHeight: 1.55,
+            minHeight: 50,
+          }}
+        >
+          {displayed}
+          {!done && (
+            <span style={{ animation: 'blink 0.5s steps(2) infinite' }}>▋</span>
           )}
         </div>
       )}

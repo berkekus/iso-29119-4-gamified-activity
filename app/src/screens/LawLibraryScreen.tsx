@@ -44,10 +44,10 @@ export default function LawLibraryScreen({ onBack }: Props) {
                 gap: 8,
               }}
             >
-              <div style={{ fontFamily: PIXEL_FONT, fontSize: 7, color: TC.grey }}>
+              <div style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: TC.grey }}>
                 {unlocked ? law.iso_clause : '🔒 LOCKED'}
               </div>
-              <div style={{ fontFamily: PIXEL_FONT, fontSize: 10, color: unlocked ? TC.ink : TC.grey }}>
+              <div style={{ fontFamily: PIXEL_FONT, fontSize: 11, color: unlocked ? TC.ink : TC.grey, lineHeight: 1.4 }}>
                 {unlocked ? law.title : '— — —'}
               </div>
               <div
@@ -55,7 +55,7 @@ export default function LawLibraryScreen({ onBack }: Props) {
                   fontFamily: HAND_FONT,
                   fontSize: 16,
                   color: TC.ink,
-                  lineHeight: 1.5,
+                  lineHeight: 1.55,
                   minHeight: 60,
                 }}
               >
@@ -70,7 +70,7 @@ export default function LawLibraryScreen({ onBack }: Props) {
                       fontFamily: HAND_FONT,
                       fontSize: 14,
                       color: TC.grey,
-                      lineHeight: 1.5,
+                      lineHeight: 1.55,
                     }}
                   >
                     {law.long_description}
@@ -80,22 +80,22 @@ export default function LawLibraryScreen({ onBack }: Props) {
                       marginTop: 4,
                       background: `${TC.magenta}10`,
                       border: `2px solid ${TC.magenta}`,
-                      padding: '6px 8px',
+                      padding: '8px 10px',
                     }}
                   >
-                    <div style={{ fontFamily: PIXEL_FONT, fontSize: 6, color: TC.magenta, marginBottom: 2 }}>
+                    <div style={{ fontFamily: PIXEL_FONT, fontSize: 8, color: TC.magenta, marginBottom: 6 }}>
                       COMMON PITFALL
                     </div>
-                    <div style={{ fontFamily: HAND_FONT, fontSize: 14, color: TC.ink, lineHeight: 1.4 }}>
+                    <div style={{ fontFamily: HAND_FONT, fontSize: 14, color: TC.ink, lineHeight: 1.5 }}>
                       {law.pitfall}
                     </div>
                   </div>
                   <div
                     style={{
                       fontFamily: MONO_FONT,
-                      fontSize: 10,
+                      fontSize: 11,
                       color: TC.grey,
-                      lineHeight: 1.4,
+                      lineHeight: 1.5,
                       marginTop: 4,
                     }}
                   >
@@ -112,10 +112,11 @@ export default function LawLibraryScreen({ onBack }: Props) {
       <div
         style={{
           marginTop: 24,
-          padding: 12,
+          padding: '14px 18px',
           border: `2px dashed ${TC.greyLight}`,
           fontFamily: HAND_FONT,
-          fontSize: 13,
+          fontSize: 15,
+          lineHeight: 1.55,
           color: TC.grey,
           textAlign: 'center',
         }}

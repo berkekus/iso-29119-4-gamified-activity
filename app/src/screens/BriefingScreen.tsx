@@ -113,16 +113,16 @@ export default function BriefingScreen({ onNavigate, onBack }: Props) {
               border: `2px solid ${TC.magenta}`, padding: '4px 8px', transform: 'rotate(3deg)',
             }}>CLASSIFIED</div>
 
-            <div style={{ fontFamily: PIXEL_FONT, fontSize: 8, color: TC.grey, marginBottom: 4 }}>{caseFileNum}</div>
-            <h2 style={{ fontFamily: PIXEL_FONT, fontSize: 16, color: TC.ink, margin: '0 0 16px 0' }}>{caseData.title}</h2>
+            <div style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: TC.grey, marginBottom: 6 }}>{caseFileNum}</div>
+            <h2 style={{ fontFamily: PIXEL_FONT, fontSize: 18, color: TC.ink, margin: '0 0 18px 0', lineHeight: 1.4 }}>{caseData.title}</h2>
 
-            <div style={{ fontFamily: HAND_FONT, fontSize: 16, color: TC.ink, lineHeight: 1.6, marginBottom: 20 }}>
+            <div style={{ fontFamily: HAND_FONT, fontSize: 18, color: TC.ink, lineHeight: 1.6, marginBottom: 20 }}>
               {caseData.narrative}
             </div>
 
             {/* Code exhibit */}
             <div style={{ marginBottom: 20 }}>
-              <div style={{ fontFamily: PIXEL_FONT, fontSize: 7, color: TC.orange, marginBottom: 6 }}>EXHIBIT A — SOURCE CODE</div>
+              <div style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: TC.orange, marginBottom: 8 }}>EXHIBIT A — SOURCE CODE</div>
               <div style={{
                 background: '#1e1e2e', color: '#cdd6f4', fontFamily: MONO_FONT, fontSize: 13,
                 padding: 16, border: `2px solid ${TC.ink}`, lineHeight: 1.6, overflow: 'auto',
@@ -138,20 +138,20 @@ export default function BriefingScreen({ onNavigate, onBack }: Props) {
                 an empty truth-table-style block. */}
             {caseData.conditions.length > 0 && (
               <div style={{ marginBottom: 20 }}>
-                <div style={{ fontFamily: PIXEL_FONT, fontSize: 7, color: TC.blue, marginBottom: 8 }}>CONDITIONS IDENTIFIED</div>
+                <div style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: TC.blue, marginBottom: 10 }}>CONDITIONS IDENTIFIED</div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                   {caseData.conditions.map(c => (
                     <div key={c.id} style={{
                       display: 'flex', alignItems: 'center', gap: 10,
                       padding: '8px 12px', background: `${TC.blue}10`, border: `1px solid ${TC.blue}`,
                     }}>
-                      <span style={{ fontFamily: PIXEL_FONT, fontSize: 14, color: TC.blue, width: 28 }}>{c.id}</span>
-                      <span style={{ fontFamily: MONO_FONT, fontSize: 12, color: TC.ink }}>{c.label}</span>
+                      <span style={{ fontFamily: PIXEL_FONT, fontSize: 13, color: TC.blue, width: 28 }}>{c.id}</span>
+                      <span style={{ fontFamily: MONO_FONT, fontSize: 13, color: TC.ink }}>{c.label}</span>
                     </div>
                   ))}
                 </div>
                 {caseData.expression && (
-                  <div style={{ fontFamily: MONO_FONT, fontSize: 12, color: TC.grey, marginTop: 8 }}>
+                  <div style={{ fontFamily: MONO_FONT, fontSize: 13, color: TC.grey, marginTop: 10, lineHeight: 1.5 }}>
                     Decision expression: <strong style={{ color: TC.ink }}>{caseData.expression}</strong>
                   </div>
                 )}
@@ -160,15 +160,15 @@ export default function BriefingScreen({ onNavigate, onBack }: Props) {
 
             {/* Charges */}
             <div>
-              <div style={{ fontFamily: PIXEL_FONT, fontSize: 7, color: TC.magenta, marginBottom: 8 }}>CHARGES</div>
+              <div style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: TC.magenta, marginBottom: 10 }}>CHARGES</div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                 {caseData.charges.map((ch, i) => (
                   <div key={i} style={{
                     display: 'flex', gap: 8, alignItems: 'flex-start',
-                    fontFamily: HAND_FONT, fontSize: 16, color: TC.ink,
+                    fontFamily: HAND_FONT, fontSize: 18, color: TC.ink, lineHeight: 1.5,
                     padding: '6px 0', borderBottom: `1px solid ${TC.grid}`,
                   }}>
-                    <span style={{ fontFamily: PIXEL_FONT, fontSize: 8, color: TC.magenta, marginTop: 4 }}>{i + 1}.</span>
+                    <span style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: TC.magenta, marginTop: 4 }}>{i + 1}.</span>
                     {ch}
                   </div>
                 ))}
@@ -180,8 +180,8 @@ export default function BriefingScreen({ onNavigate, onBack }: Props) {
               marginTop: 20, display: 'inline-flex', alignItems: 'center', gap: 8,
               background: `${TC.magenta}15`, border: `2px solid ${TC.magenta}`, padding: '8px 14px',
             }}>
-              <span style={{ fontFamily: PIXEL_FONT, fontSize: 7, color: TC.magenta }}>REQUIRED:</span>
-              <span style={{ fontFamily: MONO_FONT, fontSize: 11, color: TC.ink }}>{techniqueLine}</span>
+              <span style={{ fontFamily: PIXEL_FONT, fontSize: 8, color: TC.magenta }}>REQUIRED:</span>
+              <span style={{ fontFamily: MONO_FONT, fontSize: 12, color: TC.ink }}>{techniqueLine}</span>
             </div>
 
             {/* Law Reference toggle + panel — reuses the same cream/ink card
@@ -199,24 +199,24 @@ export default function BriefingScreen({ onNavigate, onBack }: Props) {
                     border: `2px solid ${TC.orange}`,
                     padding: 16,
                   }}>
-                    <div style={{ fontFamily: PIXEL_FONT, fontSize: 7, color: TC.orange, marginBottom: 6 }}>
+                    <div style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: TC.orange, marginBottom: 8 }}>
                       LAW CARD · {lawCard.iso_clause}
                     </div>
-                    <div style={{ fontFamily: PIXEL_FONT, fontSize: 12, color: TC.ink, marginBottom: 10 }}>
+                    <div style={{ fontFamily: PIXEL_FONT, fontSize: 12, color: TC.ink, marginBottom: 12, lineHeight: 1.4 }}>
                       {lawCard.title}
                     </div>
-                    <div style={{ fontFamily: HAND_FONT, fontSize: 18, color: TC.ink, lineHeight: 1.5, marginBottom: 10 }}>
+                    <div style={{ fontFamily: HAND_FONT, fontSize: 18, color: TC.ink, lineHeight: 1.55, marginBottom: 10 }}>
                       {lawCard.short_definition}
                     </div>
-                    <div style={{ fontFamily: HAND_FONT, fontSize: 16, color: TC.ink, lineHeight: 1.5, marginBottom: 10 }}>
+                    <div style={{ fontFamily: HAND_FONT, fontSize: 16, color: TC.ink, lineHeight: 1.55, marginBottom: 12 }}>
                       {lawCard.long_description}
                     </div>
                     <div style={{
-                      fontFamily: PIXEL_FONT, fontSize: 7, color: TC.magenta, marginBottom: 4,
+                      fontFamily: PIXEL_FONT, fontSize: 9, color: TC.magenta, marginBottom: 6,
                     }}>
                       COMMON PITFALL
                     </div>
-                    <div style={{ fontFamily: HAND_FONT, fontSize: 16, color: TC.ink, lineHeight: 1.5 }}>
+                    <div style={{ fontFamily: HAND_FONT, fontSize: 16, color: TC.ink, lineHeight: 1.55 }}>
                       {lawCard.pitfall}
                     </div>
                   </div>
@@ -233,9 +233,9 @@ export default function BriefingScreen({ onNavigate, onBack }: Props) {
             background: TC.cream, border: `3px solid ${TC.ink}`, boxShadow: `4px 4px 0 ${TC.ink}`,
             padding: 16, textAlign: 'center',
           }}>
-            <div style={{ fontFamily: PIXEL_FONT, fontSize: 7, color: TC.grey, marginBottom: 8 }}>THE DEFENDANT</div>
+            <div style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: TC.grey, marginBottom: 10 }}>THE DEFENDANT</div>
             <BugSprite size={90} type="mcdc" mood="nervous" />
-            <div style={{ fontFamily: HAND_FONT, fontSize: 9, color: TC.grey, marginTop: 8, fontStyle: 'italic', lineHeight: 1.9, overflowWrap: 'break-word' }}>
+            <div style={{ fontFamily: HAND_FONT, fontSize: 16, color: TC.grey, marginTop: 8, fontStyle: 'italic', lineHeight: 1.5 }}>
               "I... I'm sure my tests were enough..."
             </div>
           </div>
@@ -255,7 +255,7 @@ export default function BriefingScreen({ onNavigate, onBack }: Props) {
           )}
 
           {/* Time hint */}
-          <div style={{ fontFamily: PIXEL_FONT, fontSize: 7, color: TC.grey, textAlign: 'center', padding: 8 }}>
+          <div style={{ fontFamily: MONO_FONT, fontSize: 11, color: TC.grey, textAlign: 'center', padding: 8, letterSpacing: 0.5 }}>
             EST. TIME: 8–12 MIN
           </div>
         </div>

@@ -121,14 +121,14 @@ export default function InvestigationScreen({ onNavigate, onBack }: Props) {
               background: TC.cream, border: `3px solid ${TC.ink}`, boxShadow: `5px 5px 0 ${TC.ink}`,
               padding: 24,
             }}>
-              <div style={{ fontFamily: PIXEL_FONT, fontSize: 8, color: TC.grey, marginBottom: 4 }}>CASE BRIEF</div>
-              <div style={{ fontFamily: HAND_FONT, fontSize: 18, color: TC.ink, lineHeight: 1.6, marginBottom: 16 }}>
+              <div style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: TC.grey, marginBottom: 8 }}>CASE BRIEF</div>
+              <div style={{ fontFamily: HAND_FONT, fontSize: 18, color: TC.ink, lineHeight: 1.6, marginBottom: 18 }}>
                 {narrative}
               </div>
 
               {code && (
-                <div style={{ marginBottom: 16 }}>
-                  <div style={{ fontFamily: PIXEL_FONT, fontSize: 7, color: TC.orange, marginBottom: 6 }}>EXHIBIT — SOURCE CODE</div>
+                <div style={{ marginBottom: 18 }}>
+                  <div style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: TC.orange, marginBottom: 8 }}>EXHIBIT — SOURCE CODE</div>
                   <div style={{
                     background: '#1e1e2e', color: '#cdd6f4', fontFamily: MONO_FONT, fontSize: 13,
                     padding: 16, border: `2px solid ${TC.ink}`, lineHeight: 1.6, overflow: 'auto',
@@ -140,12 +140,12 @@ export default function InvestigationScreen({ onNavigate, onBack }: Props) {
               )}
 
               {testSet.length > 0 && questionType !== 'coverage_table' && questionType !== 'test_designer' && (
-                <div style={{ marginBottom: 16 }}>
-                  <div style={{ fontFamily: PIXEL_FONT, fontSize: 7, color: TC.blue, marginBottom: 6 }}>TEST SET ON RECORD</div>
+                <div style={{ marginBottom: 18 }}>
+                  <div style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: TC.blue, marginBottom: 8 }}>TEST SET ON RECORD</div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                     {testSet.map((t) => (
                       <div key={t.id} style={{
-                        fontFamily: MONO_FONT, fontSize: 12, color: TC.ink,
+                        fontFamily: MONO_FONT, fontSize: 12, color: TC.ink, lineHeight: 1.55,
                         padding: '6px 10px', background: `${TC.blue}10`, border: `1px solid ${TC.blue}`,
                       }}>
                         <strong>{t.id}</strong>: inputs = {JSON.stringify(t.inputs)} → outcome = {String(t.outcome)}
@@ -160,8 +160,8 @@ export default function InvestigationScreen({ onNavigate, onBack }: Props) {
                   background: `${TC.magenta}10`, border: `2px solid ${TC.magenta}`, padding: 14,
                   marginTop: 8,
                 }}>
-                  <div style={{ fontFamily: PIXEL_FONT, fontSize: 7, color: TC.magenta, marginBottom: 6 }}>THE CLAIM UNDER REVIEW</div>
-                  <div style={{ fontFamily: HAND_FONT, fontSize: 19, color: TC.ink, lineHeight: 1.5 }}>
+                  <div style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: TC.magenta, marginBottom: 8 }}>THE CLAIM UNDER REVIEW</div>
+                  <div style={{ fontFamily: HAND_FONT, fontSize: 18, color: TC.ink, lineHeight: 1.55 }}>
                     "{claim}"
                   </div>
                 </div>
@@ -203,15 +203,15 @@ export default function InvestigationScreen({ onNavigate, onBack }: Props) {
           <div style={{ width: 280, display: 'flex', flexDirection: 'column', gap: 16 }}>
             <div style={{ textAlign: 'center', padding: 16, border: `3px solid ${TC.ink}`, background: TC.cream, boxShadow: `4px 4px 0 ${TC.ink}` }}>
               <JudgeSprite size={90} />
-              <div style={{ fontFamily: HAND_FONT, fontSize: 9, color: TC.ink, marginTop: 10, lineHeight: 1.9, overflowWrap: 'break-word' }}>
+              <div style={{ fontFamily: HAND_FONT, fontSize: 16, color: TC.ink, marginTop: 10, lineHeight: 1.55 }}>
                 "Read the claim carefully. Does the evidence support it under the required coverage standard?"
               </div>
             </div>
 
             {(caseFile?.hints?.length ?? 0) > 0 && (
               <div style={{ padding: 14, border: `2px solid ${TC.grid}`, background: TC.cream }}>
-                <div style={{ fontFamily: PIXEL_FONT, fontSize: 7, color: TC.blue, marginBottom: 8 }}>HINT</div>
-                <div style={{ fontFamily: MONO_FONT, fontSize: 10, color: TC.ink, lineHeight: 1.6 }}>
+                <div style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: TC.blue, marginBottom: 8 }}>HINT</div>
+                <div style={{ fontFamily: MONO_FONT, fontSize: 12, color: TC.ink, lineHeight: 1.6 }}>
                   {caseFile?.hints?.[0]}
                 </div>
               </div>
@@ -238,7 +238,7 @@ export default function InvestigationScreen({ onNavigate, onBack }: Props) {
       <div className="responsive-row" style={{ gap: 30, maxWidth: 1100, margin: '0 auto' }}>
         {/* Main: Truth Table */}
         <div style={{ flex: 1 }}>
-          <div style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: TC.grey, marginBottom: 12 }}>
+          <div style={{ fontFamily: PIXEL_FONT, fontSize: 10, color: TC.grey, marginBottom: 12 }}>
             TRUTH TABLE — {decisionExpr}
           </div>
 
@@ -320,7 +320,7 @@ export default function InvestigationScreen({ onNavigate, onBack }: Props) {
               marginTop: 12, padding: '10px 14px',
               background: feedback.type === 'success' ? `${TC.green}15` : `${TC.magenta}15`,
               border: `2px solid ${feedback.type === 'success' ? TC.green : TC.magenta}`,
-              fontFamily: HAND_FONT, fontSize: 18, color: TC.ink,
+              fontFamily: HAND_FONT, fontSize: 18, color: TC.ink, lineHeight: 1.55,
             }}>
               {feedback.type === 'error' && '⚠  '}{feedback.msg}
             </div>
@@ -331,14 +331,14 @@ export default function InvestigationScreen({ onNavigate, onBack }: Props) {
         <div style={{ width: 280, display: 'flex', flexDirection: 'column', gap: 16 }}>
           <div style={{ textAlign: 'center', padding: 16, border: `3px solid ${TC.ink}`, background: TC.cream, boxShadow: `4px 4px 0 ${TC.ink}` }}>
             <JudgeSprite size={90} />
-            <div style={{ fontFamily: HAND_FONT, fontSize: 9, color: TC.ink, marginTop: 10, lineHeight: 1.9, overflowWrap: 'break-word' }}>
+            <div style={{ fontFamily: HAND_FONT, fontSize: 16, color: TC.ink, marginTop: 10, lineHeight: 1.55 }}>
               "Build the truth table first. Identify which rows you'll need for your independence pairs."
             </div>
           </div>
 
           <div style={{ padding: 14, border: `2px solid ${TC.grid}`, background: TC.cream }}>
-            <div style={{ fontFamily: PIXEL_FONT, fontSize: 7, color: TC.blue, marginBottom: 8 }}>QUICK REF</div>
-            <div style={{ fontFamily: MONO_FONT, fontSize: 10, color: TC.ink, lineHeight: 1.6 }}>
+            <div style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: TC.blue, marginBottom: 8 }}>QUICK REF</div>
+            <div style={{ fontFamily: MONO_FONT, fontSize: 12, color: TC.ink, lineHeight: 1.6 }}>
               • N conditions → N+1 tests min<br />
               • Each condition must independently<br />
               &nbsp;&nbsp;affect the decision<br />

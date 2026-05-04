@@ -50,7 +50,7 @@ export default function DesignSystemScreen({ onBack }: Props) {
             <div style={{ fontFamily: PIXEL_FONT, fontSize: 14, color: TC.ink, marginTop: 4 }}>BUTTONS · BADGES · SCORES</div>
           </div>
           <div>
-            <span style={{ fontFamily: PIXEL_FONT, fontSize: 7, color: TC.grey }}>HAND — Press Start 2P</span>
+            <span style={{ fontFamily: PIXEL_FONT, fontSize: 7, color: TC.grey }}>HAND — Special Elite</span>
             <div style={{ fontFamily: HAND_FONT, fontSize: 28, color: TC.ink, marginTop: 4 }}>Body text, narratives, and case descriptions</div>
           </div>
           <div>
