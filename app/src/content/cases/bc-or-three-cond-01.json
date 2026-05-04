@@ -21,6 +21,11 @@
     "decision_expression": "A || B || C"
   },
   "claim": "Toggle the rows in your test suite so that Branch Condition coverage is achieved (each of A, B, C must be observed both T and F).",
+  "charges": [
+    "The alarm function alarm(a, b, c) fires whenever any of three sensor inputs is true and otherwise returns None.",
+    "The defendant test suite must demonstrate Branch Condition coverage of the predicate `a or b or c`.",
+    "The prosecution alleges a candidate selection of test rows fails to observe each of a, b, c as both TRUE and FALSE."
+  ],
   "test_set": [
     { "id": "T1", "inputs": { "A": true,  "B": false, "C": false }, "outcome": true  },
     { "id": "T2", "inputs": { "A": false, "B": true,  "C": false }, "outcome": true  },

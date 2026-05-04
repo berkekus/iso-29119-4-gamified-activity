@@ -21,6 +21,11 @@
     "decision_expression": "A || (B && C)"
   },
   "claim": "Toggling each condition once in isolation is enough for MCDC.",
+  "charges": [
+    "The emergency system trigger() fires when alarmA is true OR when both backupSensor AND manualOverride are active.",
+    "The defendant submits a 4-test suite that flips each condition once in isolation from an all-false baseline and claims MC/DC coverage of `A || (B && C)`.",
+    "The prosecution alleges that flipping B or C alone from the baseline does not flip the decision outcome, so the submitted suite contains no valid independence pair for B or for C."
+  ],
   "test_set": [
     { "id": "T1", "inputs": { "A": true,  "B": false, "C": false }, "outcome": true  },
     { "id": "T2", "inputs": { "A": false, "B": false, "C": false }, "outcome": false },

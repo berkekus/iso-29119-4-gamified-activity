@@ -23,6 +23,11 @@
     "decision_expression": "A && B && C && D && E"
   },
   "claim": "Quick budget check before the next case: how many tests does each technique require?",
+  "charges": [
+    "The defendant predicate `a and b and c and d and e` guards a safety-critical detonate() call with five independent conditions.",
+    "The court must establish, on the record, the test budget required to certify the predicate under Branch Condition Combination coverage and under MC/DC.",
+    "The prosecution alleges that confusing BCC and MC/DC test budgets at five conditions leads to either an infeasibly large suite or a false claim of certification."
+  ],
   "test_set": [],
   "numeric_prompts": [
     {
