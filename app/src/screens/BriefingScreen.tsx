@@ -145,7 +145,7 @@ export default function BriefingScreen({ onNavigate, onBack }: Props) {
                       display: 'flex', alignItems: 'center', gap: 10,
                       padding: '8px 12px', background: `${TC.blue}10`, border: `1px solid ${TC.blue}`,
                     }}>
-                      <span style={{ fontFamily: PIXEL_FONT, fontSize: 13, color: TC.blue, width: 28 }}>{c.id}</span>
+                      <span style={{ fontFamily: PIXEL_FONT, fontSize: 13, color: TC.blue, minWidth: 28, flexShrink: 0 }}>{c.id}</span>
                       <span style={{ fontFamily: MONO_FONT, fontSize: 13, color: TC.ink }}>{c.label}</span>
                     </div>
                   ))}
