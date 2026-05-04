@@ -12,42 +12,42 @@
   "scenario": {
     "title": "Altitude Hold Disengage",
     "narrative": "A flight control law disengages altitude hold when vertical speed exceeds the limit and either the autopilot is engaged or the pilot has override active.",
-    "code": "if (verticalSpeed > LIMIT && (autopilotEngaged || pilotOverride)) disengage();",
+    "code": "if (verticalSpeedExceedsLimit && (autopilotEngaged || pilotOverride)) disengage();",
     "conditions": [
-      { "id": "A", "label": "verticalSpeed > LIMIT" },
-      { "id": "B", "label": "autopilotEngaged" },
-      { "id": "C", "label": "pilotOverride" }
+      { "id": "verticalSpeedExceedsLimit", "label": "verticalSpeed > LIMIT" },
+      { "id": "autopilotEngaged", "label": "autopilotEngaged" },
+      { "id": "pilotOverride", "label": "pilotOverride" }
     ],
-    "decision_expression": "A && (B || C)"
+    "decision_expression": "verticalSpeedExceedsLimit && (autopilotEngaged || pilotOverride)"
   },
-  "claim": "This 4-test set satisfies MCDC for A, B, and C.",
+  "claim": "This 4-test set satisfies MCDC for verticalSpeedExceedsLimit, autopilotEngaged, and pilotOverride.",
   "charges": [
     "The flight control law disengages altitude hold only when verticalSpeed > LIMIT AND (autopilotEngaged OR pilotOverride).",
-    "The defendant submits a 4-test suite and claims MC/DC coverage for all three conditions of `A && (B || C)`.",
-    "The prosecution alleges that under short-circuit evaluation of `B || C`, an independence pair for C is only valid when B is FALSE — and the suite must demonstrate this for each condition."
+    "The defendant submits a 4-test suite and claims MC/DC coverage for all three conditions of `verticalSpeedExceedsLimit && (autopilotEngaged || pilotOverride)`.",
+    "The prosecution alleges that under short-circuit evaluation of `autopilotEngaged || pilotOverride`, an independence pair for pilotOverride is only valid when autopilotEngaged is FALSE — and the suite must demonstrate this for each condition."
   ],
   "test_set": [
-    { "id": "T1", "inputs": { "A": true,  "B": true,  "C": false }, "outcome": true  },
-    { "id": "T2", "inputs": { "A": false, "B": true,  "C": false }, "outcome": false },
-    { "id": "T3", "inputs": { "A": true,  "B": false, "C": false }, "outcome": false },
-    { "id": "T4", "inputs": { "A": true,  "B": false, "C": true  }, "outcome": true  }
+    { "id": "T1", "inputs": { "verticalSpeedExceedsLimit": true,  "autopilotEngaged": true,  "pilotOverride": false }, "outcome": true  },
+    { "id": "T2", "inputs": { "verticalSpeedExceedsLimit": false, "autopilotEngaged": true,  "pilotOverride": false }, "outcome": false },
+    { "id": "T3", "inputs": { "verticalSpeedExceedsLimit": true,  "autopilotEngaged": false, "pilotOverride": false }, "outcome": false },
+    { "id": "T4", "inputs": { "verticalSpeedExceedsLimit": true,  "autopilotEngaged": false, "pilotOverride": true  }, "outcome": true  }
   ],
   "hints": [
-    "Re-read Law Card 6. For each condition, find a pair of tests where only that condition changes AND the decision flips.",
-    "For C: notice that when B is true, short-circuit evaluation makes C irrelevant. Find pairs where B is FALSE so C actually controls the outcome.",
-    "Solution — A: T1↔T2 (only A flips, outcome flips). B: T1↔T3 (only B flips, outcome flips). C: T3↔T4 (only C flips, outcome flips). Note: short-circuiting forces C's pair to use B=false."
+    "For each condition, find a pair of tests where only that condition changes AND the decision flips.",
+    "For pilotOverride: notice that when autopilotEngaged is true, short-circuit evaluation makes pilotOverride irrelevant. Find pairs where autopilotEngaged is FALSE so pilotOverride actually controls the outcome.",
+    "verticalSpeedExceedsLimit: T1↔T2 (only it flips, outcome flips). autopilotEngaged: T1↔T3 (only it flips, outcome flips). pilotOverride: T3↔T4 (only it flips, outcome flips). Note: short-circuiting forces pilotOverride's pair to use autopilotEngaged=false."
   ],
   "seeded_faults": [
     {
       "id": "F1",
-      "description": "Short-circuit evaluation skips C when B is true",
-      "trigger": { "condition": "C", "requiredDecisionFlip": true }
+      "description": "Short-circuit evaluation skips pilotOverride when autopilotEngaged is true",
+      "trigger": { "condition": "pilotOverride", "requiredDecisionFlip": true }
     }
   ],
   "misconceptions": [
     {
       "id": "MCDC-INDEP-AS-ISOLATION",
-      "explanation_md": "You tested each condition in isolation, but ISO §5.3.6.2 requires *paired* test cases in which one condition changes while all others remain fixed and the decision outcome flips."
+      "explanation_md": "You tested each condition in isolation, but MCDC requires *paired* test cases in which one condition changes while all others remain fixed and the decision outcome flips."
     }
   ]
 }
