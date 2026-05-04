@@ -57,6 +57,7 @@ const ACT_LABEL: Record<string, string> = {
 export default function BriefingScreen({ onNavigate, onBack }: Props) {
   const [dialogIdx, setDialogIdx] = useState(0)
   const [showLawCard, setShowLawCard] = useState(false)
+  const [isTyping, setIsTyping] = useState(false)
   const caseFile = useGameStore((s) => s.caseFile)
   const lawCard = lawCardForCase(caseFile?.id)
 
@@ -241,18 +242,27 @@ export default function BriefingScreen({ onNavigate, onBack }: Props) {
           </div>
 
           {/* Dialog */}
-          {dialogIdx < dialogs.length && (
-            <DialogBox
-              speaker={dialogs[dialogIdx].speaker}
-              text={dialogs[dialogIdx].text}
-              portrait={dialogIdx === 0 || dialogIdx === 2 ? <JudgeSprite size={60} /> : <ProsecutorSprite size={60} />}
-              onNext={() => {
-                if (dialogIdx < dialogs.length - 1) setDialogIdx(dialogIdx + 1)
-                else onNavigate('investigation')
-              }}
-              isLast={dialogIdx === dialogs.length - 1}
-            />
-          )}
+          {(() => {
+            const currentDialog = dialogs[dialogIdx]
+            if (!currentDialog) return null
+            return (
+              <DialogBox
+                speaker={currentDialog.speaker}
+                text={currentDialog.text}
+                onTypingChange={setIsTyping}
+                portrait={
+                  dialogIdx === 0 || dialogIdx === 2
+                    ? <JudgeSprite size={60} isTalking={isTyping} />
+                    : <ProsecutorSprite size={60} isTalking={isTyping} />
+                }
+                onNext={() => {
+                  if (dialogIdx < dialogs.length - 1) setDialogIdx(dialogIdx + 1)
+                  else onNavigate('investigation')
+                }}
+                isLast={dialogIdx === dialogs.length - 1}
+              />
+            )
+          })()}
 
           {/* Time hint */}
           <div style={{ fontFamily: MONO_FONT, fontSize: 11, color: TC.grey, textAlign: 'center', padding: 8, letterSpacing: 0.5 }}>
