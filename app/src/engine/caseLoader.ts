@@ -102,6 +102,8 @@ export const CaseFileSchema = z.object({
   concept_ref: z.string().optional(),
   /** Multi-choice options for level_picker / binary_verdict / test_designer. */
   options: z.array(OptionSchema).optional(),
+  /** Charge sheet — 1-3 sentences describing what the defendant code is alleged to do wrong. Replaces hints in the BriefingScreen CHARGES panel. */
+  charges: z.array(z.string()).optional(),
   /** One or more numeric prompts for numeric_input bridge quizzes. */
   numeric_prompts: z.array(NumericPromptSchema).optional(),
   /** Toggle-rows interaction for coverage_table cases. */

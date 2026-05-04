@@ -20,6 +20,11 @@
     "decision_expression": "A && B"
   },
   "claim": "This 3-test set satisfies MCDC for both conditions.",
+  "charges": [
+    "The defendant function activates a safety system only when sensorTriggered AND buttonPressed are both true.",
+    "The defendant submits a 3-test suite — (T,T), (F,T), (T,F) — and claims MC/DC coverage for the predicate `sensorTriggered && buttonPressed`.",
+    "The court must determine whether each condition has a valid independence pair within the submitted suite."
+  ],
   "test_set": [
     { "id": "T1", "inputs": { "A": true,  "B": true  }, "outcome": true  },
     { "id": "T2", "inputs": { "A": false, "B": true  }, "outcome": false },

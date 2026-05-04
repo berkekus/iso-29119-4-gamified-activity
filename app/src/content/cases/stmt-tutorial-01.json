@@ -17,6 +17,10 @@
     "decision_expression": ""
   },
   "claim": "Did the test set below execute every statement of greet() at least once?",
+  "charges": [
+    "The defendant function greet(name) is presented for Statement coverage review.",
+    "The prosecution alleges that a single test exercising one greeting input is sufficient to claim 100% Statement coverage of greet()."
+  ],
   "test_set": [
     { "id": "T1", "inputs": { "name_given": true }, "outcome": true }
   ],

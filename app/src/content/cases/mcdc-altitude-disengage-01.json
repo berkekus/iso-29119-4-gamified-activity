@@ -21,6 +21,11 @@
     "decision_expression": "A && (B || C)"
   },
   "claim": "This 4-test set satisfies MCDC for A, B, and C.",
+  "charges": [
+    "The flight control law disengages altitude hold only when verticalSpeed > LIMIT AND (autopilotEngaged OR pilotOverride).",
+    "The defendant submits a 4-test suite and claims MC/DC coverage for all three conditions of `A && (B || C)`.",
+    "The prosecution alleges that under short-circuit evaluation of `B || C`, an independence pair for C is only valid when B is FALSE — and the suite must demonstrate this for each condition."
+  ],
   "test_set": [
     { "id": "T1", "inputs": { "A": true,  "B": true,  "C": false }, "outcome": true  },
     { "id": "T2", "inputs": { "A": false, "B": true,  "C": false }, "outcome": false },

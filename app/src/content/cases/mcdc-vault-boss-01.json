@@ -22,6 +22,11 @@
     "decision_expression": "A && B && C && D"
   },
   "claim": "Choose exactly 5 of the 16 truth-table rows so that each of A, B, C, D has a valid MCDC independence pair.",
+  "charges": [
+    "Vault access is granted only when the badge is valid AND the PIN is not expired AND the request falls within the time window AND the biometric scan is positive.",
+    "The court certifies the vault under MC/DC coverage of the four-condition predicate `badge_valid && !pin_expired && time_window_ok && biometric_ok`.",
+    "The prosecution alleges that any test selection other than the canonical 5-row N+1 pattern (one all-true baseline plus one row per condition flipped to false) leaves at least one condition without a valid independence pair."
+  ],
   "test_set": [
     { "id": "R1",  "inputs": { "A": true,  "B": true,  "C": true,  "D": true  }, "outcome": true  },
     { "id": "R2",  "inputs": { "A": false, "B": true,  "C": true,  "D": true  }, "outcome": false },

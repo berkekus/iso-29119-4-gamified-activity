@@ -21,12 +21,17 @@
   },
   "claim": "Which candidate test set satisfies BOTH Decision coverage AND Branch Condition coverage for `is_logged_in AND has_permission`?",
   "test_set": [],
+  "charges": [
+    "The defendant function show_page(is_logged_in, has_permission) admits a user only when both conditions are true and shows an error otherwise.",
+    "The prosecution alleges that several candidate test sets falsely claim Decision-and-Branch-Condition coverage while leaving one or both criteria unmet.",
+    "The court must identify which candidate set genuinely satisfies both Decision coverage and Branch Condition coverage for the predicate `A && B`."
+  ],
   "options": [
     {
-      "id": "opt-diagonal",
-      "label": "Set A — { (T,T) → show, (F,F) → error }",
+      "id": "opt-only-false",
+      "label": "Set A — { (T,F) → error, (F,T) → error }",
       "is_correct": false,
-      "explanation": "TRAP. Decision coverage IS 100% (one T outcome, one F outcome). But A and B always move together — A never appears T while B is F (and vice versa), so Branch Condition is NOT satisfied. A real bug where the permission check is bypassed when the user is logged in stays hidden."
+      "explanation": "Decision is NOT satisfied — both tests produce the FALSE outcome, so the if-statement never evaluates to TRUE. Branch Condition for A and B individually is fine, but Decision coverage requires both T and F outcomes overall."
     },
     {
       "id": "opt-bc-correct",
@@ -47,12 +52,12 @@
       "explanation": "Decision is satisfied (T then F outcome), and A flips T→F. But B is stuck at TRUE in both tests — Branch Condition for B is NOT satisfied (no F observation)."
     }
   ],
-  "correct_answer_explanation": "Decision coverage only asks whether the overall if-statement produced both T and F outcomes. Branch Condition is stricter: each condition must independently appear as T and F across the test set.",
-  "wrong_answer_explanation": "If A and B always move together, you can flip the decision without flipping each condition. That's Decision-without-BC — Concept Analysis §3 row 3.",
+  "correct_answer_explanation": "Decision coverage requires the overall if-statement to produce both T and F outcomes. Branch Condition is stricter: each condition must appear as T and F across the test set. Set B is the smallest set that satisfies both for `A && B`.",
+  "wrong_answer_explanation": "Check Decision and Branch Condition independently. Decision needs at least one TRUE outcome and one FALSE outcome overall. Branch Condition needs each of A and B to be observed as TRUE and as FALSE.",
   "hints": [
-    "Decision testing only asks: did the if-statement produce both TRUE and FALSE outcomes overall? Branch Condition asks something stricter — re-read Law Card 4.",
-    "Look at A and B separately. Did A appear as both TRUE and FALSE across the tests? What about B? Are any of them stuck on a single value?",
-    "Solution — Set B uses three diagonal tests. (T,T) gives T outcome; (T,F) and (F,T) give F outcomes (Decision ✓); A and B each appear T and F (BC ✓). Set A is the classic 'diagonal trap' — Decision passes but BC fails."
+    "Decision testing asks: did the if-statement produce both TRUE and FALSE outcomes overall? Branch Condition asks something stricter — re-read Law Card 4.",
+    "Look at A and B separately. Did A appear as both TRUE and FALSE across the tests? What about B? Are any of them stuck on a single value? And does the decision overall produce both T and F?",
+    "Solution — Set B uses three tests. (T,T) gives T outcome; (T,F) and (F,T) give F outcomes (Decision ✓); A and B each appear T and F (BC ✓)."
   ],
   "seeded_faults": [
     {
@@ -64,7 +69,7 @@
   "misconceptions": [
     {
       "id": "DECISION-EQUALS-BC",
-      "explanation_md": "Decision coverage tests only the overall outcome of the predicate (T/F at the if-statement). Branch Condition coverage requires *each individual condition* to take both TRUE and FALSE across the test set. With T1=(T,T) and T2=(F,F), A and B move together — a real-world bug where the permission check is bypassed when the user is logged in stays hidden."
+      "explanation_md": "Decision coverage tests only the overall outcome of the predicate (T/F at the if-statement). Branch Condition coverage requires *each individual condition* to take both TRUE and FALSE across the test set. A test set whose outcomes are all FALSE may exercise both A and B as T/F individually yet still fail Decision coverage; a test set that pins one of A or B to a single value satisfies Decision but fails Branch Condition."
     }
   ]
 }

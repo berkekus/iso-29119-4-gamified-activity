@@ -19,6 +19,11 @@
     "decision_expression": "L"
   },
   "claim": "Which candidate test set achieves 100% BRANCH coverage of the loop guard in process_all()?",
+  "charges": [
+    "The batch processor process_all(items) iterates over a list and counts handled items inside the loop body.",
+    "The defendant test suite exercises only the case where items is non-empty, so the loop body always runs.",
+    "The prosecution alleges the FALSE edge of the for-loop guard (empty list, body skipped) is never taken, leaving an empty-input fault undetectable."
+  ],
   "test_set": [
     { "id": "T1", "inputs": { "L": true }, "outcome": true }
   ],

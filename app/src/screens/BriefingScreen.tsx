@@ -68,8 +68,8 @@ export default function BriefingScreen({ onNavigate, onBack }: Props) {
         code:       caseFile.scenario.code,
         conditions: caseFile.scenario.conditions,
         expression: caseFile.scenario.decision_expression,
-        charges:    (caseFile.hints && caseFile.hints.length > 0)
-          ? caseFile.hints
+        charges:    (caseFile.charges && caseFile.charges.length > 0)
+          ? caseFile.charges
           : caseFile.claim
             ? [caseFile.claim]
             : fallbackCaseData.charges,

@@ -19,6 +19,11 @@
     "decision_expression": "P"
   },
   "claim": "Does the team's claim — 'T1 achieves 100% Statement coverage, therefore the function is fully tested' — hold up?",
+  "charges": [
+    "The pricing function price(amount, is_premium) applies a discount only when is_premium is true and contains no else branch.",
+    "The defendant team submitted a single happy-path test (is_premium=True) and claims the function is fully tested.",
+    "The prosecution alleges the implicit FALSE edge of the if statement is never exercised, leaving non-premium pricing logic unverified."
+  ],
   "test_set": [
     { "id": "T1", "inputs": { "P": true }, "outcome": true }
   ],

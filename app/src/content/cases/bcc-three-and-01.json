@@ -21,6 +21,11 @@
     "decision_expression": "A && B && C"
   },
   "claim": "Which is the STRONGEST coverage level the test set below actually satisfies?",
+  "charges": [
+    "The defendant function launch(a, b, c) fires the launch sequence only when all three sensor checks are simultaneously true.",
+    "The QA team submits five tests — TTT, FFF, TFF, FTF, FFT — and claims the suite satisfies Branch Condition Combination coverage of `a and b and c`.",
+    "The prosecution alleges that three of the eight required combinations (TTF, TFT, FTT) are missing from the suite, leaving interaction faults among the conditions undetectable."
+  ],
   "test_set": [
     { "id": "T1", "inputs": { "A": true,  "B": true,  "C": true  }, "outcome": true  },
     { "id": "T2", "inputs": { "A": false, "B": false, "C": false }, "outcome": false },
