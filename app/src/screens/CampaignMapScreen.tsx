@@ -78,8 +78,9 @@ const acts: ActEntry[] = [
     bugType: 'bcc',
     clauses: '§5.3.5',
     cases: [
-      { id: 'bcc-three-and-01',      name: 'Triple Lock',         difficulty: 1 },
-      { id: 'bcc-cost-intuition-01', name: 'The Cost Calculator', difficulty: 2 },
+      { id: 'bcc-intro-01',          name: 'E-Commerce Discount', difficulty: 1 },
+      { id: 'bcc-vs-bc-01',          name: 'Bank Loan Scandal',   difficulty: 2 },
+      { id: 'bcc-explosion-01',      name: 'Emergency Brake',     difficulty: 3 },
     ],
   },
   {

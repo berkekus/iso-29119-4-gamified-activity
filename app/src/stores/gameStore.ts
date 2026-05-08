@@ -21,8 +21,9 @@ import branchLoopTrap01    from '../content/cases/branch-loop-trap-01.json'
 import decisionAndTrap01   from '../content/cases/decision-and-trap-01.json'
 import bcOrThreeCond01     from '../content/cases/bc-or-three-cond-01.json'
 import bcNegationMask01    from '../content/cases/bc-negation-mask-01.json'
-import bccThreeAnd01       from '../content/cases/bcc-three-and-01.json'
-import bccCostIntuition01  from '../content/cases/bcc-cost-intuition-01.json'
+import bccIntro01        from '../content/cases/bcc-intro-01.json'
+import bccVsBc01         from '../content/cases/bcc-vs-bc-01.json'
+import bccExplosion01    from '../content/cases/bcc-explosion-01.json'
 import mcdcTutorial01      from '../content/cases/mcdc-tutorial-01.json'
 import mcdcAltitude01      from '../content/cases/mcdc-altitude-disengage-01.json'
 import mcdcTrapIsolation01 from '../content/cases/mcdc-trap-isolation-01.json'
@@ -35,8 +36,9 @@ const CASE_REGISTRY: Record<string, unknown> = {
   'decision-and-trap-01':       decisionAndTrap01,
   'bc-or-three-cond-01':        bcOrThreeCond01,
   'bc-negation-mask-01':        bcNegationMask01,
-  'bcc-three-and-01':           bccThreeAnd01,
-  'bcc-cost-intuition-01':      bccCostIntuition01,
+  'bcc-intro-01':               bccIntro01,
+  'bcc-vs-bc-01':               bccVsBc01,
+  'bcc-explosion-01':           bccExplosion01,
   'mcdc-tutorial-01':           mcdcTutorial01,
   'mcdc-altitude-disengage-01': mcdcAltitude01,
   'mcdc-trap-isolation-01':     mcdcTrapIsolation01,
@@ -139,6 +141,9 @@ export type AnswerPayload =
   | { kind: 'coverage_table'; selectedRowIds: string[] }
   | { kind: 'numeric_input';  answers: number[] }
   | { kind: 'test_designer';  selectedRowIds: string[] }
+  | { kind: 'dialogue_objection'; selectedFragments: string[] }
+  | { kind: 'evidence_board'; connectedEvidence: [string, string] }
+  | { kind: 'budget_strategy'; selectedRowIds: string[] }
 
 const PHASES: GamePhase[] = ['briefing', 'investigation', 'evidence', 'trial', 'debrief']
 
@@ -175,6 +180,10 @@ export function evaluateAnswer(caseData: CaseFile, payload: AnswerPayload): bool
       if (payload.answers.length !== prompts.length) return false
       return prompts.every((p, i) => payload.answers[i] === p.answer)
     }
+    case 'budget_strategy': {
+      const expectedCount = caseData.required_pick_count ?? 0;
+      return payload.selectedRowIds.length === expectedCount;
+    }
     case 'test_designer': {
       const rows = caseData.coverage_table ?? []
       const requiredIds = new Set(rows.filter((r) => r.required).map((r) => r.id))
@@ -185,6 +194,18 @@ export function evaluateAnswer(caseData: CaseFile, payload: AnswerPayload): bool
       if (selected.size !== requiredIds.size) return false
       for (const id of requiredIds) if (!selected.has(id)) return false
       return true
+    }
+    case 'dialogue_objection': {
+      const required = caseData.required_fragments ?? [];
+      if (payload.selectedFragments.length !== required.length) return false;
+      return required.every((f, i) => f === payload.selectedFragments[i]);
+    }
+    case 'evidence_board': {
+      const required = caseData.required_connection;
+      if (!required) return false;
+      const [r1, r2] = required;
+      const [s1, s2] = payload.connectedEvidence;
+      return (s1 === r1 && s2 === r2) || (s1 === r2 && s2 === r1);
     }
   }
 }

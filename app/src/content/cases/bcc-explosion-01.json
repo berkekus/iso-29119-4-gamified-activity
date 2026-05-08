@@ -1,0 +1,63 @@
+{
+  "id": "bcc-explosion-01",
+  "act": "BCC",
+  "difficulty": 3,
+  "iso_clauses": ["§5.3.6", "§6.3.6"],
+  "technique": "BCC",
+  "layer": 4,
+  "question_type": "budget_strategy",
+  "required_pick_count": 3,
+  "misconception_target": "BCC-EXPLOSION",
+  "concept_ref": "§2 Level 4b — 'Exponential test explosion'",
+  "estimated_time_sec": 120,
+  "scenario": {
+    "title": "Autonomous Emergency Brake",
+    "narrative": "A self-driving car crashed. The brake logic has 4 variables. The Judge warns you: 'Counsel, the court budget is strict. You can only afford to subpoena 3 crash test logs out of the 16 combinations.'",
+    "code": "if obstacle_ahead and speed_gt_50 and not_wet and no_manual_brake:\n    trigger_emergency_brake()",
+    "conditions": [
+      { "id": "obstacle", "label": "Obstacle" },
+      { "id": "spd50", "label": "Speed>50" },
+      { "id": "dry", "label": "Dry Road" },
+      { "id": "no_brk", "label": "No Override" }
+    ],
+    "decision_expression": "obstacle && spd50 && dry && no_brk"
+  },
+  "claim": "I can't test all 16 combinations! Pick the 3 most crucial ones to prove the system fails.",
+  "charges": [
+    "The defense argues that testing every combination (BCC) is physically impossible for large systems.",
+    "The court demands you select a subset of 3 critical crash scenarios to subpoena.",
+    "Pick any 3 you think are most important."
+  ],
+  "test_set": [],
+  "coverage_table": [
+    { "id": "R1", "inputs": { "obstacle": true, "spd50": true, "dry": true, "no_brk": true }, "outcome": true, "required": false },
+    { "id": "R2", "inputs": { "obstacle": true, "spd50": true, "dry": true, "no_brk": false }, "outcome": false, "required": false },
+    { "id": "R3", "inputs": { "obstacle": true, "spd50": true, "dry": false, "no_brk": true }, "outcome": false, "required": false },
+    { "id": "R4", "inputs": { "obstacle": true, "spd50": true, "dry": false, "no_brk": false }, "outcome": false, "required": false },
+    { "id": "R5", "inputs": { "obstacle": true, "spd50": false, "dry": true, "no_brk": true }, "outcome": false, "required": false },
+    { "id": "R6", "inputs": { "obstacle": true, "spd50": false, "dry": true, "no_brk": false }, "outcome": false, "required": false },
+    { "id": "R7", "inputs": { "obstacle": true, "spd50": false, "dry": false, "no_brk": true }, "outcome": false, "required": false },
+    { "id": "R8", "inputs": { "obstacle": true, "spd50": false, "dry": false, "no_brk": false }, "outcome": false, "required": false },
+    { "id": "R9", "inputs": { "obstacle": false, "spd50": true, "dry": true, "no_brk": true }, "outcome": false, "required": false },
+    { "id": "R10", "inputs": { "obstacle": false, "spd50": true, "dry": true, "no_brk": false }, "outcome": false, "required": false },
+    { "id": "R11", "inputs": { "obstacle": false, "spd50": true, "dry": false, "no_brk": true }, "outcome": false, "required": false },
+    { "id": "R12", "inputs": { "obstacle": false, "spd50": true, "dry": false, "no_brk": false }, "outcome": false, "required": false },
+    { "id": "R13", "inputs": { "obstacle": false, "spd50": false, "dry": true, "no_brk": true }, "outcome": false, "required": false },
+    { "id": "R14", "inputs": { "obstacle": false, "spd50": false, "dry": true, "no_brk": false }, "outcome": false, "required": false },
+    { "id": "R15", "inputs": { "obstacle": false, "spd50": false, "dry": false, "no_brk": true }, "outcome": false, "required": false },
+    { "id": "R16", "inputs": { "obstacle": false, "spd50": false, "dry": false, "no_brk": false }, "outcome": false, "required": false }
+  ],
+  "correct_answer_explanation": "Debrief: You subpoenaed 3 logs, but you left 13 combinations completely untested! If this car had 10 variables, there would be 1,024 combinations. BCC is perfect, but physically impossible. There must be a mathematically cheaper way to test (Enter MC/DC in the next module!).",
+  "wrong_answer_explanation": "You must pick exactly 3 combinations to meet the court budget.",
+  "hints": [
+    "Yargıç Notu: Elimizde sadece 3 celp hakkı var ve tabloda 16 olasılık duruyor.",
+    "Bu görevde hangi 3 logu seçtiğinin teknik olarak bir önemi yok. Amaç, kanunun gerektirdiği tüm kombinasyonların sınırlı bütçeyle test edilemeyeceğini mahkemeye kanıtlamak. Rastgele 3 kritik senaryo seç ve geride ne kadar büyük bir boşluk kaldığını izle."
+  ],
+  "seeded_faults": [],
+  "misconceptions": [
+    {
+      "id": "BCC-EXPLOSION",
+      "explanation_md": "As N grows, BCC becomes practically impossible due to 'combinatorial explosion' (2^N). This paves the way for MC/DC, which guarantees detection of critical interactions with only N+1 tests."
+    }
+  ]
+}

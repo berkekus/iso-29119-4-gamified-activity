@@ -12,6 +12,9 @@ import {
   CoverageTablePicker,
   TestDesignerPicker,
   NumericInputPicker,
+  DialogueObjectionPicker,
+  EvidenceBoardPicker,
+  BudgetStrategyPicker,
 } from './QuestionRenderer'
 
 interface Props {
@@ -191,6 +194,27 @@ export default function InvestigationScreen({ onNavigate, onBack }: Props) {
               )}
               {caseFile && questionType === 'numeric_input' && (
                 <NumericInputPicker
+                  caseFile={caseFile}
+                  feedback={feedback}
+                  onSubmit={handleAnswer}
+                />
+              )}
+              {caseFile && questionType === 'dialogue_objection' && (
+                <DialogueObjectionPicker
+                  caseFile={caseFile}
+                  feedback={feedback}
+                  onSubmit={handleAnswer}
+                />
+              )}
+              {caseFile && questionType === 'evidence_board' && (
+                <EvidenceBoardPicker
+                  caseFile={caseFile}
+                  feedback={feedback}
+                  onSubmit={handleAnswer}
+                />
+              )}
+              {caseFile && questionType === 'budget_strategy' && (
+                <BudgetStrategyPicker
                   caseFile={caseFile}
                   feedback={feedback}
                   onSubmit={handleAnswer}

@@ -44,6 +44,9 @@ const QuestionTypeEnum = z.enum([
   'pair_selector',
   'test_designer',
   'numeric_input',
+  'dialogue_objection',
+  'evidence_board',
+  'budget_strategy',
 ])
 
 const TechniqueEnum = z.enum([
@@ -123,6 +126,12 @@ export const CaseFileSchema = z.object({
   wrong_answer_explanation: z.string().optional(),
   /** Short feedback shown when the player submits the correct answer. */
   correct_answer_explanation: z.string().optional(),
+  /** Dialogue fragments for dialogue_objection */
+  fragments: z.array(z.string()).optional(),
+  required_fragments: z.array(z.string()).optional(),
+  /** Clues for evidence_board */
+  evidence_board_clues: z.array(z.object({ id: z.string(), label: z.string() })).optional(),
+  required_connection: z.tuple([z.string(), z.string()]).optional(),
 })
 
 export type CaseFile = z.infer<typeof CaseFileSchema>

@@ -45,10 +45,10 @@
       "technique": "BCC",
       "title": "Branch Condition Combination",
       "iso_clause": "§5.3.5",
-      "short_definition": "Every combination of condition values within each decision is tested.",
-      "long_description": "Branch Condition Combination coverage requires every combination of TRUE/FALSE across all N conditions of a decision — i.e. all 2^N rows of the truth table. It is exhaustive at the decision level but its cost grows exponentially with the number of conditions.",
-      "pitfall": "BCC's 2^N test count becomes infeasible at six or more conditions. Mistaking this for the only acceptable rigor leads teams to over-test small decisions while skipping large ones entirely.",
-      "example_note": "A decision with 3 conditions needs 8 test cases for BCC; with 10 conditions it needs 1024. Use BCC only when the decision is small or safety-critical enough to warrant exhaustive evaluation."
+      "short_definition": "ARTICLE 5.3.5: Every combination of condition values within a decision MUST be exhaustively tested.",
+      "long_description": "Under ISO/IEC/IEEE 29119-4 law, Branch Condition Combination (BCC) requires that all possible TRUE and FALSE combinations for N conditions are tested. This statute demands exactly 2^N test cases. It guarantees zero blind spots by forcing the execution of every single row in the truth table.",
+      "pitfall": "The Combinatorial Explosion Clause: Because it requires 2^N tests, BCC becomes practically impossible as the number of conditions grows. Applying this law to a decision with many conditions will bankrupt your testing budget.",
+      "example_note": "Case Law: A decision with 3 conditions legally requires 8 test cases. A decision with 10 conditions requires 1,024 test cases. Prosecutors should only apply this strict law to small or highly critical systems."
     },
     {
       "id": "law-mcdc",
