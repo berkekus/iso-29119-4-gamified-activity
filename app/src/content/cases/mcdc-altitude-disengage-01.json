@@ -3,28 +3,51 @@
   "act": "MCDC",
   "difficulty": 2,
   "iso_clauses": ["§5.3.6", "§3.36", "Annex C.2.3.6"],
+  "technique": "MCDC",
+  "layer": 4,
+  "question_type": "pair_selector",
+  "misconception_target": "MCDC-INDEP-AS-ISOLATION",
+  "concept_ref": "§3 row 5 + §4 'Short-circuit evaluation demonstrated'",
+  "estimated_time_sec": 180,
   "scenario": {
     "title": "Altitude Hold Disengage",
     "narrative": "A flight control law disengages altitude hold when vertical speed exceeds the limit and either the autopilot is engaged or the pilot has override active.",
-    "code": "if (verticalSpeed > LIMIT && (autopilotEngaged || pilotOverride)) disengage();",
+    "code": "if (verticalSpeedExceedsLimit && (autopilotEngaged || pilotOverride)) disengage();",
     "conditions": [
-      { "id": "A", "label": "verticalSpeed > LIMIT" },
-      { "id": "B", "label": "autopilotEngaged" },
-      { "id": "C", "label": "pilotOverride" }
+      { "id": "verticalSpeedExceedsLimit", "label": "verticalSpeed > LIMIT" },
+      { "id": "autopilotEngaged", "label": "autopilot is engaged" },
+      { "id": "pilotOverride", "label": "pilot override is active" }
     ],
-    "decision_expression": "A && (B || C)"
+    "decision_expression": "verticalSpeedExceedsLimit && (autopilotEngaged || pilotOverride)"
   },
+  "claim": "This 4-test set satisfies MCDC for verticalSpeedExceedsLimit, autopilotEngaged, and pilotOverride.",
+  "charges": [
+    "The flight control law disengages altitude hold only when verticalSpeed > LIMIT AND (autopilotEngaged OR pilotOverride).",
+    "The defendant submits a 4-test suite and claims MC/DC coverage for all three conditions of `verticalSpeedExceedsLimit && (autopilotEngaged || pilotOverride)`.",
+    "The prosecution alleges that under short-circuit evaluation of `autopilotEngaged || pilotOverride`, an independence pair for pilotOverride is only valid when autopilotEngaged is FALSE — and the suite must demonstrate this for each condition."
+  ],
+  "test_set": [
+    { "id": "T1", "inputs": { "verticalSpeedExceedsLimit": true,  "autopilotEngaged": true,  "pilotOverride": false }, "outcome": true  },
+    { "id": "T2", "inputs": { "verticalSpeedExceedsLimit": false, "autopilotEngaged": true,  "pilotOverride": false }, "outcome": false },
+    { "id": "T3", "inputs": { "verticalSpeedExceedsLimit": true,  "autopilotEngaged": false, "pilotOverride": false }, "outcome": false },
+    { "id": "T4", "inputs": { "verticalSpeedExceedsLimit": true,  "autopilotEngaged": false, "pilotOverride": true  }, "outcome": true  }
+  ],
+  "hints": [
+    "For each condition, find a pair of tests where only that condition changes AND the decision flips.",
+    "For pilotOverride: notice that when autopilotEngaged is true, short-circuit evaluation makes pilotOverride irrelevant. Find pairs where autopilotEngaged is FALSE so pilotOverride actually controls the outcome.",
+    "verticalSpeedExceedsLimit: T1↔T2 (only it flips, outcome flips). autopilotEngaged: T1↔T3 (only it flips, outcome flips). pilotOverride: T3↔T4 (only it flips, outcome flips). Note: short-circuiting forces pilotOverride's pair to use autopilotEngaged=false."
+  ],
   "seeded_faults": [
     {
       "id": "F1",
-      "description": "Short-circuit evaluation skips C when B is true",
-      "trigger": { "condition": "C", "requiredDecisionFlip": true }
+      "description": "Short-circuit evaluation skips pilotOverride when autopilotEngaged is true",
+      "trigger": { "condition": "pilotOverride", "requiredDecisionFlip": true }
     }
   ],
   "misconceptions": [
     {
       "id": "MCDC-INDEP-AS-ISOLATION",
-      "explanation_md": "You tested each condition in isolation, but ISO §5.3.6.2 requires *paired* test cases in which one condition changes while all others remain fixed and the decision outcome flips."
+      "explanation_md": "You tested each condition in isolation, but MCDC requires *paired* test cases in which one condition changes while all others remain fixed and the decision outcome flips."
     }
   ]
 }

@@ -92,16 +92,18 @@ describe('validateMcdcCoverage — B signature', () => {
 })
 
 describe('simulateFaults — B signature', () => {
-  test('geçerli C pair → F1 detected', () => {
-    const pairs = [{ condition: 'C', row1: 4, row2: 5 }]
+  // The altitude case's seeded F1 is keyed on the pilotOverride condition,
+  // so the B-signature simulator looks for an independence pair on that id.
+  test('geçerli pilotOverride pair → F1 detected', () => {
+    const pairs = [{ condition: 'pilotOverride', row1: 4, row2: 5 }]
     const result = simulateFaults({ selectedRows: [4, 5], independencePairs: pairs })
     expect(result).toHaveLength(1)
     expect(result[0]?.id).toBe('F1')
     expect(result[0]?.detected).toBe(true)
   })
 
-  test('C pair yoksa → F1 missed', () => {
-    const pairs = [{ condition: 'A', row1: 2, row2: 6 }]
+  test('pilotOverride pair yoksa → F1 missed', () => {
+    const pairs = [{ condition: 'verticalSpeedExceedsLimit', row1: 2, row2: 6 }]
     const result = simulateFaults({ selectedRows: [2, 6], independencePairs: pairs })
     expect(result[0]?.detected).toBe(false)
   })

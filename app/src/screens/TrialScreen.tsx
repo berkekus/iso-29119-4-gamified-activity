@@ -17,9 +17,24 @@ interface Props {
   onBack: () => void
 }
 
+const TECHNIQUE_LABEL: Record<string, string> = {
+  STATEMENT: 'STATEMENT',
+  BRANCH:    'BRANCH',
+  DECISION:  'DECISION',
+  BC:        'BC',
+  BCC:       'BCC',
+  MCDC:      'MC/DC',
+}
+
 export default function TrialScreen({ onNavigate, onBack }: Props) {
-  const { mcdc, setVerdict } = useGameStore()
+  const { mcdc, setVerdict, caseFile } = useGameStore()
+  const techniqueLabel =
+    (caseFile?.technique && TECHNIQUE_LABEL[caseFile.technique]) ?? 'CASE'
   const [phase, setPhase] = useState<Phase>('presenting')
+  const seededFaultMap: Record<string, string> = {}
+  if (caseFile) {
+    for (const f of caseFile.seeded_faults) seededFaultMap[f.id] = f.description
+  }
 
   useEffect(() => {
     if (phase === 'presenting') {
@@ -28,10 +43,12 @@ export default function TrialScreen({ onNavigate, onBack }: Props) {
     }
     if (phase === 'deliberating') {
       const t = setTimeout(() => {
-        const result    = validateMcdcCoverage({ selectedRows: mcdc.selectedRows, independencePairs: mcdc.independencePairs })
-        const faults    = simulateFaults({ selectedRows: mcdc.selectedRows, independencePairs: mcdc.independencePairs })
-        const miscList  = detectMisconceptions({ selectedRows: mcdc.selectedRows, independencePairs: mcdc.independencePairs })
-        setVerdict(result, faults, miscList)
+        if (caseFile?.question_type === 'pair_selector') {
+          const result    = validateMcdcCoverage({ selectedRows: mcdc.selectedRows, independencePairs: mcdc.independencePairs })
+          const faults    = simulateFaults({ selectedRows: mcdc.selectedRows, independencePairs: mcdc.independencePairs })
+          const miscList  = detectMisconceptions({ selectedRows: mcdc.selectedRows, independencePairs: mcdc.independencePairs })
+          setVerdict(result, faults, miscList)
+        }
         setPhase('verdict')
       }, 2000)
       return () => clearTimeout(t)
@@ -44,23 +61,27 @@ export default function TrialScreen({ onNavigate, onBack }: Props) {
   const phaseLabels: Phase[] = ['presenting', 'deliberating', 'verdict']
 
   return (
-    <div style={{ minHeight: '100vh', position: 'relative', zIndex: 1, padding: '30px 40px' }}>
+    <div style={{ minHeight: '100vh', position: 'relative', zIndex: 1, padding: 'clamp(16px, 3vw, 30px) clamp(16px, 4vw, 40px)' }}>
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
         <PixelButton small variant="secondary" onClick={onBack}>← EVIDENCE</PixelButton>
         <div style={{ display: 'flex', gap: 8 }}>
-          <span style={{ fontFamily: PIXEL_FONT, fontSize: 8, color: TC.magenta, padding: '4px 10px', border: `2px solid ${TC.magenta}` }}>MC/DC</span>
+          <span style={{ fontFamily: PIXEL_FONT, fontSize: 8, color: TC.magenta, padding: '4px 10px', border: `2px solid ${TC.magenta}` }}>{techniqueLabel}</span>
           <span style={{ fontFamily: PIXEL_FONT, fontSize: 8, color: TC.magenta, padding: '4px 10px', border: `2px solid ${TC.magenta}`, background: `${TC.magenta}15` }}>PHASE 4: TRIAL</span>
         </div>
-        <ScoreChip label="PAIRS" value={mcdc.independencePairs.length} color={TC.blue} />
+        {caseFile?.question_type === 'pair_selector' ? (
+          <ScoreChip label="PAIRS" value={mcdc.independencePairs.length} color={TC.blue} />
+        ) : (
+          <div style={{ width: 60 }} />
+        )}
       </div>
 
       {/* Courtroom scene */}
       <div style={{ textAlign: 'center', marginBottom: 30 }}>
         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'flex-end', gap: 40 }}>
-          <ProsecutorSprite size={110} pose="pointing" />
-          <JudgeSprite size={140} pose={phase === 'verdict' ? 'verdict' : 'idle'} />
-          <DefenseSprite size={110} pose={phase === 'verdict' && !isGuilty ? 'objecting' : 'idle'} />
+          <ProsecutorSprite size={110} pose="pointing" isTalking={phase === 'presenting'} />
+          <JudgeSprite size={140} pose={phase === 'verdict' ? 'verdict' : 'idle'} isTalking={phase === 'verdict'} />
+          <DefenseSprite size={110} pose={phase === 'verdict' && !isGuilty ? 'objecting' : 'idle'} isTalking={phase === 'deliberating'} />
         </div>
       </div>
 
@@ -89,11 +110,11 @@ export default function TrialScreen({ onNavigate, onBack }: Props) {
             border: `4px solid ${isGuilty ? TC.green : TC.magenta}`,
             boxShadow: `6px 6px 0 ${TC.ink}`,
           }}>
-            <div style={{ fontFamily: PIXEL_FONT, fontSize: 10, color: TC.grey, marginBottom: 8 }}>THE VERDICT IS</div>
-            <div style={{ fontFamily: PIXEL_FONT, fontSize: 28, color: isGuilty ? TC.green : TC.magenta }}>
+            <div style={{ fontFamily: PIXEL_FONT, fontSize: 10, color: TC.grey, marginBottom: 10 }}>THE VERDICT IS</div>
+            <div style={{ fontFamily: PIXEL_FONT, fontSize: 26, color: isGuilty ? TC.green : TC.magenta, lineHeight: 1.2 }}>
               {isGuilty ? 'GUILTY' : 'MISTRIAL'}
             </div>
-            <div style={{ fontFamily: HAND_FONT, fontSize: 20, color: TC.ink, marginTop: 10 }}>
+            <div style={{ fontFamily: HAND_FONT, fontSize: 18, color: TC.ink, marginTop: 12, lineHeight: 1.55 }}>
               {isGuilty
                 ? 'The defendant has been found guilty. All faults detected.'
                 : 'The defendant walks free. Your evidence was incomplete — the bug escapes.'}
@@ -104,44 +125,52 @@ export default function TrialScreen({ onNavigate, onBack }: Props) {
           <div style={{ display: 'flex', gap: 16, marginBottom: 20 }}>
             {/* Coverage */}
             <div style={{ flex: 1, background: TC.cream, border: `3px solid ${TC.ink}`, boxShadow: `4px 4px 0 ${TC.ink}`, padding: 16 }}>
-              <div style={{ fontFamily: PIXEL_FONT, fontSize: 8, color: TC.blue, marginBottom: 10 }}>COVERAGE ACHIEVED</div>
+              <div style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: TC.blue, marginBottom: 12 }}>COVERAGE ACHIEVED</div>
               <CoverageMeter value={verdictResult.coveragePercent} max={100} color={TC.green} width={200} />
-              <div style={{ marginTop: 10, display: 'flex', flexDirection: 'column', gap: 6 }}>
-                {(['A', 'B', 'C'] as const).map(cond => {
-                  const hit = verdictResult.conditionsCovered.includes(cond)
-                  return (
-                    <div key={cond} style={{ display: 'flex', alignItems: 'center', gap: 8, fontFamily: MONO_FONT, fontSize: 11 }}>
-                      <span style={{ color: hit ? TC.green : TC.magenta, fontFamily: PIXEL_FONT, fontSize: 10 }}>
-                        {hit ? '✓' : '✗'}
-                      </span>
-                      <span style={{ color: TC.ink }}>Condition {cond} independence</span>
-                    </div>
-                  )
-                })}
-              </div>
+              {caseFile?.question_type === 'pair_selector' && (
+                <div style={{ marginTop: 10, display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  {(['A', 'B', 'C'] as const).map(cond => {
+                    const hit = verdictResult.conditionsCovered.includes(cond)
+                    return (
+                      <div key={cond} style={{ display: 'flex', alignItems: 'center', gap: 8, fontFamily: MONO_FONT, fontSize: 12 }}>
+                        <span style={{ color: hit ? TC.green : TC.magenta, fontFamily: PIXEL_FONT, fontSize: 10 }}>
+                          {hit ? '✓' : '✗'}
+                        </span>
+                        <span style={{ color: TC.ink }}>Condition {cond} independence</span>
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
             </div>
 
             {/* Faults */}
             <div style={{ flex: 1, background: TC.cream, border: `3px solid ${TC.ink}`, boxShadow: `4px 4px 0 ${TC.ink}`, padding: 16 }}>
-              <div style={{ fontFamily: PIXEL_FONT, fontSize: 8, color: TC.magenta, marginBottom: 10 }}>FAULTS DETECTED</div>
-              {faultResults.map(f => (
-                <div key={f.id} style={{
-                  display: 'flex', alignItems: 'center', gap: 8,
-                  padding: '8px 10px',
-                  background: f.detected ? `${TC.green}10` : `${TC.magenta}10`,
-                  border: `1px solid ${f.detected ? TC.green : TC.magenta}`,
-                }}>
-                  <BugSprite size={30} type="mcdc" mood={f.detected ? 'caught' : 'nervous'} />
-                  <div>
-                    <div style={{ fontFamily: PIXEL_FONT, fontSize: 7, color: f.detected ? TC.green : TC.magenta }}>
-                      {f.id}: {f.detected ? 'CAUGHT' : 'ESCAPED'}
-                    </div>
-                    <div style={{ fontFamily: MONO_FONT, fontSize: 10, color: TC.grey }}>
-                      Short-circuit evaluation skips C
+              <div style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: TC.magenta, marginBottom: 12 }}>FAULTS DETECTED</div>
+              {faultResults.length > 0 ? (
+                faultResults.map(f => (
+                  <div key={f.id} style={{
+                    display: 'flex', alignItems: 'center', gap: 8,
+                    padding: '8px 10px',
+                    background: f.detected ? `${TC.green}10` : `${TC.magenta}10`,
+                    border: `1px solid ${f.detected ? TC.green : TC.magenta}`,
+                  }}>
+                    <BugSprite size={30} type="mcdc" mood={f.detected ? 'caught' : 'nervous'} />
+                    <div>
+                      <div style={{ fontFamily: PIXEL_FONT, fontSize: 8, color: f.detected ? TC.green : TC.magenta }}>
+                        {f.id}: {f.detected ? 'CAUGHT' : 'ESCAPED'}
+                      </div>
+                      <div style={{ fontFamily: MONO_FONT, fontSize: 11, color: TC.grey, marginTop: 3, lineHeight: 1.5 }}>
+                        {seededFaultMap[f.id] ?? 'Seeded fault — see case file.'}
+                      </div>
                     </div>
                   </div>
+                ))
+              ) : (
+                <div style={{ fontFamily: MONO_FONT, fontSize: 12, color: TC.grey }}>
+                  {isGuilty ? 'No faults escaped.' : 'No fault detection data on record.'}
                 </div>
-              ))}
+              )}
             </div>
           </div>
 
@@ -151,20 +180,27 @@ export default function TrialScreen({ onNavigate, onBack }: Props) {
               background: `${TC.magenta}10`, border: `3px solid ${TC.magenta}`,
               boxShadow: `4px 4px 0 ${TC.ink}`, padding: 16, marginBottom: 20,
             }}>
-              <div style={{ fontFamily: PIXEL_FONT, fontSize: 8, color: TC.magenta, marginBottom: 8 }}>MISCONCEPTION DETECTED</div>
+              <div style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: TC.magenta, marginBottom: 10 }}>MISCONCEPTION DETECTED</div>
               {misconceptions.filter(m => m.triggered).map(m => (
-                <div key={m.id} style={{ fontFamily: HAND_FONT, fontSize: 20, color: TC.ink, lineHeight: 1.5, marginBottom: 8 }}>
+                <div key={m.id} style={{ fontFamily: HAND_FONT, fontSize: 18, color: TC.ink, lineHeight: 1.55, marginBottom: 8 }}>
                   {m.explanation}
                 </div>
               ))}
-              <div style={{ fontFamily: MONO_FONT, fontSize: 11, color: TC.grey, marginTop: 10 }}>
-                See §5.3.6.2: "For each condition, show pairs where that condition's value changes while all other conditions are held fixed, and the decision value changes."
+              <div style={{ fontFamily: MONO_FONT, fontSize: 12, color: TC.grey, marginTop: 10 }}>
+                See ISO 29119-4 {(caseFile?.iso_clauses && caseFile.iso_clauses[0]) ?? '§5.3'} for the coverage criterion definition.
               </div>
             </div>
           )}
 
           <div style={{ textAlign: 'center' }}>
             <PixelButton variant="primary" onClick={() => onNavigate('debrief')}>VIEW DEBRIEF →</PixelButton>
+          </div>
+
+          <div style={{ display: 'flex', justifyContent: 'center', marginTop: 40, paddingBottom: 40, animation: 'fadeIn 1s ease-in' }}>
+            <BugSprite 
+              mood={isGuilty ? 'prisoned' : 'escaped'} 
+              className="!w-full !h-auto max-w-[240px] sm:max-w-[300px] md:max-w-[380px] opacity-90 transition-all" 
+            />
           </div>
         </div>
       )}

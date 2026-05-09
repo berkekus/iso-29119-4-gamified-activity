@@ -25,10 +25,21 @@ const tdStyle = {
   fontFamily: MONO_FONT, fontSize: 13,
 }
 
+const TECHNIQUE_LABEL: Record<string, string> = {
+  STATEMENT: 'STATEMENT',
+  BRANCH:    'BRANCH',
+  DECISION:  'DECISION',
+  BC:        'BC',
+  BCC:       'BCC',
+  MCDC:      'MC/DC',
+}
+
 export default function EvidenceScreen({ onNavigate, onBack }: Props) {
-  const { mcdc, addPair, clearPairs } = useGameStore()
+  const { mcdc, addPair, clearPairs, caseFile } = useGameStore()
   const [selecting, setSelecting] = useState<number | null>(null)
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; msg: string } | null>(null)
+  const techniqueLabel =
+    (caseFile?.technique && TECHNIQUE_LABEL[caseFile.technique]) ?? 'CASE'
 
   const handleRowClick = (rowId: number) => {
     if (selecting === null) {
@@ -73,24 +84,24 @@ export default function EvidenceScreen({ onNavigate, onBack }: Props) {
   const pairs = mcdc.independencePairs
 
   return (
-    <div style={{ minHeight: '100vh', position: 'relative', zIndex: 1, padding: '30px 40px' }}>
+    <div style={{ minHeight: '100vh', position: 'relative', zIndex: 1, padding: 'clamp(16px, 3vw, 30px) clamp(16px, 4vw, 40px)' }}>
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
         <PixelButton small variant="secondary" onClick={onBack}>← INVESTIGATION</PixelButton>
         <div style={{ display: 'flex', gap: 8 }}>
-          <span style={{ fontFamily: PIXEL_FONT, fontSize: 8, color: TC.magenta, padding: '4px 10px', border: `2px solid ${TC.magenta}` }}>MC/DC</span>
+          <span style={{ fontFamily: PIXEL_FONT, fontSize: 8, color: TC.magenta, padding: '4px 10px', border: `2px solid ${TC.magenta}` }}>{techniqueLabel}</span>
           <span style={{ fontFamily: PIXEL_FONT, fontSize: 8, color: TC.green, padding: '4px 10px', border: `2px solid ${TC.green}`, background: `${TC.green}15` }}>PHASE 3: EVIDENCE</span>
         </div>
         <ScoreChip label="PAIRS" value={`${pairs.length}/3`} color={TC.blue} />
       </div>
 
-      <div style={{ display: 'flex', gap: 30 }}>
+      <div className="responsive-row" style={{ gap: 30, maxWidth: 1100, margin: '0 auto' }}>
         {/* Main */}
         <div style={{ flex: 1 }}>
-          <div style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: TC.grey, marginBottom: 6 }}>
+          <div style={{ fontFamily: PIXEL_FONT, fontSize: 10, color: TC.grey, marginBottom: 8 }}>
             INDEPENDENCE PAIRS — Click two rows to form a pair
           </div>
-          <div style={{ fontFamily: HAND_FONT, fontSize: 17, color: TC.grey, marginBottom: 16 }}>
+          <div style={{ fontFamily: HAND_FONT, fontSize: 16, color: TC.grey, marginBottom: 16, lineHeight: 1.55 }}>
             Select pairs where exactly one condition changes and the decision flips.
           </div>
 
@@ -162,7 +173,7 @@ export default function EvidenceScreen({ onNavigate, onBack }: Props) {
               marginTop: 12, padding: '10px 14px',
               background: feedback.type === 'success' ? `${TC.green}15` : `${TC.magenta}15`,
               border: `2px solid ${feedback.type === 'success' ? TC.green : TC.magenta}`,
-              fontFamily: HAND_FONT, fontSize: 18, color: TC.ink,
+              fontFamily: HAND_FONT, fontSize: 18, color: TC.ink, lineHeight: 1.55,
             }}>
               {feedback.type === 'error' ? '⚠  ' : '✓ '}{feedback.msg}
             </div>
@@ -202,9 +213,9 @@ export default function EvidenceScreen({ onNavigate, onBack }: Props) {
         {/* Side panel */}
         <div style={{ width: 280, display: 'flex', flexDirection: 'column', gap: 16 }}>
           <div style={{ padding: 14, border: `3px solid ${TC.ink}`, background: TC.cream, boxShadow: `4px 4px 0 ${TC.ink}` }}>
-            <div style={{ fontFamily: PIXEL_FONT, fontSize: 7, color: TC.blue, marginBottom: 10 }}>EVIDENCE LOG</div>
+            <div style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: TC.blue, marginBottom: 10 }}>EVIDENCE LOG</div>
             {pairs.length === 0 ? (
-              <div style={{ fontFamily: HAND_FONT, fontSize: 16, color: TC.grey, fontStyle: 'italic' }}>No pairs submitted yet...</div>
+              <div style={{ fontFamily: HAND_FONT, fontSize: 16, color: TC.grey, fontStyle: 'italic', lineHeight: 1.5 }}>No pairs submitted yet...</div>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 {pairs.map((p, i) => (
@@ -213,10 +224,10 @@ export default function EvidenceScreen({ onNavigate, onBack }: Props) {
                     background: `${pairColors[p.condition]}10`,
                     border: `1px solid ${pairColors[p.condition]}`,
                   }}>
-                    <div style={{ fontFamily: PIXEL_FONT, fontSize: 7, color: pairColors[p.condition] }}>
+                    <div style={{ fontFamily: PIXEL_FONT, fontSize: 8, color: pairColors[p.condition] }}>
                       COND {p.condition}: TC{p.row1} ↔ TC{p.row2}
                     </div>
-                    <div style={{ fontFamily: MONO_FONT, fontSize: 9, color: TC.grey, marginTop: 2 }}>
+                    <div style={{ fontFamily: MONO_FONT, fontSize: 11, color: TC.grey, marginTop: 4 }}>
                       {p.condition} flips, D flips ✓
                     </div>
                   </div>
@@ -225,7 +236,7 @@ export default function EvidenceScreen({ onNavigate, onBack }: Props) {
             )}
           </div>
 
-          <CoverageMeter value={Math.round((pairs.length / 3) * 100)} max={100} label="MC/DC COVERAGE" color={TC.green} width={250} />
+          <CoverageMeter value={Math.round((pairs.length / 3) * 100)} max={100} label={`${techniqueLabel} COVERAGE`} color={TC.green} width={250} />
 
           <div style={{ textAlign: 'center' }}>
             <ProsecutorSprite size={90} pose={pairs.length >= 2 ? 'pointing' : 'idle'} />

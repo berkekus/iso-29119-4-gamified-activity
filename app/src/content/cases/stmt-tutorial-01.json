@@ -1,0 +1,50 @@
+{
+  "id": "stmt-tutorial-01",
+  "act": "STMT_BRANCH",
+  "difficulty": 1,
+  "iso_clauses": ["§5.3.1", "§6.3.1"],
+  "technique": "STATEMENT",
+  "layer": 1,
+  "question_type": "binary_verdict",
+  "misconception_target": "NONE",
+  "concept_ref": "§2 Level 1 — Statement testing (executed nodes, CFG)",
+  "estimated_time_sec": 60,
+  "scenario": {
+    "title": "First Trial — Greeting Service",
+    "narrative": "You are reviewing a tiny greeting helper. Every line of the function must execute at least once for Statement coverage.",
+    "code": "def greet(name):\n    msg = 'Hello, ' + name\n    return msg",
+    "conditions": [],
+    "decision_expression": ""
+  },
+  "claim": "Did the test set below execute every statement of greet() at least once?",
+  "charges": [
+    "The defendant function greet(name) is presented for Statement coverage review.",
+    "The prosecution alleges that a single test exercising one greeting input is sufficient to claim 100% Statement coverage of greet()."
+  ],
+  "test_set": [
+    { "id": "T1", "inputs": { "name": "World" }, "outcome": "Hello, World" }
+  ],
+  "options": [
+    {
+      "id": "opt-yes",
+      "label": "Yes — both lines (the assignment and the return) run when T1 fires.",
+      "is_correct": true,
+      "explanation": "Correct. T1 calls greet('World'), which executes the assignment AND the return. With no decisions in this function, Statement coverage is the strongest applicable level."
+    },
+    {
+      "id": "opt-no",
+      "label": "No — the return statement is never reached by T1.",
+      "is_correct": false,
+      "explanation": "Incorrect. There are no early-exit branches in greet(); once the assignment runs, control falls straight into the return."
+    }
+  ],
+  "correct_answer_explanation": "Statement coverage = 100%. T1 hits both executable lines.",
+  "wrong_answer_explanation": "Statement coverage only asks whether each line ran at least once. Trace T1 line by line — both run.",
+  "hints": [
+    "Statement coverage only asks: did every line of code execute at least once?",
+    "There are 2 executable lines (the assignment and the return). Did T1 hit both?",
+    "T1 runs both lines exactly once, so Statement coverage is 100%. Note: there are no decisions to test here, so Statement is the strongest applicable level."
+  ],
+  "seeded_faults": [],
+  "misconceptions": []
+}
