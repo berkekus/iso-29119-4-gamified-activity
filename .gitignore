@@ -1,0 +1,11 @@
+# Added by code-review-graph
+.code-review-graph/
+
+# AI tool config files
+CLAUDE.md
+AGENTS.md
+GEMINI.md
+.cursorrules
+.windsurfrules
+.claude/
+.kiro/
