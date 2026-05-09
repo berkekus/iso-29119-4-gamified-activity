@@ -37,7 +37,7 @@ export const CASE_TO_LAW: Record<string, string> = {
   'bcc-vs-bc-01':               'law-bcc',
   'bcc-explosion-01':           'law-bcc',
   'mcdc-tutorial-01':           'law-mcdc',
-  'mcdc-altitude-disengage-01': 'law-mcdc',
+  'mcdc-showdown-01':           'law-mcdc',
   'mcdc-trap-isolation-01':     'law-mcdc',
   'mcdc-vault-boss-01':         'law-mcdc',
 }

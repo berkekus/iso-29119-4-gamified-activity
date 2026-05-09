@@ -509,3 +509,74 @@ export function BudgetStrategyPicker({ caseFile, feedback, onSubmit }: BaseProps
     </div>
   )
 }
+
+// ── MCDC Pair Builder ────────────────────────────────────────────────────────
+export function McdcPairBuilderPicker({ caseFile, feedback, onSubmit }: BaseProps) {
+  const rows = caseFile.coverage_table ?? []
+  const condIds = caseFile.scenario.conditions.map((c) => c.id)
+  const expectedCount = caseFile.required_pick_count ?? 0
+  const [selected, setSelected] = useState<Record<string, boolean>>({})
+
+  const toggle = (id: string) => setSelected((s) => ({ ...s, [id]: !s[id] }))
+  const selectedIds = rows.filter((r) => selected[r.id]).map((r) => r.id)
+  const atLimit = selectedIds.length === expectedCount
+  const overLimit = selectedIds.length > expectedCount
+
+  const submit = () => onSubmit({ kind: 'mcdc_pair_builder', selectedRowIds: selectedIds });
+
+  return (
+    <div style={{ marginTop: 16 }}>
+      <div style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: TC.blue, marginBottom: 10 }}>
+        MC/DC PAIR BUILDER — Connect the logs to form valid pairs (Max {expectedCount} logs)
+      </div>
+      
+      {/* Evidence Logs Display */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: 10, marginBottom: 16 }}>
+        {rows.map((row) => {
+          const marked = !!selected[row.id]
+          return (
+            <button
+              key={row.id}
+              onClick={() => toggle(row.id)}
+              style={{
+                background: marked ? `${TC.blue}15` : TC.cream,
+                border: `3px solid ${marked ? TC.blue : TC.ink}`,
+                boxShadow: `3px 3px 0 ${marked ? TC.blue : TC.ink}`,
+                padding: 10, cursor: 'pointer', textAlign: 'center',
+                fontFamily: MONO_FONT, fontSize: 12, color: TC.ink,
+              }}
+            >
+              <div style={{ fontFamily: PIXEL_FONT, fontSize: 14, color: marked ? TC.blue : TC.ink, marginBottom: 8 }}>
+                {row.id}
+              </div>
+              {condIds.map(id => (
+                <div key={id} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 2 }}>
+                  <span>{id}:</span>
+                  <strong style={{ color: row.inputs[id] ? TC.green : TC.magenta }}>{row.inputs[id] ? 'T' : 'F'}</strong>
+                </div>
+              ))}
+              <div style={{ borderTop: `1px solid ${TC.grid}`, marginTop: 4, paddingTop: 4, display: 'flex', justifyContent: 'space-between' }}>
+                <span>OUT:</span>
+                <strong style={{ color: row.outcome ? TC.green : TC.magenta }}>{row.outcome ? 'T' : 'F'}</strong>
+              </div>
+            </button>
+          )
+        })}
+      </div>
+
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 16 }}>
+        <div style={{ fontFamily: MONO_FONT, fontSize: 11, color: overLimit ? TC.magenta : TC.grey }}>
+          Logs Selected: <strong style={{ color: atLimit ? TC.green : overLimit ? TC.magenta : TC.blue }}>
+            {selectedIds.length}
+          </strong> / {expectedCount}
+          {overLimit && ' (Too many!)'}
+        </div>
+        <PixelButton variant="primary" onClick={submit} disabled={!atLimit}>
+          CERTIFY MC/DC SUITE
+        </PixelButton>
+      </div>
+
+      <FeedbackBanner feedback={feedback} />
+    </div>
+  )
+}

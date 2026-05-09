@@ -1,53 +1,50 @@
 {
   "id": "mcdc-trap-isolation-01",
   "act": "MCDC",
-  "difficulty": 3,
-  "iso_clauses": ["§5.3.6", "§5.3.6.2", "Annex C.2.3.6"],
+  "difficulty": 2,
+  "iso_clauses": ["§5.3.6"],
   "technique": "MCDC",
-  "layer": 4,
-  "question_type": "pair_selector",
-  "misconception_target": "MCDC-INDEP-AS-ISOLATION",
-  "concept_ref": "§3 row 5 — 'students routinely satisfy (1) while violating (2) or (3)'",
-  "estimated_time_sec": 240,
+  "layer": 5,
+  "question_type": "evidence_board",
+  "required_connection": ["T2", "T4"],
+  "evidence_board_clues": [
+    { "id": "T1", "label": "T1: Target=ON, Override=ON, Auto=ON (Fires)" },
+    { "id": "T2", "label": "T2: Target=ON, Override=ON, Auto=OFF (Fires)" },
+    { "id": "T3", "label": "T3: Target=ON, Override=OFF, Auto=ON (Fires)" },
+    { "id": "T4", "label": "T4: Target=ON, Override=OFF, Auto=OFF (Fails)" }
+  ],
+  "misconception_target": "MCDC-MASKING",
+  "concept_ref": "§2 Level 5b — 'Masking in OR gates'",
+  "estimated_time_sec": 120,
   "scenario": {
-    "title": "Emergency Override",
-    "narrative": "An emergency system triggers when alarmA fires, or when both backupSensor and manualOverride are active.",
-    "code": "if (alarmA || (backupSensor && manualOverride)) trigger();",
+    "title": "The Sabotaged Drone",
+    "narrative": "A security drone fired illegally. Logic: Target_Locked AND (Override_Key OR Auto_Confirm). The defense provides a suite of 4 tests and claims they have full MC/DC. You must find the two tests that form a valid pair for the Override_Key.",
+    "code": "if Target_Locked and (Override_Key or Auto_Confirm):\n    fire_weapon()",
     "conditions": [
-      { "id": "alarmA", "label": "primary alarm is firing" },
-      { "id": "backupSensor", "label": "backup sensor reports a fault" },
-      { "id": "manualOverride", "label": "manual override is asserted" }
+      { "id": "Target_Locked", "label": "Target" },
+      { "id": "Override_Key", "label": "Override" },
+      { "id": "Auto_Confirm", "label": "Auto" }
     ],
-    "decision_expression": "alarmA || (backupSensor && manualOverride)"
+    "decision_expression": "Target_Locked && (Override_Key || Auto_Confirm)"
   },
-  "claim": "Toggling each condition once in isolation is enough for MCDC.",
+  "claim": "We tested everything! Connect the two tests that legally prove the Override_Key independently affects the weapon firing.",
   "charges": [
-    "The emergency system trigger() fires when alarmA is true OR when both backupSensor AND manualOverride are active.",
-    "The defendant submits a 4-test suite that flips each condition once in isolation from an all-false baseline and claims MC/DC coverage of `alarmA || (backupSensor && manualOverride)`.",
-    "The prosecution alleges that flipping backupSensor or manualOverride alone from the baseline does not flip the decision outcome, so the submitted suite contains no valid independence pair for backupSensor or for manualOverride."
+    "You must find an Independence Pair for 'Override_Key'.",
+    "If Auto_Confirm is ON, the weapon fires anyway, masking the Override_Key.",
+    "Find the pair where only Override_Key flips, the outcome flips, and it's NOT masked."
   ],
-  "test_set": [
-    { "id": "T1", "inputs": { "alarmA": true,  "backupSensor": false, "manualOverride": false }, "outcome": true  },
-    { "id": "T2", "inputs": { "alarmA": false, "backupSensor": false, "manualOverride": false }, "outcome": false },
-    { "id": "T3", "inputs": { "alarmA": false, "backupSensor": true,  "manualOverride": false }, "outcome": false },
-    { "id": "T4", "inputs": { "alarmA": false, "backupSensor": false, "manualOverride": true  }, "outcome": false }
-  ],
+  "test_set": [],
+  "correct_answer_explanation": "Debrief: Got them! By selecting T2 and T4, you proved Override_Key's effect. In T2 it was ON (Fires), in T4 it was OFF (Fails). Crucially, you held Auto=OFF to prevent masking. If Auto was ON (like T1/T3), the drone fires regardless, masking the Override Key!",
+  "wrong_answer_explanation": "That pair doesn't isolate the Override Key. Make sure Auto_Confirm is held in a state that doesn't force the decision to True.",
   "hints": [
-    "The trap: an 'isolation' test where you flip a condition is NOT a valid pair if the outcome doesn't actually flip.",
-    "Look at backupSensor: T2↔T3 only flips backupSensor, but the outcome stays false because alarmA=false AND manualOverride=false make backupSensor's contribution zero. This is NOT a valid independence pair for backupSensor.",
-    "alarmA: T1↔T2 valid. backupSensor: needs manualOverride=true so flipping backupSensor matters; e.g. add T5={alarmA=F, backupSensor=T, manualOverride=T, out=T} and pair T4↔T5. manualOverride: similarly needs backupSensor=true. The given 4-test set FAILS MCDC for backupSensor and manualOverride."
+    "Prosecutor's Note: If Auto_Confirm is ON, the drone fires no matter what the Override Key does.",
+    "You must find a pair where Auto_Confirm is strictly OFF, and only the Override_Key flips."
   ],
-  "seeded_faults": [
-    {
-      "id": "F1",
-      "description": "manualOverride is ignored when backupSensor is inactive",
-      "trigger": { "condition": "manualOverride", "requiredDecisionFlip": true }
-    }
-  ],
+  "seeded_faults": [],
   "misconceptions": [
     {
-      "id": "MCDC-INDEP-AS-ISOLATION",
-      "explanation_md": "For `alarmA || (backupSensor && manualOverride)`, testing each condition alone in isolation may not produce a valid independence pair because the decision may not flip. You need pairs where exactly one condition changes AND the decision flips."
+      "id": "MCDC-MASKING",
+      "explanation_md": "In an OR gate (A || B), if B is True, the whole expression is True. Therefore, to test A's independent effect, you MUST hold B as False. Otherwise, A is 'masked'."
     }
   ]
 }

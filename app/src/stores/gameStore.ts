@@ -25,9 +25,9 @@ import bccIntro01        from '../content/cases/bcc-intro-01.json'
 import bccVsBc01         from '../content/cases/bcc-vs-bc-01.json'
 import bccExplosion01    from '../content/cases/bcc-explosion-01.json'
 import mcdcTutorial01      from '../content/cases/mcdc-tutorial-01.json'
-import mcdcAltitude01      from '../content/cases/mcdc-altitude-disengage-01.json'
 import mcdcTrapIsolation01 from '../content/cases/mcdc-trap-isolation-01.json'
 import mcdcVaultBoss01     from '../content/cases/mcdc-vault-boss-01.json'
+import mcdcShowdown01      from '../content/cases/mcdc-showdown-01.json'
 
 const CASE_REGISTRY: Record<string, unknown> = {
   'stmt-tutorial-01':           stmtTutorial01,
@@ -40,9 +40,9 @@ const CASE_REGISTRY: Record<string, unknown> = {
   'bcc-vs-bc-01':               bccVsBc01,
   'bcc-explosion-01':           bccExplosion01,
   'mcdc-tutorial-01':           mcdcTutorial01,
-  'mcdc-altitude-disengage-01': mcdcAltitude01,
   'mcdc-trap-isolation-01':     mcdcTrapIsolation01,
   'mcdc-vault-boss-01':         mcdcVaultBoss01,
+  'mcdc-showdown-01':           mcdcShowdown01,
 }
 
 // ── Screen type — all navigable screens ──────────────────────────────────────
@@ -144,6 +144,7 @@ export type AnswerPayload =
   | { kind: 'dialogue_objection'; selectedFragments: string[] }
   | { kind: 'evidence_board'; connectedEvidence: [string, string] }
   | { kind: 'budget_strategy'; selectedRowIds: string[] }
+  | { kind: 'mcdc_pair_builder'; selectedRowIds: string[] }
 
 const PHASES: GamePhase[] = ['briefing', 'investigation', 'evidence', 'trial', 'debrief']
 
@@ -206,6 +207,15 @@ export function evaluateAnswer(caseData: CaseFile, payload: AnswerPayload): bool
       const [r1, r2] = required;
       const [s1, s2] = payload.connectedEvidence;
       return (s1 === r1 && s2 === r2) || (s1 === r2 && s2 === r1);
+    }
+    case 'mcdc_pair_builder': {
+      const rows = caseData.coverage_table ?? []
+      const requiredRows = rows.filter((r) => r.required).map((r) => r.id)
+      const selected = payload.selectedRowIds
+      return (
+        selected.length === requiredRows.length &&
+        requiredRows.every((id) => selected.includes(id))
+      )
     }
   }
 }

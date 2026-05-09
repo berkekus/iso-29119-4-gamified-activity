@@ -1,6 +1,6 @@
 import type { McdcSubmission, TruthTableRow } from '../types'
 import { TRUTH_TABLE } from '../coverage/mcdc'
-import altitudeCase from '../../content/cases/mcdc-altitude-disengage-01.json'
+import altitudeCase from '../../content/cases/mcdc-showdown-01.json'
 
 type BMisconception = { id: string; triggered: boolean; explanation: string }
 type BInput = { selectedRows: number[]; independencePairs: Array<{ condition: string; row1: number; row2: number }> }

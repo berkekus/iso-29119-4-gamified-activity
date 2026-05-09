@@ -4,7 +4,7 @@
 // ACT I  : stmt-tutorial-01, stmt-hidden-branch-01, branch-loop-trap-01
 // ACT II : decision-and-trap-01, bc-or-three-cond-01, bc-negation-mask-01
 // ACT III: bcc-intro-01, bcc-vs-bc-01, bcc-explosion-01
-// ACT IV : mcdc-tutorial-01, mcdc-altitude-disengage-01, mcdc-trap-isolation-01, mcdc-vault-boss-01
+// ACT IV : mcdc-tutorial-01, mcdc-trap-isolation-01, mcdc-vault-boss-01, mcdc-showdown-01
 
 export const CASE_ORDER = [
   'stmt-tutorial-01',
@@ -17,9 +17,9 @@ export const CASE_ORDER = [
   'bcc-vs-bc-01',
   'bcc-explosion-01',
   'mcdc-tutorial-01',
-  'mcdc-altitude-disengage-01',
   'mcdc-trap-isolation-01',
   'mcdc-vault-boss-01',
+  'mcdc-showdown-01',
 ] as const
 
 export type CaseId = (typeof CASE_ORDER)[number]

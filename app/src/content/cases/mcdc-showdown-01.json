@@ -1,0 +1,62 @@
+{
+  "id": "mcdc-showdown-01",
+  "act": "MCDC",
+  "difficulty": 4,
+  "iso_clauses": ["§5.3.6"],
+  "technique": "MCDC",
+  "layer": 5,
+  "question_type": "mcdc_pair_builder",
+  "required_pick_count": 5,
+  "misconception_target": "MCDC-VS-BCC",
+  "concept_ref": "§2 Level 5d — 'MC/DC vs BCC'",
+  "estimated_time_sec": 240,
+  "scenario": {
+    "title": "BCC vs MC/DC Showdown",
+    "narrative": "We return to the Autonomous Brake trial (4 variables, 16 combinations). Previously, the budget of 5 subpoenas made BCC impossible. Now, armed with MC/DC, you can win the case.",
+    "code": "if obstacle and spd50 and dry and no_brk:\n    trigger_brake()",
+    "conditions": [
+      { "id": "obstacle", "label": "Obstacle" },
+      { "id": "spd50", "label": "Speed>50" },
+      { "id": "dry", "label": "Dry" },
+      { "id": "no_brk", "label": "No Override" }
+    ],
+    "decision_expression": "obstacle && spd50 && dry && no_brk"
+  },
+  "claim": "For many expressions, an MC/DC suite can often be built with N+1 tests. We have 4 conditions. Pick exactly 5 tests out of 16 to prove every variable works.",
+  "charges": [
+    "Select 5 logs that form valid independence pairs for all 4 conditions.",
+    "Find the single 'True' case where everything works, and pair it with 4 'False' cases."
+  ],
+  "test_set": [],
+  "coverage_table": [
+    { "id": "R1", "inputs": { "obstacle": true, "spd50": true, "dry": true, "no_brk": true }, "outcome": true, "required": true },
+    { "id": "R2", "inputs": { "obstacle": true, "spd50": true, "dry": true, "no_brk": false }, "outcome": false, "required": true },
+    { "id": "R3", "inputs": { "obstacle": true, "spd50": true, "dry": false, "no_brk": true }, "outcome": false, "required": true },
+    { "id": "R4", "inputs": { "obstacle": true, "spd50": true, "dry": false, "no_brk": false }, "outcome": false, "required": false },
+    { "id": "R5", "inputs": { "obstacle": true, "spd50": false, "dry": true, "no_brk": true }, "outcome": false, "required": true },
+    { "id": "R6", "inputs": { "obstacle": true, "spd50": false, "dry": true, "no_brk": false }, "outcome": false, "required": false },
+    { "id": "R7", "inputs": { "obstacle": true, "spd50": false, "dry": false, "no_brk": true }, "outcome": false, "required": false },
+    { "id": "R8", "inputs": { "obstacle": true, "spd50": false, "dry": false, "no_brk": false }, "outcome": false, "required": false },
+    { "id": "R9", "inputs": { "obstacle": false, "spd50": true, "dry": true, "no_brk": true }, "outcome": false, "required": true },
+    { "id": "R10", "inputs": { "obstacle": false, "spd50": true, "dry": true, "no_brk": false }, "outcome": false, "required": false },
+    { "id": "R11", "inputs": { "obstacle": false, "spd50": true, "dry": false, "no_brk": true }, "outcome": false, "required": false },
+    { "id": "R12", "inputs": { "obstacle": false, "spd50": true, "dry": false, "no_brk": false }, "outcome": false, "required": false },
+    { "id": "R13", "inputs": { "obstacle": false, "spd50": false, "dry": true, "no_brk": true }, "outcome": false, "required": false },
+    { "id": "R14", "inputs": { "obstacle": false, "spd50": false, "dry": true, "no_brk": false }, "outcome": false, "required": false },
+    { "id": "R15", "inputs": { "obstacle": false, "spd50": false, "dry": false, "no_brk": true }, "outcome": false, "required": false },
+    { "id": "R16", "inputs": { "obstacle": false, "spd50": false, "dry": false, "no_brk": false }, "outcome": false, "required": false }
+  ],
+  "correct_answer_explanation": "Debrief: You did it. You proved the brakes were faulty using only 5 logs instead of 16. You used R1 (T,T,T,T) as the base True case. Then you isolated each condition: Obstacle via R9, Speed via R5, Dry via R3, and Override via R2. The jury is stunned. This is why aviation relies on MC/DC!",
+  "wrong_answer_explanation": "Those 5 tests don't form valid MC/DC pairs for all 4 variables. Try starting with the row where everything is True.",
+  "hints": [
+    "Prosecutor's Note: Find the 'Base True' log where everything works (R1).",
+    "Then find the 4 logs that flip exactly one variable to break the brakes. Pair each of them with R1."
+  ],
+  "seeded_faults": [],
+  "misconceptions": [
+    {
+      "id": "MCDC-VS-BCC",
+      "explanation_md": "MC/DC provides near exhaustive confidence by ensuring no condition is masked, but scales linearly (N+1) instead of exponentially (2^N). This is the gold standard for DO-178C aviation software."
+    }
+  ]
+}

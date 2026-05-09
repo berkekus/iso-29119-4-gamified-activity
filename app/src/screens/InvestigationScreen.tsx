@@ -15,6 +15,7 @@ import {
   DialogueObjectionPicker,
   EvidenceBoardPicker,
   BudgetStrategyPicker,
+  McdcPairBuilderPicker,
 } from './QuestionRenderer'
 
 interface Props {
@@ -215,6 +216,13 @@ export default function InvestigationScreen({ onNavigate, onBack }: Props) {
               )}
               {caseFile && questionType === 'budget_strategy' && (
                 <BudgetStrategyPicker
+                  caseFile={caseFile}
+                  feedback={feedback}
+                  onSubmit={handleAnswer}
+                />
+              )}
+              {caseFile && questionType === 'mcdc_pair_builder' && (
+                <McdcPairBuilderPicker
                   caseFile={caseFile}
                   feedback={feedback}
                   onSubmit={handleAnswer}

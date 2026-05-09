@@ -1,7 +1,7 @@
 import type { McdcSubmission, TruthTableRow } from '../types'
 import type { CaseFile } from '../caseLoader'
 import { TRUTH_TABLE } from '../coverage/mcdc'
-import altitudeCase from '../../content/cases/mcdc-altitude-disengage-01.json'
+import altitudeCase from '../../content/cases/mcdc-showdown-01.json'
 
 type FaultSimulationResult = {
   detected: string[]

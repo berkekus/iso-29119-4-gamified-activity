@@ -47,6 +47,7 @@ const QuestionTypeEnum = z.enum([
   'dialogue_objection',
   'evidence_board',
   'budget_strategy',
+  'mcdc_pair_builder',
 ])
 
 const TechniqueEnum = z.enum([
@@ -87,7 +88,7 @@ export const CaseFileSchema = z.object({
   id: z.string(),
   // 'act' is the campaign chapter; we keep legacy values + add hierarchy acts
   act: z.enum(['MCDC', 'BCC', 'Combinatorial', 'DataFlow', 'STMT_BRANCH', 'DECISION_BC']),
-  difficulty: z.number().int().min(1).max(3),
+  difficulty: z.number().int().min(1).max(5),
   iso_clauses: z.array(z.string()),
   scenario: z.object({
     title: z.string(),
@@ -101,7 +102,7 @@ export const CaseFileSchema = z.object({
 
   // ─── NEW (optional, single-player) ────────────────────────────────
   technique: TechniqueEnum.optional(),
-  layer: z.number().int().min(1).max(4).optional(),
+  layer: z.number().int().min(1).max(5).optional(),
   question_type: QuestionTypeEnum.optional(),
   misconception_target: z.string().optional(),
   test_set: z.array(TestSetRowSchema).optional(),

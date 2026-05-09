@@ -39,9 +39,9 @@
       "description": "Completed all ACT IV cases — MC/DC and the Vault Boss conquered.",
       "required_cases": [
         "mcdc-tutorial-01",
-        "mcdc-altitude-disengage-01",
         "mcdc-trap-isolation-01",
-        "mcdc-vault-boss-01"
+        "mcdc-vault-boss-01",
+        "mcdc-showdown-01"
       ]
     }
   ]

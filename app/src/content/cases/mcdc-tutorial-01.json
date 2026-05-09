@@ -2,50 +2,50 @@
   "id": "mcdc-tutorial-01",
   "act": "MCDC",
   "difficulty": 1,
-  "iso_clauses": ["§5.3.6", "§3.36"],
+  "iso_clauses": ["§5.3.6"],
   "technique": "MCDC",
-  "layer": 4,
-  "question_type": "pair_selector",
-  "misconception_target": "MCDC-INDEP-AS-ISOLATION",
-  "concept_ref": "§3 row 5 — 'One test per condition is enough for MCDC'",
+  "layer": 5,
+  "question_type": "dialogue_objection",
+  "misconception_target": "MCDC-SINGLE-FLIP",
+  "concept_ref": "§2 Level 5a — 'Independent Effect via Single Flip'",
   "estimated_time_sec": 120,
+  "required_fragments": ["In your two tests...", "Both Badge AND Fingerprint changed", "so we can't prove WHICH ONE opened the door!"],
+  "fragments": [
+    "In your two tests...",
+    "The fingerprint matched both times",
+    "Both Badge AND Fingerprint changed",
+    "Only the badge was tested",
+    "so we can't prove WHICH ONE opened the door!",
+    "so we achieved 100% decision coverage!"
+  ],
   "scenario": {
-    "title": "Simple Safety Gate",
-    "narrative": "A safety system activates when sensor sensorTriggered is triggered AND buttonPressed is pressed.",
-    "code": "if (sensorTriggered && buttonPressed) activate();",
+    "title": "The Single Flip",
+    "narrative": "A secure lab door failed, letting a spy inside. The logic: Has_Badge AND Fingerprint_Match. The defense submits 2 test logs and says 'The door was thoroughly tested!' You must prove their tests are legally invalid.",
+    "code": "if has_badge and fingerprint_match:\n    open_lab_door()",
     "conditions": [
-      { "id": "sensorTriggered", "label": "sensor has been triggered" },
-      { "id": "buttonPressed", "label": "button is pressed" }
+      { "id": "has_badge", "label": "Badge" },
+      { "id": "finger_match", "label": "Fingerprint" }
     ],
-    "decision_expression": "sensorTriggered && buttonPressed"
+    "decision_expression": "has_badge && finger_match"
   },
-  "claim": "This 3-test set satisfies MCDC for both conditions.",
+  "claim": "Test 1: Badge=True, Finger=True (Door Opened). Test 2: Badge=False, Finger=False (Door Closed). Our testing is flawless!",
   "charges": [
-    "The defendant function activates a safety system only when sensorTriggered AND buttonPressed are both true.",
-    "The defendant submits a 3-test suite — (T,T), (F,T), (T,F) — and claims MC/DC coverage for the predicate `sensorTriggered && buttonPressed`.",
-    "The court must determine whether each condition has a valid independence pair within the submitted suite."
+    "The defense claims they proved the Fingerprint scanner works.",
+    "However, their 'failing' test changed BOTH the badge and the fingerprint.",
+    "Form an objection to show why this invalidates their proof of independent effect."
   ],
-  "test_set": [
-    { "id": "T1", "inputs": { "sensorTriggered": true,  "buttonPressed": true  }, "outcome": true  },
-    { "id": "T2", "inputs": { "sensorTriggered": false, "buttonPressed": true  }, "outcome": false },
-    { "id": "T3", "inputs": { "sensorTriggered": true,  "buttonPressed": false }, "outcome": false }
-  ],
+  "test_set": [],
+  "correct_answer_explanation": "Debrief: You shattered their defense! By changing multiple variables, they masked the fingerprint scanner's failure. Welcome to the rule of the 'Single Flip'. Note: In this mission, 'only one condition changes' is an easy beginner-friendly way to introduce MC/DC. In deeper logic, we will look at 'independent effect' even if non-essential things change.",
+  "wrong_answer_explanation": "That objection doesn't hit the mathematical flaw. Focus on how many variables they flipped at once.",
   "hints": [
-    "An independence pair fixes every condition except one and the outcome must flip.",
-    "For sensorTriggered: which two tests differ ONLY in sensorTriggered and produce different outcomes? Same question for buttonPressed.",
-    "sensorTriggered's pair: T1 vs T2 (only sensorTriggered flips, outcome flips). buttonPressed's pair: T1 vs T3 (only buttonPressed flips, outcome flips). Three tests are enough here because T1 is shared."
+    "Judge's Note: Look at the defense's logs. Did they change just the fingerprint, or did they swap the badge too?",
+    "A valid MC/DC pair must flip EXACTLY ONE variable to prove that specific variable caused the outcome change."
   ],
-  "seeded_faults": [
-    {
-      "id": "F1",
-      "description": "buttonPressed check is bypassed when sensorTriggered is triggered",
-      "trigger": { "condition": "buttonPressed", "requiredDecisionFlip": true }
-    }
-  ],
+  "seeded_faults": [],
   "misconceptions": [
     {
-      "id": "MCDC-INDEP-AS-ISOLATION",
-      "explanation_md": "You tested each condition in isolation. MCDC requires *paired* test cases where one condition changes while all others remain fixed and the decision outcome flips."
+      "id": "MCDC-SINGLE-FLIP",
+      "explanation_md": "To prove independent effect, you must hold all other variables constant while flipping the target variable. If you change two things at once, you cannot prove which one caused the decision to change."
     }
   ]
 }
