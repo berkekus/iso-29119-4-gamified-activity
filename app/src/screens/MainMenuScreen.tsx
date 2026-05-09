@@ -88,6 +88,9 @@ export default function MainMenuScreen({ onNavigate }: Props) {
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
                 <span style={{ fontSize: 24 }}>{item.icon}</span>
                 <span style={{ fontFamily: PIXEL_FONT, fontSize: 10, color: item.color }}>{item.label}</span>
+                {disabled && (
+                  <span style={{ fontFamily: PIXEL_FONT, fontSize: 7, color: TC.grey, border: `1px solid ${TC.greyLight}`, padding: '2px 6px' }}>COMING SOON</span>
+                )}
               </div>
               <div style={{ fontFamily: HAND_FONT, fontSize: 17, color: TC.grey }}>{item.desc}</div>
             </button>

@@ -215,9 +215,16 @@ export default function DebriefScreen({ onNavigate, onBack }: Props) {
           <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
             <PixelButton variant="danger" onClick={handleRetry}>RETRY CASE</PixelButton>
             <PixelButton variant="secondary" onClick={() => onNavigate('law-library')}>OPEN ANNEX C</PixelButton>
-            <PixelButton variant="primary" onClick={handleNext} disabled={!canAdvance}>
-              {isLastCase ? 'CAMPAIGN MAP →' : 'NEXT CASE →'}
-            </PixelButton>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
+              <PixelButton variant="primary" onClick={handleNext} disabled={!canAdvance}>
+                {isLastCase ? 'CAMPAIGN MAP →' : 'NEXT CASE →'}
+              </PixelButton>
+              {!canAdvance && (
+                <div style={{ fontFamily: PIXEL_FONT, fontSize: 7, color: TC.grey }}>
+                  Retry this case to unlock the next one
+                </div>
+              )}
+            </div>
           </div>
         </div>
 

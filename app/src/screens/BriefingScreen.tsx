@@ -110,7 +110,7 @@ export default function BriefingScreen({ onNavigate, onBack }: Props) {
               border: `2px solid ${TC.magenta}`, padding: '4px 8px', transform: 'rotate(3deg)',
             }}>CLASSIFIED</div>
 
-            <div style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: TC.grey, marginBottom: 6 }}>{caseFileNum}</div>
+            <div style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: TC.ink, marginBottom: 6 }}>{caseFileNum}</div>
             <h2 style={{ fontFamily: PIXEL_FONT, fontSize: 18, color: TC.ink, margin: '0 0 18px 0', lineHeight: 1.4 }}>{caseData.title}</h2>
 
             <div style={{ fontFamily: HAND_FONT, fontSize: 18, color: TC.ink, lineHeight: 1.6, marginBottom: 20 }}>
@@ -204,7 +204,7 @@ export default function BriefingScreen({ onNavigate, onBack }: Props) {
             background: TC.cream, border: `3px solid ${TC.ink}`, boxShadow: `4px 4px 0 ${TC.ink}`,
             padding: 16, textAlign: 'center',
           }}>
-            <div style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: TC.grey, marginBottom: 4 }}>THE DEFENDANT</div>
+            <div style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: TC.ink, marginBottom: 4 }}>THE DEFENDANT</div>
             {caseFile?.defendant?.name && (
               <div style={{ fontFamily: MONO_FONT, fontSize: 11, color: TC.magenta, marginBottom: 10 }}>
                 {caseFile.defendant.name}
@@ -241,7 +241,7 @@ export default function BriefingScreen({ onNavigate, onBack }: Props) {
 
           {/* Time hint */}
           <div style={{ fontFamily: MONO_FONT, fontSize: 11, color: TC.grey, textAlign: 'center', padding: 8, letterSpacing: 0.5 }}>
-            EST. TIME: 8–12 MIN
+            EST. TIME: {caseFile?.estimated_time_sec ? `${Math.ceil(caseFile.estimated_time_sec / 60)} MIN` : '8–12 MIN'}
           </div>
         </div>
       </div>

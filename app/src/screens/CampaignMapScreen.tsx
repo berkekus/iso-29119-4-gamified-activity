@@ -155,8 +155,12 @@ export default function CampaignMapScreen({ onNavigate, onBack, completedCases, 
                 cursor: 'pointer',
                 textAlign: 'center',
                 transition: 'all 0.06s steps(2)',
+                position: 'relative',
               }}
             >
+              <div style={{ position: 'absolute', top: 8, right: 10, fontFamily: PIXEL_FONT, fontSize: 8, color: TC.grey }}>
+                {selectedAct === act.id ? '▼' : '▶'}
+              </div>
               <div style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: TC.grey }}>{act.name}</div>
               <div style={{ fontFamily: PIXEL_FONT, fontSize: 14, color: act.color, margin: '10px 0 6px', lineHeight: 1.4 }}>{act.title}</div>
               <div style={{ fontFamily: HAND_FONT, fontSize: 15, color: TC.ink, lineHeight: 1.4 }}>{act.subtitle}</div>
@@ -216,6 +220,16 @@ export default function CampaignMapScreen({ onNavigate, onBack, completedCases, 
                           ★ FINAL BOSS
                         </div>
                       )}
+                      {isLocked && (() => {
+                        const idx = CASE_ORDER.indexOf(c.id as (typeof CASE_ORDER)[number])
+                        const prevId = idx > 0 ? CASE_ORDER[idx - 1] : undefined
+                        const prevName = prevId ? acts.flatMap(a => a.cases).find(x => x.id === prevId)?.name : null
+                        return prevName ? (
+                          <div style={{ fontFamily: PIXEL_FONT, fontSize: 7, color: TC.grey, lineHeight: 1.5 }}>
+                            Needs: {prevName}
+                          </div>
+                        ) : null
+                      })()}
                     </div>
                     <div style={{ display: 'flex', gap: 3 }}>
                       {[1, 2, 3].map((d) => (

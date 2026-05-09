@@ -45,6 +45,8 @@ export default function InvestigationScreen({ onNavigate, onBack }: Props) {
   const { mcdc, toggleRow, caseFile, submitAnswer } = useGameStore()
   const [validated, setValidated] = useState(false)
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; msg: string } | null>(null)
+  const [hintLevel, setHintLevel] = useState(0)
+  const [readyToAdvance, setReadyToAdvance] = useState(false)
   const decisionExpr = caseFile?.scenario.decision_expression || 'A && (B || C)'
 
   const techniqueLabel =
@@ -66,14 +68,14 @@ export default function InvestigationScreen({ onNavigate, onBack }: Props) {
         caseFile.correct_answer_explanation ??
         'Correct. The claim has been certified.'
       setFeedback({ type: 'success', msg })
-      setTimeout(() => onNavigate('trial'), 900)
+      setReadyToAdvance(true)
     } else {
       const msg =
         pickOptionExplanation(caseFile, payload, false) ??
         caseFile.wrong_answer_explanation ??
         'Not quite. The court will now convene.'
       setFeedback({ type: 'error', msg })
-      setTimeout(() => onNavigate('trial'), 1500)
+      setReadyToAdvance(true)
     }
   }
 
@@ -148,7 +150,7 @@ export default function InvestigationScreen({ onNavigate, onBack }: Props) {
                         fontFamily: MONO_FONT, fontSize: 12, color: TC.ink, lineHeight: 1.55,
                         padding: '6px 10px', background: `${TC.blue}10`, border: `1px solid ${TC.blue}`,
                       }}>
-                        <strong>{t.id}</strong>: inputs = {JSON.stringify(t.inputs)} → outcome = {String(t.outcome)}
+                        <strong>{t.id}</strong>: {Object.entries(t.inputs as Record<string, unknown>).map(([k, v]) => `${k} = ${String(v)}`).join(', ')} → {String(t.outcome)}
                       </div>
                     ))}
                   </div>
@@ -196,6 +198,16 @@ export default function InvestigationScreen({ onNavigate, onBack }: Props) {
                   onSubmit={handleAnswer}
                 />
               )}
+              {readyToAdvance && feedback && (
+                <div style={{ marginTop: 16, display: 'flex', justifyContent: 'flex-end' }}>
+                  <PixelButton
+                    variant={feedback.type === 'success' ? 'primary' : 'danger'}
+                    onClick={() => onNavigate('trial')}
+                  >
+                    PROCEED TO TRIAL →
+                  </PixelButton>
+                </div>
+              )}
             </div>
           </div>
 
@@ -210,9 +222,21 @@ export default function InvestigationScreen({ onNavigate, onBack }: Props) {
 
             {(caseFile?.hints?.length ?? 0) > 0 && (
               <div style={{ padding: 14, border: `2px solid ${TC.grid}`, background: TC.cream }}>
-                <div style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: TC.blue, marginBottom: 8 }}>HINT</div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                  <div style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: TC.blue }}>
+                    HINT {hintLevel + 1}/{caseFile?.hints?.length}
+                  </div>
+                  {hintLevel < (caseFile?.hints?.length ?? 1) - 1 && (
+                    <button
+                      onClick={() => setHintLevel((h) => h + 1)}
+                      style={{ fontFamily: PIXEL_FONT, fontSize: 8, color: TC.orange, background: 'none', border: `1px solid ${TC.orange}`, padding: '3px 8px', cursor: 'pointer' }}
+                    >
+                      NEXT →
+                    </button>
+                  )}
+                </div>
                 <div style={{ fontFamily: MONO_FONT, fontSize: 12, color: TC.ink, lineHeight: 1.6 }}>
-                  {caseFile?.hints?.[0]}
+                  {caseFile?.hints?.[hintLevel]}
                 </div>
               </div>
             )}
@@ -257,9 +281,9 @@ export default function InvestigationScreen({ onNavigate, onBack }: Props) {
               <thead>
                 <tr style={{ background: `${TC.blue}15` }}>
                   <th style={thStyle}>TC#</th>
-                  <th style={{ ...thStyle, color: TC.blue }}>A</th>
-                  <th style={{ ...thStyle, color: TC.blue }}>B</th>
-                  <th style={{ ...thStyle, color: TC.blue }}>C</th>
+                  <th style={{ ...thStyle, color: TC.blue }}>{caseFile?.scenario.conditions[0]?.id ?? 'A'}</th>
+                  <th style={{ ...thStyle, color: TC.blue }}>{caseFile?.scenario.conditions[1]?.id ?? 'B'}</th>
+                  <th style={{ ...thStyle, color: TC.blue }}>{caseFile?.scenario.conditions[2]?.id ?? 'C'}</th>
                   <th style={{ ...thStyle, color: TC.green }}>D</th>
                   <th style={thStyle}>SELECT</th>
                 </tr>

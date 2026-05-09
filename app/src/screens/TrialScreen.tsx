@@ -37,10 +37,6 @@ export default function TrialScreen({ onNavigate, onBack }: Props) {
   }
 
   useEffect(() => {
-    if (phase === 'presenting') {
-      const t = setTimeout(() => setPhase('deliberating'), 2500)
-      return () => clearTimeout(t)
-    }
     if (phase === 'deliberating') {
       const t = setTimeout(() => {
         if (caseFile?.question_type === 'pair_selector') {
@@ -76,6 +72,15 @@ export default function TrialScreen({ onNavigate, onBack }: Props) {
           <div style={{ width: 60 }} />
         )}
       </div>
+
+      {/* Submit evidence — user-triggered advance from presenting to deliberating (F11) */}
+      {phase === 'presenting' && (
+        <div style={{ textAlign: 'center', marginBottom: 20 }}>
+          <PixelButton variant="primary" onClick={() => setPhase('deliberating')}>
+            SUBMIT EVIDENCE →
+          </PixelButton>
+        </div>
+      )}
 
       {/* Courtroom scene */}
       <div style={{ textAlign: 'center', marginBottom: 30 }}>
