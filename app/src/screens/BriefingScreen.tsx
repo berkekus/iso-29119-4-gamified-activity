@@ -204,10 +204,15 @@ export default function BriefingScreen({ onNavigate, onBack }: Props) {
             background: TC.cream, border: `3px solid ${TC.ink}`, boxShadow: `4px 4px 0 ${TC.ink}`,
             padding: 16, textAlign: 'center',
           }}>
-            <div style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: TC.grey, marginBottom: 10 }}>THE DEFENDANT</div>
-            <BugSprite size={90} type="mcdc" mood="nervous" />
+            <div style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: TC.grey, marginBottom: 4 }}>THE DEFENDANT</div>
+            {caseFile?.defendant?.name && (
+              <div style={{ fontFamily: MONO_FONT, fontSize: 11, color: TC.magenta, marginBottom: 10 }}>
+                {caseFile.defendant.name}
+              </div>
+            )}
+            <BugSprite size={90} type={caseFile?.technique === 'BCC' ? 'bcc' : 'mcdc'} mood="nervous" />
             <div style={{ fontFamily: HAND_FONT, fontSize: 16, color: TC.grey, marginTop: 8, fontStyle: 'italic', lineHeight: 1.5 }}>
-              "I... I'm sure my tests were enough..."
+              "{caseFile?.defendant?.quote ?? "I... I'm sure my tests were enough..."}"
             </div>
           </div>
 
