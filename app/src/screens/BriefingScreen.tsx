@@ -90,7 +90,10 @@ export default function BriefingScreen({ onNavigate, onBack }: Props) {
     <div style={{ minHeight: '100vh', position: 'relative', zIndex: 1, padding: 'clamp(16px, 3vw, 30px) clamp(16px, 4vw, 40px)' }}>
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
-        <PixelButton small variant="secondary" onClick={onBack}>← CAMPAIGN</PixelButton>
+        <div style={{ display: 'flex', gap: 6 }}>
+          <PixelButton small variant="secondary" onClick={onBack}>← CAMPAIGN</PixelButton>
+          <PixelButton small variant="secondary" onClick={() => onNavigate('menu')}>⌂ MENU</PixelButton>
+        </div>
         <div style={{ display: 'flex', gap: 8 }}>
           <span style={{ fontFamily: PIXEL_FONT, fontSize: 8, color: TC.magenta, padding: '4px 10px', border: `2px solid ${TC.magenta}` }}>{actLabel}</span>
           <span style={{ fontFamily: PIXEL_FONT, fontSize: 8, color: TC.grey, padding: '4px 10px', border: `2px solid ${TC.grid}` }}>PHASE 1: BRIEFING</span>
