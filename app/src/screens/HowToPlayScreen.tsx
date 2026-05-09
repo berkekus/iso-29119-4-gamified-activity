@@ -112,7 +112,7 @@ export default function HowToPlayScreen({ onBack }: Props) {
   const isLast = current === steps.length - 1
 
   return (
-    <div style={{ minHeight: '100vh', position: 'relative', zIndex: 1, padding: '30px 40px' }}>
+    <div style={{ minHeight: '100vh', position: 'relative', zIndex: 1, padding: 'clamp(16px, 3vw, 30px) clamp(16px, 4vw, 40px)' }}>
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 32 }}>
         <PixelButton small variant="secondary" onClick={onBack}>← MENU</PixelButton>
@@ -140,10 +140,10 @@ export default function HowToPlayScreen({ onBack }: Props) {
       {/* Main card */}
       <div
         key={current}
+        className="responsive-row"
         style={{
           maxWidth: 960,
           margin: '0 auto',
-          display: 'flex',
           gap: 40,
           alignItems: 'flex-start',
           animation: 'slideIn 0.15s steps(4)',

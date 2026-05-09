@@ -1,0 +1,64 @@
+{
+  "id": "stmt-hidden-branch-01",
+  "act": "STMT_BRANCH",
+  "difficulty": 2,
+  "iso_clauses": ["§5.3.1", "§5.3.2", "§6.3.1", "§6.3.2"],
+  "technique": "STATEMENT",
+  "layer": 1,
+  "question_type": "binary_verdict",
+  "misconception_target": "STMT-BLIND-TO-BRANCH",
+  "concept_ref": "§3 row 1 — '100% statement coverage = fully tested' / §4 Level 1 narrative",
+  "estimated_time_sec": 90,
+  "scenario": {
+    "title": "The Missing Else",
+    "narrative": "A pricing function applies a discount only to premium users. The 'happy path' test was added; the team claims testing is complete.",
+    "code": "def price(amount, is_premium):\n    if is_premium:\n        amount = amount * 0.9\n    return amount",
+    "conditions": [
+      { "id": "is_premium", "label": "customer is on the premium plan" }
+    ],
+    "decision_expression": "is_premium"
+  },
+  "claim": "Does the team's claim — 'T1 achieves 100% Statement coverage, therefore the function is fully tested' — hold up?",
+  "charges": [
+    "The pricing function price(amount, is_premium) applies a discount only when is_premium is true and contains no else branch.",
+    "The defendant team submitted a single happy-path test (is_premium=True) and claims the function is fully tested.",
+    "The prosecution alleges the implicit FALSE edge of the if statement is never exercised, leaving non-premium pricing logic unverified."
+  ],
+  "test_set": [
+    { "id": "T1", "inputs": { "amount": 100, "is_premium": true }, "outcome": 90 }
+  ],
+  "options": [
+    {
+      "id": "opt-fully-tested",
+      "label": "Yes — every line ran, so the function is fully tested.",
+      "is_correct": false,
+      "explanation": "Trap. Statement coverage IS 100% — but 'fully tested' also requires Branch coverage. The implicit FALSE edge of the if (is_premium=False) is NEVER taken, so an else-path bug stays hidden."
+    },
+    {
+      "id": "opt-not-fully-tested",
+      "label": "No — Statement is 100%, but the FALSE branch of the if is untested.",
+      "is_correct": true,
+      "explanation": "Correct. T1 only exercises is_premium=True. Statement coverage is satisfied (every line runs), but Branch coverage is 50% — the implicit else-path is never taken. 'Fully tested' is a misconception."
+    }
+  ],
+  "correct_answer_explanation": "Statement is 100% but Branch is 50%. A non-premium user could be mishandled and Statement testing would never catch it.",
+  "wrong_answer_explanation": "An if-without-else creates a hidden branch that Statement coverage cannot see — you also need a test where is_premium is FALSE.",
+  "hints": [
+    "The first half of the claim is true; the second half is the trap. Statement coverage IS 100%, but does that mean the function is fully tested?",
+    "Statement coverage only asks 'did each line execute?' — but what about the implicit FALSE branch of the if? Is there a test where is_premium=False?",
+    "Statement coverage IS 100% (every line executed via T1), but Branch coverage is 0% on the false edge. 'Fully tested' is a misconception. Verdict: claim INVALID."
+  ],
+  "seeded_faults": [
+    {
+      "id": "F1",
+      "description": "Hidden bug on the implicit else path: a non-premium user is double-charged due to a missing reset.",
+      "trigger": { "condition": "is_premium", "requiredDecisionFlip": true }
+    }
+  ],
+  "misconceptions": [
+    {
+      "id": "STMT-BLIND-TO-BRANCH",
+      "explanation_md": "100% Statement coverage does NOT mean 'fully tested'. An `if` without an `else` creates a bypass path that Statement coverage cannot see. You must add a test where the condition is FALSE to exercise the implicit branch."
+    }
+  ]
+}

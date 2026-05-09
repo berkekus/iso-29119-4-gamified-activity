@@ -66,6 +66,7 @@ export function generateTruthTable(
   decisionExpression: string,
 ): TruthTableRow[] {
   const n = conditions.length
+  if (n === 0 || decisionExpression.trim() === '') return []
   const rowCount = Math.pow(2, n)
   const rows: TruthTableRow[] = []
 

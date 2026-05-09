@@ -3,28 +3,51 @@
   "act": "MCDC",
   "difficulty": 3,
   "iso_clauses": ["§5.3.6", "§5.3.6.2", "Annex C.2.3.6"],
+  "technique": "MCDC",
+  "layer": 4,
+  "question_type": "pair_selector",
+  "misconception_target": "MCDC-INDEP-AS-ISOLATION",
+  "concept_ref": "§3 row 5 — 'students routinely satisfy (1) while violating (2) or (3)'",
+  "estimated_time_sec": 240,
   "scenario": {
     "title": "Emergency Override",
-    "narrative": "An emergency system triggers when alarm A fires, or when both backup sensor B and manual override C are active.",
+    "narrative": "An emergency system triggers when alarmA fires, or when both backupSensor and manualOverride are active.",
     "code": "if (alarmA || (backupSensor && manualOverride)) trigger();",
     "conditions": [
-      { "id": "A", "label": "alarmA" },
-      { "id": "B", "label": "backupSensor" },
-      { "id": "C", "label": "manualOverride" }
+      { "id": "alarmA", "label": "primary alarm is firing" },
+      { "id": "backupSensor", "label": "backup sensor reports a fault" },
+      { "id": "manualOverride", "label": "manual override is asserted" }
     ],
-    "decision_expression": "A || (B && C)"
+    "decision_expression": "alarmA || (backupSensor && manualOverride)"
   },
+  "claim": "Toggling each condition once in isolation is enough for MCDC.",
+  "charges": [
+    "The emergency system trigger() fires when alarmA is true OR when both backupSensor AND manualOverride are active.",
+    "The defendant submits a 4-test suite that flips each condition once in isolation from an all-false baseline and claims MC/DC coverage of `alarmA || (backupSensor && manualOverride)`.",
+    "The prosecution alleges that flipping backupSensor or manualOverride alone from the baseline does not flip the decision outcome, so the submitted suite contains no valid independence pair for backupSensor or for manualOverride."
+  ],
+  "test_set": [
+    { "id": "T1", "inputs": { "alarmA": true,  "backupSensor": false, "manualOverride": false }, "outcome": true  },
+    { "id": "T2", "inputs": { "alarmA": false, "backupSensor": false, "manualOverride": false }, "outcome": false },
+    { "id": "T3", "inputs": { "alarmA": false, "backupSensor": true,  "manualOverride": false }, "outcome": false },
+    { "id": "T4", "inputs": { "alarmA": false, "backupSensor": false, "manualOverride": true  }, "outcome": false }
+  ],
+  "hints": [
+    "The trap: an 'isolation' test where you flip a condition is NOT a valid pair if the outcome doesn't actually flip.",
+    "Look at backupSensor: T2↔T3 only flips backupSensor, but the outcome stays false because alarmA=false AND manualOverride=false make backupSensor's contribution zero. This is NOT a valid independence pair for backupSensor.",
+    "alarmA: T1↔T2 valid. backupSensor: needs manualOverride=true so flipping backupSensor matters; e.g. add T5={alarmA=F, backupSensor=T, manualOverride=T, out=T} and pair T4↔T5. manualOverride: similarly needs backupSensor=true. The given 4-test set FAILS MCDC for backupSensor and manualOverride."
+  ],
   "seeded_faults": [
     {
       "id": "F1",
-      "description": "Manual override C is ignored when backup sensor B is inactive",
-      "trigger": { "condition": "C", "requiredDecisionFlip": true }
+      "description": "manualOverride is ignored when backupSensor is inactive",
+      "trigger": { "condition": "manualOverride", "requiredDecisionFlip": true }
     }
   ],
   "misconceptions": [
     {
       "id": "MCDC-INDEP-AS-ISOLATION",
-      "explanation_md": "For `A || (B && C)`, testing each condition alone in isolation may not produce a valid independence pair because the decision may not flip. You need pairs where exactly one condition changes AND the decision flips."
+      "explanation_md": "For `alarmA || (backupSensor && manualOverride)`, testing each condition alone in isolation may not produce a valid independence pair because the decision may not flip. You need pairs where exactly one condition changes AND the decision flips."
     }
   ]
 }

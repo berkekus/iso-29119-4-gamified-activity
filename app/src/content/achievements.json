@@ -1,0 +1,48 @@
+{
+  "achievements": [
+    {
+      "id": "ach-act-1",
+      "act": "ACT I",
+      "title": "Foundations Forged",
+      "description": "Completed all ACT I cases — Statement & Branch coverage mastered.",
+      "required_cases": [
+        "stmt-tutorial-01",
+        "stmt-hidden-branch-01",
+        "branch-loop-trap-01"
+      ]
+    },
+    {
+      "id": "ach-act-2",
+      "act": "ACT II",
+      "title": "Decisive Reasoning",
+      "description": "Completed all ACT II cases — Decision & Branch Condition coverage.",
+      "required_cases": [
+        "decision-and-trap-01",
+        "bc-or-three-cond-01",
+        "bc-negation-mask-01"
+      ]
+    },
+    {
+      "id": "ach-act-3",
+      "act": "ACT III",
+      "title": "Combinatorial Insight",
+      "description": "Completed all ACT III cases — BCC mastered.",
+      "required_cases": [
+        "bcc-three-and-01",
+        "bcc-cost-intuition-01"
+      ]
+    },
+    {
+      "id": "ach-act-4",
+      "act": "ACT IV",
+      "title": "Independence Proven",
+      "description": "Completed all ACT IV cases — MC/DC and the Vault Boss conquered.",
+      "required_cases": [
+        "mcdc-tutorial-01",
+        "mcdc-altitude-disengage-01",
+        "mcdc-trap-isolation-01",
+        "mcdc-vault-boss-01"
+      ]
+    }
+  ]
+}

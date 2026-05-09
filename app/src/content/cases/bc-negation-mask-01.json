@@ -1,0 +1,79 @@
+{
+  "id": "bc-negation-mask-01",
+  "act": "DECISION_BC",
+  "difficulty": 3,
+  "iso_clauses": ["§5.3.3", "§5.3.4", "§6.3.4"],
+  "technique": "BC",
+  "layer": 3,
+  "question_type": "level_picker",
+  "misconception_target": "DECISION-EQUALS-BC",
+  "concept_ref": "§3 row 3 + §1 'sub-condition can never change value across all tests — masked by the others'",
+  "estimated_time_sec": 240,
+  "scenario": {
+    "title": "Admin Override With Negation",
+    "narrative": "A panel is shown when the user is NOT an admin or has an explicit override. The QA engineer claims Branch Condition coverage is met with three tests. Read carefully — the negation is the trap.",
+    "code": "def show_panel(is_admin, has_override):\n    if (not is_admin) or has_override:\n        return show()\n    return hide()",
+    "conditions": [
+      { "id": "is_admin", "label": "user has admin privileges" },
+      { "id": "has_override", "label": "override flag is set" }
+    ],
+    "decision_expression": "(!is_admin) || has_override"
+  },
+  "claim": "Which is the STRONGEST coverage level the test set below actually satisfies?",
+  "charges": [
+    "The defendant function show_panel(is_admin, has_override) shows a panel when the user is NOT an admin OR has an explicit override.",
+    "The QA team submits a 3-test suite — (admin=F, override=F), (admin=F, override=T), (admin=T, override=F) — and claims the suite satisfies MC/DC.",
+    "The prosecution alleges that under short-circuit evaluation of `(!is_admin) || has_override`, the override condition is masked when is_admin is FALSE, breaking the MC/DC independence requirement for has_override."
+  ],
+  "test_set": [
+    { "id": "T1", "inputs": { "is_admin": false, "has_override": false }, "outcome": true  },
+    { "id": "T2", "inputs": { "is_admin": false, "has_override": true  }, "outcome": true  },
+    { "id": "T3", "inputs": { "is_admin": true,  "has_override": false }, "outcome": false }
+  ],
+  "options": [
+    {
+      "id": "opt-stmt",
+      "label": "Statement only",
+      "is_correct": false,
+      "explanation": "Too weak. Statement is satisfied (every line runs), but so are Decision and BC — pick the strongest level that is actually met."
+    },
+    {
+      "id": "opt-decision",
+      "label": "Decision (and therefore Branch + Statement)",
+      "is_correct": false,
+      "explanation": "Decision IS satisfied — but so is Branch Condition. is_admin is observed T (T3) and F (T1/T2); has_override is observed T (T2) and F (T1/T3). BC is also fully met, so Decision is not the STRONGEST level."
+    },
+    {
+      "id": "opt-bc",
+      "label": "Branch Condition (each condition T and F)",
+      "is_correct": true,
+      "explanation": "Correct. is_admin observed T (T3) and F (T1/T2); has_override observed T (T2) and F (T1/T3) — BC ✓. MCDC fails for has_override: T1↔T2 flips only has_override but outcome stays T (because !is_admin=T already covers the OR). No valid override-only-flip pair exists in T1..T3."
+    },
+    {
+      "id": "opt-mcdc",
+      "label": "MCDC — independence pairs for both conditions",
+      "is_correct": false,
+      "explanation": "TRAP. MCDC for is_admin succeeds (T1↔T3 flips only is_admin, outcome flips T→F). MCDC for has_override fails: T1↔T2 flips only has_override but the outcome stays T because !is_admin=T already satisfies the OR. With short-circuit on (!is_admin) when is_admin=F, has_override is masked. To reach MCDC you would need (T,F)+(T,T) — neither (T,T) is in the set."
+    }
+  ],
+  "correct_answer_explanation": "BC is the strongest level that holds. MCDC for is_admin is reachable via T1↔T3, but MCDC for has_override is masked: T1↔T2 only flips has_override yet the outcome stays TRUE because !is_admin=T already saturates the OR. You'd need (T,T) in the test set to surface a valid override independence pair — and it isn't there.",
+  "wrong_answer_explanation": "Read each condition at the SOURCE level: is_admin is the literal variable, not `not is_admin`. Branch Condition coverage requires is_admin and has_override each to be observed as T and F.",
+  "hints": [
+    "Read each condition at the SOURCE level: is_admin is the literal variable, not `not is_admin`. Branch Condition coverage requires is_admin and has_override each to be observed as T and F.",
+    "Tally for is_admin and has_override independently. is_admin: F in T1/T2, T in T3 ✓. has_override: F in T1/T3, T in T2 ✓. Both conditions observed T and F — BC is satisfied. Now ask: is MCDC also satisfied?",
+    "Decision: T1/T2 give true, T3 gives false → ✓. BC: each of is_admin and has_override observed T and F → ✓. MCDC for is_admin: T1↔T3 flips only is_admin and outcome flips → ✓. MCDC for has_override: T1↔T2 flips only has_override but outcome stays T (!is_admin=T saturates the OR). No valid override-pair exists. Strongest satisfied = BRANCH CONDITION."
+  ],
+  "seeded_faults": [
+    {
+      "id": "F1",
+      "description": "The override flag is read from the wrong variable; the bug is masked when is_admin is FALSE because short-circuit evaluation skips the second operand.",
+      "trigger": { "condition": "has_override", "requiredDecisionFlip": true }
+    }
+  ],
+  "misconceptions": [
+    {
+      "id": "DECISION-EQUALS-BC",
+      "explanation_md": "Negations and short-circuit operators trick learners into thinking that if every condition appears as T and F at the source level, then everything stronger is automatically satisfied too. BC is satisfied here, but has_override can never independently flip the outcome when is_admin=False — exactly the kind of masking effect MCDC is designed to surface."
+    }
+  ]
+}
