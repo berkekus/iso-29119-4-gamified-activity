@@ -117,6 +117,7 @@ function isCaseUnlocked(caseId: string, completed: string[]): boolean {
 
 export default function CampaignMapScreen({ onNavigate, onBack, completedCases, onSelectCase }: Props) {
   const [selectedAct, setSelectedAct] = useState<string | null>(null)
+  const [lockedFeedback, setLockedFeedback] = useState<string | null>(null)
   const completedCount = completedCases.filter((id) =>
     acts.some((a) => a.cases.some((c) => c.id === id)),
   ).length
@@ -155,8 +156,12 @@ export default function CampaignMapScreen({ onNavigate, onBack, completedCases, 
                 cursor: 'pointer',
                 textAlign: 'center',
                 transition: 'all 0.06s steps(2)',
+                position: 'relative',
               }}
             >
+              <div style={{ position: 'absolute', top: 8, right: 10, fontFamily: PIXEL_FONT, fontSize: 8, color: TC.grey }}>
+                {selectedAct === act.id ? '▼' : '▶'}
+              </div>
               <div style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: TC.grey }}>{act.name}</div>
               <div style={{ fontFamily: PIXEL_FONT, fontSize: 14, color: act.color, margin: '10px 0 6px', lineHeight: 1.4 }}>{act.title}</div>
               <div style={{ fontFamily: HAND_FONT, fontSize: 15, color: TC.ink, lineHeight: 1.4 }}>{act.subtitle}</div>
@@ -172,7 +177,15 @@ export default function CampaignMapScreen({ onNavigate, onBack, completedCases, 
                 const isComplete = completedCases.includes(c.id)
                 const isLocked = !isComplete && !isCaseUnlocked(c.id, completedCases)
                 const handleClick = () => {
-                  if (isLocked) return
+                  if (isLocked) {
+                    const idx = CASE_ORDER.indexOf(c.id as (typeof CASE_ORDER)[number])
+                    const prevId = idx > 0 ? CASE_ORDER[idx - 1] : undefined
+                    const prevName = prevId ? acts.flatMap(a => a.cases).find(x => x.id === prevId)?.name : null
+                    setLockedFeedback(prevName ? `Önce "${prevName}" vakasını tamamla.` : 'Bu vaka henüz kilitli.')
+                    setTimeout(() => setLockedFeedback(null), 3000)
+                    return
+                  }
+                  setLockedFeedback(null)
                   if (onSelectCase) onSelectCase(c.id)
                   onNavigate('briefing')
                 }
@@ -212,10 +225,20 @@ export default function CampaignMapScreen({ onNavigate, onBack, completedCases, 
                         {c.name}
                       </div>
                       {c.isBoss && (
-                        <div style={{ fontFamily: PIXEL_FONT, fontSize: 7, color: TC.magenta }}>
+                        <div style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: TC.magenta }}>
                           ★ FINAL BOSS
                         </div>
                       )}
+                      {isLocked && (() => {
+                        const idx = CASE_ORDER.indexOf(c.id as (typeof CASE_ORDER)[number])
+                        const prevId = idx > 0 ? CASE_ORDER[idx - 1] : undefined
+                        const prevName = prevId ? acts.flatMap(a => a.cases).find(x => x.id === prevId)?.name : null
+                        return prevName ? (
+                          <div style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: TC.grey, lineHeight: 1.5 }}>
+                            Needs: {prevName}
+                          </div>
+                        ) : null
+                      })()}
                     </div>
                     <div style={{ display: 'flex', gap: 3 }}>
                       {[1, 2, 3].map((d) => (
@@ -237,6 +260,17 @@ export default function CampaignMapScreen({ onNavigate, onBack, completedCases, 
           </div>
         ))}
       </div>
+
+      {/* Locked-case inline feedback */}
+      {lockedFeedback && (
+        <div style={{
+          marginTop: 16, padding: '10px 16px',
+          background: `${TC.orange}15`, border: `2px solid ${TC.orange}`,
+          fontFamily: PIXEL_FONT, fontSize: 9, color: TC.orange, textAlign: 'center',
+        }}>
+          🔒 {lockedFeedback}
+        </div>
+      )}
 
       {/* Legend / hint footer */}
       <div

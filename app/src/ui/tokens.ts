@@ -6,7 +6,7 @@ export const TC = {
   orange:    '#F26B1F',
   blue:      '#2C6FBB',
   grid:      '#E5DFCE',
-  grey:      '#8A8474',
+  grey:      '#5A5448',
   greyLight: '#C9C3B0',
 } as const
 

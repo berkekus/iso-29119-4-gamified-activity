@@ -123,6 +123,11 @@ export const CaseFileSchema = z.object({
   wrong_answer_explanation: z.string().optional(),
   /** Short feedback shown when the player submits the correct answer. */
   correct_answer_explanation: z.string().optional(),
+  /** Per-case defendant identity shown in the BriefingScreen sidebar. */
+  defendant: z.object({
+    name: z.string(),
+    quote: z.string(),
+  }).optional(),
 })
 
 export type CaseFile = z.infer<typeof CaseFileSchema>

@@ -7,12 +7,41 @@ import { JudgeSprite } from '../ui/CharacterSprites'
 import { TRUTH_TABLE } from '../engine/coverage/mcdc'
 import { useGameStore } from '../stores/gameStore'
 import type { AnswerPayload, Screen } from '../stores/gameStore'
+import { lawCardForCase } from '../content/lawCards'
 import {
   OptionListPicker,
   CoverageTablePicker,
   TestDesignerPicker,
   NumericInputPicker,
 } from './QuestionRenderer'
+
+const PHASE_STEPS = [
+  { label: 'BRIEFING',      color: TC.grey },
+  { label: 'INVESTIGATION', color: TC.orange },
+  { label: 'EVIDENCE',      color: TC.green },
+  { label: 'TRIAL',         color: TC.blue },
+  { label: 'DEBRIEF',       color: TC.grey },
+]
+
+function PhaseBreadcrumb({ current }: { current: number }) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexWrap: 'wrap' }}>
+      {PHASE_STEPS.map((s, i) => (
+        <span key={s.label} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+          <span style={{
+            fontFamily: PIXEL_FONT, fontSize: 7, padding: '3px 7px',
+            background: i === current ? s.color : 'transparent',
+            color: i === current ? '#fff' : i < current ? TC.grey : TC.greyLight,
+            border: `1.5px solid ${i <= current ? s.color : TC.greyLight}`,
+          }}>{i + 1}. {s.label}</span>
+          {i < PHASE_STEPS.length - 1 && (
+            <span style={{ fontFamily: PIXEL_FONT, fontSize: 7, color: TC.greyLight }}>›</span>
+          )}
+        </span>
+      ))}
+    </div>
+  )
+}
 
 interface Props {
   onNavigate: (screen: Screen) => void
@@ -45,7 +74,12 @@ export default function InvestigationScreen({ onNavigate, onBack }: Props) {
   const { mcdc, toggleRow, caseFile, submitAnswer } = useGameStore()
   const [validated, setValidated] = useState(false)
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; msg: string } | null>(null)
+  const [hintLevel, setHintLevel] = useState(0)
+  const [readyToAdvance, setReadyToAdvance] = useState(false)
+  const [showLawCard, setShowLawCard] = useState(false)
+  const [highlightSuggested, setHighlightSuggested] = useState(false)
   const decisionExpr = caseFile?.scenario.decision_expression || 'A && (B || C)'
+  const lawCard = lawCardForCase(caseFile?.id)
 
   const techniqueLabel =
     (caseFile?.technique && TECHNIQUE_LABEL[caseFile.technique]) ?? 'CASE'
@@ -66,14 +100,14 @@ export default function InvestigationScreen({ onNavigate, onBack }: Props) {
         caseFile.correct_answer_explanation ??
         'Correct. The claim has been certified.'
       setFeedback({ type: 'success', msg })
-      setTimeout(() => onNavigate('trial'), 900)
+      setReadyToAdvance(true)
     } else {
       const msg =
         pickOptionExplanation(caseFile, payload, false) ??
         caseFile.wrong_answer_explanation ??
         'Not quite. The court will now convene.'
       setFeedback({ type: 'error', msg })
-      setTimeout(() => onNavigate('trial'), 1500)
+      setReadyToAdvance(true)
     }
   }
 
@@ -82,11 +116,13 @@ export default function InvestigationScreen({ onNavigate, onBack }: Props) {
   const handleValidate = () => {
     if (selectedCount >= 4) {
       setValidated(true)
+      setHighlightSuggested(false)
       setFeedback({ type: 'success', msg: 'Model accepted. The judge approves your truth table construction. Proceed to evidence derivation.' })
     } else {
+      setHighlightSuggested(true)
       setFeedback({
         type: 'error',
-        msg: 'Insufficient rows selected. The required coverage standard needs at least N+1 = 4 test cases for 3 conditions. Review your selection.',
+        msg: 'Insufficient rows selected. The required coverage standard needs at least N+1 = 4 test cases for 3 conditions. Suggested rows are highlighted in yellow.',
       })
     }
   }
@@ -105,14 +141,20 @@ export default function InvestigationScreen({ onNavigate, onBack }: Props) {
     return (
       <div style={{ minHeight: '100vh', position: 'relative', zIndex: 1, padding: 'clamp(16px, 3vw, 30px) clamp(16px, 4vw, 40px)' }}>
         {/* Header */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
-          <PixelButton small variant="secondary" onClick={onBack}>← BRIEFING</PixelButton>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+          <div style={{ display: 'flex', gap: 6 }}>
+            <PixelButton small variant="secondary" onClick={onBack}>← BRIEFING</PixelButton>
+            <PixelButton small variant="secondary" onClick={() => onNavigate('campaign')}>CAMPAIGN</PixelButton>
+            <PixelButton small variant="secondary" onClick={() => onNavigate('menu')}>⌂ MENU</PixelButton>
+            <PixelButton small variant="secondary" onClick={() => onNavigate('how-to-play')}>? HELP</PixelButton>
+          </div>
           <div style={{ display: 'flex', gap: 8 }}>
             <span style={{ fontFamily: PIXEL_FONT, fontSize: 8, color: TC.magenta, padding: '4px 10px', border: `2px solid ${TC.magenta}` }}>{techniqueLabel}</span>
             <span style={{ fontFamily: PIXEL_FONT, fontSize: 8, color: TC.orange, padding: '4px 10px', border: `2px solid ${TC.orange}`, background: `${TC.orange}15` }}>PHASE 2: INVESTIGATION</span>
           </div>
           <div style={{ width: 60 }} />
         </div>
+        <div style={{ marginBottom: 20 }}><PhaseBreadcrumb current={1} /></div>
 
         <div className="responsive-row" style={{ gap: 30, maxWidth: 1100, margin: '0 auto' }}>
           {/* Main: claim + code + tests */}
@@ -148,7 +190,7 @@ export default function InvestigationScreen({ onNavigate, onBack }: Props) {
                         fontFamily: MONO_FONT, fontSize: 12, color: TC.ink, lineHeight: 1.55,
                         padding: '6px 10px', background: `${TC.blue}10`, border: `1px solid ${TC.blue}`,
                       }}>
-                        <strong>{t.id}</strong>: inputs = {JSON.stringify(t.inputs)} → outcome = {String(t.outcome)}
+                        <strong>{t.id}</strong>: {Object.entries(t.inputs as Record<string, unknown>).map(([k, v]) => `${k} = ${String(v)}`).join(', ')} → {String(t.outcome)}
                       </div>
                     ))}
                   </div>
@@ -196,6 +238,16 @@ export default function InvestigationScreen({ onNavigate, onBack }: Props) {
                   onSubmit={handleAnswer}
                 />
               )}
+              {readyToAdvance && feedback && (
+                <div style={{ marginTop: 16, display: 'flex', justifyContent: 'flex-end' }}>
+                  <PixelButton
+                    variant={feedback.type === 'success' ? 'primary' : 'danger'}
+                    onClick={() => onNavigate('trial')}
+                  >
+                    PROCEED TO TRIAL →
+                  </PixelButton>
+                </div>
+              )}
             </div>
           </div>
 
@@ -210,10 +262,44 @@ export default function InvestigationScreen({ onNavigate, onBack }: Props) {
 
             {(caseFile?.hints?.length ?? 0) > 0 && (
               <div style={{ padding: 14, border: `2px solid ${TC.grid}`, background: TC.cream }}>
-                <div style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: TC.blue, marginBottom: 8 }}>HINT</div>
-                <div style={{ fontFamily: MONO_FONT, fontSize: 12, color: TC.ink, lineHeight: 1.6 }}>
-                  {caseFile?.hints?.[0]}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                  <div style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: TC.blue }}>
+                    HINT {hintLevel + 1}/{caseFile?.hints?.length}
+                  </div>
+                  {hintLevel < (caseFile?.hints?.length ?? 1) - 1 && (
+                    <button
+                      onClick={() => setHintLevel((h) => h + 1)}
+                      style={{ fontFamily: PIXEL_FONT, fontSize: 8, color: TC.orange, background: 'none', border: `1px solid ${TC.orange}`, padding: '3px 8px', cursor: 'pointer' }}
+                    >
+                      NEXT →
+                    </button>
+                  )}
                 </div>
+                <div style={{ fontFamily: MONO_FONT, fontSize: 12, color: TC.ink, lineHeight: 1.6 }}>
+                  {caseFile?.hints?.[hintLevel]}
+                </div>
+              </div>
+            )}
+
+            {/* Law card reference — H22 */}
+            {lawCard && (
+              <div>
+                <PixelButton small variant="secondary" onClick={() => setShowLawCard(v => !v)}>
+                  {showLawCard ? '▲ HIDE LAW REF' : '▼ LAW REFERENCE'}
+                </PixelButton>
+                {showLawCard && (
+                  <div style={{ marginTop: 8, background: `${TC.orange}08`, border: `2px solid ${TC.orange}`, padding: 12 }}>
+                    <div style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: TC.orange, marginBottom: 6 }}>
+                      {lawCard.iso_clause}
+                    </div>
+                    <div style={{ fontFamily: PIXEL_FONT, fontSize: 10, color: TC.ink, marginBottom: 8, lineHeight: 1.4 }}>
+                      {lawCard.title}
+                    </div>
+                    <div style={{ fontFamily: HAND_FONT, fontSize: 16, color: TC.ink, lineHeight: 1.55 }}>
+                      {lawCard.short_definition}
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -226,14 +312,20 @@ export default function InvestigationScreen({ onNavigate, onBack }: Props) {
   return (
     <div style={{ minHeight: '100vh', position: 'relative', zIndex: 1, padding: 'clamp(16px, 3vw, 30px) clamp(16px, 4vw, 40px)' }}>
       {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
-        <PixelButton small variant="secondary" onClick={onBack}>← BRIEFING</PixelButton>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+        <div style={{ display: 'flex', gap: 6 }}>
+          <PixelButton small variant="secondary" onClick={onBack}>← BRIEFING</PixelButton>
+          <PixelButton small variant="secondary" onClick={() => onNavigate('campaign')}>CAMPAIGN</PixelButton>
+          <PixelButton small variant="secondary" onClick={() => onNavigate('menu')}>⌂ MENU</PixelButton>
+          <PixelButton small variant="secondary" onClick={() => onNavigate('how-to-play')}>? HELP</PixelButton>
+        </div>
         <div style={{ display: 'flex', gap: 8 }}>
           <span style={{ fontFamily: PIXEL_FONT, fontSize: 8, color: TC.magenta, padding: '4px 10px', border: `2px solid ${TC.magenta}` }}>{techniqueLabel}</span>
           <span style={{ fontFamily: PIXEL_FONT, fontSize: 8, color: TC.orange, padding: '4px 10px', border: `2px solid ${TC.orange}`, background: `${TC.orange}15` }}>PHASE 2: INVESTIGATION</span>
         </div>
         <ScoreChip label="SELECTED" value={selectedCount} color={TC.blue} />
       </div>
+      <div style={{ marginBottom: 20 }}><PhaseBreadcrumb current={1} /></div>
 
       <div className="responsive-row" style={{ gap: 30, maxWidth: 1100, margin: '0 auto' }}>
         {/* Main: Truth Table */}
@@ -257,24 +349,30 @@ export default function InvestigationScreen({ onNavigate, onBack }: Props) {
               <thead>
                 <tr style={{ background: `${TC.blue}15` }}>
                   <th style={thStyle}>TC#</th>
-                  <th style={{ ...thStyle, color: TC.blue }}>A</th>
-                  <th style={{ ...thStyle, color: TC.blue }}>B</th>
-                  <th style={{ ...thStyle, color: TC.blue }}>C</th>
+                  <th style={{ ...thStyle, color: TC.blue }}>{caseFile?.scenario.conditions[0]?.id ?? 'A'}</th>
+                  <th style={{ ...thStyle, color: TC.blue }}>{caseFile?.scenario.conditions[1]?.id ?? 'B'}</th>
+                  <th style={{ ...thStyle, color: TC.blue }}>{caseFile?.scenario.conditions[2]?.id ?? 'C'}</th>
                   <th style={{ ...thStyle, color: TC.green }}>D</th>
                   <th style={thStyle}>SELECT</th>
                 </tr>
               </thead>
               <tbody>
-                {TRUTH_TABLE.map(row => {
+                {TRUTH_TABLE.map((row, idx) => {
                   const marked = mcdc.selectedRows.includes(row.id)
+                  const suggested = highlightSuggested && !marked && idx < 4
                   return (
                     <tr
                       key={row.id}
+                      tabIndex={0}
+                      role="checkbox"
+                      aria-checked={marked}
                       onClick={() => toggleRow(row.id)}
+                      onKeyDown={(e) => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); toggleRow(row.id) } }}
                       style={{
                         borderBottom: `1px solid ${TC.grid}`,
-                        background: marked ? `${TC.blue}12` : 'transparent',
+                        background: marked ? `${TC.blue}12` : suggested ? `${TC.orange}18` : 'transparent',
                         cursor: 'pointer',
+                        outline: 'none',
                         transition: 'background 0.06s steps(2)',
                       }}
                     >
@@ -286,12 +384,12 @@ export default function InvestigationScreen({ onNavigate, onBack }: Props) {
                       <td style={tdStyle}>
                         <div style={{
                           width: 20, height: 20, border: `2px solid ${TC.ink}`,
-                          background: marked ? TC.blue : 'transparent',
+                          background: marked ? TC.blue : suggested ? TC.orange : 'transparent',
                           display: 'flex', alignItems: 'center', justifyContent: 'center',
                           margin: '0 auto', color: '#fff',
                           fontFamily: PIXEL_FONT, fontSize: 10,
                         }}>
-                          {marked ? '✓' : ''}
+                          {marked ? '✓' : suggested ? '?' : ''}
                         </div>
                       </td>
                     </tr>
