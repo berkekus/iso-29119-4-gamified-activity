@@ -12,7 +12,7 @@
   "estimated_time_sec": 180,
   "scenario": {
     "title": "The Casino Vault",
-    "narrative": "A casino vault was robbed. Logic: (Manager_Card OR Master_Key) AND Time_Safe. BCC would require 8 tests. You have a budget for exactly 4. Build a perfectly interlocked MC/DC suite.",
+    "narrative": "A casino vault was robbed. The vault decision is (Manager_Card OR Master_Key) AND Time_Safe. With 3 conditions, full BCC would demand 8 tests — but a well-chosen MC/DC suite needs only N+1 = 4. Build the minimum interlocked suite that proves independence for all three conditions.",
     "code": "if (Manager_Card or Master_Key) and Time_Safe:\n    open_vault()",
     "conditions": [
       { "id": "M", "label": "Manager_Card" },
@@ -21,10 +21,11 @@
     ],
     "decision_expression": "(M || K) && T"
   },
-  "claim": "For many expressions, a minimal MC/DC suite can often be built with N+1 tests. This mission uses a 3-condition expression where 4 tests are enough.",
+  "claim": "MC/DC can often be achieved with N+1 tests when the chosen rows interlock — one test can serve as a partner in multiple independence pairs. Pick 4 rows that prove independent effect for M, K, and T simultaneously.",
   "charges": [
-    "Select exactly 4 logs that form valid independence pairs for all 3 conditions.",
-    "Remember: You can reuse a log in multiple pairs!"
+    "Select EXACTLY 4 rows from the 8-row truth table that form valid independence pairs for ALL three conditions.",
+    "A single row may participate in more than one pair — that is the trick that lets MC/DC scale linearly with N instead of exponentially.",
+    "For each condition X, the suite must contain two rows that differ ONLY in X, with the decision flipping between them."
   ],
   "coverage_table": [
     { "id": "R1", "inputs": { "M": true, "K": true, "T": true }, "outcome": true, "required": false },
@@ -36,17 +37,18 @@
     { "id": "R7", "inputs": { "M": false, "K": false, "T": true }, "outcome": false, "required": true },
     { "id": "R8", "inputs": { "M": false, "K": false, "T": false }, "outcome": false, "required": false }
   ],
-  "correct_answer_explanation": "Debrief: Masterful! You achieved MC/DC with only 4 tests. You used R7 (F,F,T) as a baseline 'False' test for both M and K. You used R3 (T,F,T) to prove M, and R5 (F,T,T) to prove K. Then you paired R3 with R4 to prove T. You proved independence for all 3 variables while saving the court 50% of the testing budget!",
-  "wrong_answer_explanation": "That selection doesn't form valid independence pairs for all 3 conditions. Find a set of 4 that overlap efficiently.",
+  "correct_answer_explanation": "Masterful — 4 tests, full MC/DC. Here is how the suite interlocks:\n\n• **M independence: R3 ↔ R7** — only M flips (T→F), K=F and T=T are held; outcome flips T→F.\n• **K independence: R5 ↔ R7** — only K flips (T→F), M=F and T=T are held; outcome flips T→F.\n• **T independence: R3 ↔ R4** — only T flips (T→F), M=T and K=F are held; outcome flips T→F.\n\nNotice that R3 participates in BOTH the M-pair and the T-pair, and R7 partners both M and K. Reusing rows across pairs is exactly why MC/DC scales as N+1 (4 tests for 3 conditions) instead of 2^N (8 tests under BCC) — a 50% saving with no loss of fault-detection power.",
+  "wrong_answer_explanation": "Those 4 rows don't form valid independence pairs for all three conditions. For each variable X, you need two rows that differ ONLY in X with the decision flipping. Try this strategy: pick R7 as a shared baseline (F,F,T → outcome F), then R3 (T,F,T → T) flips M alone, R5 (F,T,T → T) flips K alone, and R3↔R4 covers T.",
   "hints": [
-    "Prosecutor's Note: Start by finding a 'Base False' log like R7 (F,F,T). What happens if you flip just M? What happens if you flip just K?",
-    "Then find a pair to test T by flipping T while holding the others in a state that makes the door open."
+    "Strategy: pick a 'shared baseline' row that can partner two different independence pairs. R7 (M=F, K=F, T=T → outcome F) is a good base — it can pair with anything that flips just M, just K, or eventually T.",
+    "From R7, flip only M to land on R3 (T,F,T → T) — that proves M's independent effect. Flip only K from R7 to land on R5 (F,T,T → T) — that proves K's independent effect. You now need ONE more pair to cover T.",
+    "Worked solution: pick R3, R4, R5, R7. The pairs are: M via R3↔R7, K via R5↔R7, T via R3↔R4. R3 and R7 are each reused in two pairs — that is the N+1 trick."
   ],
   "seeded_faults": [],
   "misconceptions": [
     {
       "id": "MCDC-N-PLUS-ONE",
-      "explanation_md": "MC/DC doesn't require 2 tests for EVERY condition uniquely. A single test can participate in multiple pairs! This is why a 3-variable decision often only needs 4 tests (N+1) instead of 8."
+      "explanation_md": "MC/DC does NOT require two unique tests per condition. A well-designed suite REUSES tests across multiple independence pairs, which is why a decision with N conditions can usually be covered with **N+1 tests** (and at most 2N). For 3 conditions, 4 tests can suffice; for 4 conditions, 5 tests; and so on. This linear scaling is what makes MC/DC the practical sweet spot between weak Decision Coverage and infeasible BCC."
     }
   ]
 }

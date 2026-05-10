@@ -5,8 +5,10 @@ import { loadCase } from '../../src/engine/caseLoader'
 import stmtTutorial from '../../src/content/cases/stmt-tutorial-01.json'
 import branchLoopTrap from '../../src/content/cases/branch-loop-trap-01.json'
 import bcOrThreeCond from '../../src/content/cases/bc-or-three-cond-01.json'
-import bccCostIntuition from '../../src/content/cases/bcc-cost-intuition-01.json'
+import bccVsBc from '../../src/content/cases/bcc-vs-bc-01.json'
 import mcdcVaultBoss from '../../src/content/cases/mcdc-vault-boss-01.json'
+import mcdcShowdown from '../../src/content/cases/mcdc-showdown-01.json'
+import bccExplosion from '../../src/content/cases/bcc-explosion-01.json'
 
 beforeEach(() => {
   useGameStore.getState().resetGame()
@@ -68,48 +70,74 @@ describe('submitAnswer + evaluateAnswer — correct answers mark the case comple
     ).toBe(false)
   })
 
-  test('numeric_input: exact answers pass; off-by-one fails', () => {
-    const c = loadCase(bccCostIntuition)
+  test('evidence_board: required pair passes; wrong pair fails (bcc-vs-bc-01)', () => {
+    const c = loadCase(bccVsBc)
     useGameStore.getState().loadCase(c)
-    const correct = (c.numeric_prompts ?? []).map((p) => p.answer)
+    const required = (c.required_connection ?? []) as readonly string[]
+    expect(required.length).toBe(2)
 
     expect(
-      useGameStore.getState().submitAnswer({ kind: 'numeric_input', answers: correct }),
+      useGameStore.getState().submitAnswer({
+        kind: 'evidence_board',
+        connectedEvidence: [required[0]!, required[1]!],
+      }),
     ).toBe(true)
 
     expect(
       useGameStore.getState().submitAnswer({
-        kind: 'numeric_input',
-        answers: correct.map((n, i) => (i === 0 ? n + 1 : n)),
+        kind: 'evidence_board',
+        connectedEvidence: [required[0]!, 't1_age'],
       }),
     ).toBe(false)
   })
 
-  test('test_designer: canonical 5-row set passes; 6 rows or wrong rows fail', () => {
+  test('budget_strategy: any 3-row pick passes (bcc-explosion-01)', () => {
+    const c = loadCase(bccExplosion)
+    useGameStore.getState().loadCase(c)
+    const allRows = (c.coverage_table ?? []).map((r) => r.id)
+    const threeRows = allRows.slice(0, 3)
+
+    expect(
+      useGameStore.getState().submitAnswer({ kind: 'budget_strategy', selectedRowIds: threeRows }),
+    ).toBe(true)
+
+    // Two rows — under budget cap.
+    expect(
+      useGameStore.getState().submitAnswer({
+        kind: 'budget_strategy',
+        selectedRowIds: threeRows.slice(0, 2),
+      }),
+    ).toBe(false)
+  })
+
+  test('mcdc_pair_builder: canonical 4-row set passes (vault-boss); wrong row fails', () => {
     const c = loadCase(mcdcVaultBoss)
+    useGameStore.getState().loadCase(c)
+    const required = (c.coverage_table ?? []).filter((r) => r.required).map((r) => r.id)
+    expect(required.length).toBe(4)
+
+    expect(
+      useGameStore.getState().submitAnswer({ kind: 'mcdc_pair_builder', selectedRowIds: required }),
+    ).toBe(true)
+
+    // Wrong row swapped in.
+    expect(
+      useGameStore.getState().submitAnswer({
+        kind: 'mcdc_pair_builder',
+        selectedRowIds: [required[0]!, required[1]!, required[2]!, 'R6'],
+      }),
+    ).toBe(false)
+  })
+
+  test('mcdc_pair_builder: showdown 5-row canonical set passes', () => {
+    const c = loadCase(mcdcShowdown)
     useGameStore.getState().loadCase(c)
     const required = (c.coverage_table ?? []).filter((r) => r.required).map((r) => r.id)
     expect(required.length).toBe(5)
 
     expect(
-      useGameStore.getState().submitAnswer({ kind: 'test_designer', selectedRowIds: required }),
+      useGameStore.getState().submitAnswer({ kind: 'mcdc_pair_builder', selectedRowIds: required }),
     ).toBe(true)
-
-    // Six rows — too many.
-    expect(
-      useGameStore.getState().submitAnswer({
-        kind: 'test_designer',
-        selectedRowIds: [...required, 'R6'],
-      }),
-    ).toBe(false)
-
-    // Five rows but with R6 swapped in for R2 — wrong canonical set.
-    expect(
-      useGameStore.getState().submitAnswer({
-        kind: 'test_designer',
-        selectedRowIds: [required[0]!, 'R6', required[2]!, required[3]!, required[4]!],
-      }),
-    ).toBe(false)
   })
 })
 

@@ -12,21 +12,21 @@
   "estimated_time_sec": 120,
   "scenario": {
     "title": "Autonomous Emergency Brake",
-    "narrative": "A self-driving car crashed. The brake logic has 4 variables. The Judge warns you: 'Counsel, the court budget is strict. You can only afford to subpoena 3 crash test logs out of the 16 combinations.'",
+    "narrative": "A self-driving car crashed. The brake decision combines FOUR conditions, producing a 2^4 = 16-row truth table. Full BCC would demand all 16 crash-test logs, but the Judge has restricted your subpoena budget to just 3. Pick any 3 logs to introduce into evidence — the lesson is to feel how much of the combinatorial space is left untouched.",
     "code": "if obstacle_ahead and speed_gt_50 and not_wet and no_manual_brake:\n    trigger_emergency_brake()",
     "conditions": [
-      { "id": "obstacle", "label": "Obstacle" },
-      { "id": "spd50", "label": "Speed>50" },
-      { "id": "dry", "label": "Dry Road" },
-      { "id": "no_brk", "label": "No Override" }
+      { "id": "obstacle", "label": "Object detected ahead" },
+      { "id": "spd50", "label": "Vehicle moving faster than 50" },
+      { "id": "dry", "label": "Road surface is dry" },
+      { "id": "no_brk", "label": "Driver did not press the manual brake" }
     ],
     "decision_expression": "obstacle && spd50 && dry && no_brk"
   },
-  "claim": "I can't test all 16 combinations! Pick the 3 most crucial ones to prove the system fails.",
+  "claim": "BCC demands all 16 combinations, but the court budget covers only 3 subpoenas. Pick exactly 3 logs and prove to the jury how much of the truth table you are forced to leave dark.",
   "charges": [
-    "The defense argues that testing every combination (BCC) is physically impossible for large systems.",
-    "The court demands you select a subset of 3 critical crash scenarios to subpoena.",
-    "Pick any 3 you think are most important."
+    "The decision under test has 4 conditions — that is 2^4 = 16 distinct combinations under BCC.",
+    "The court budget allows only 3 logs to enter evidence. Pick any 3 from the 16-row table.",
+    "The point of this exercise is not which 3 you pick — it is to see that 13 combinations remain completely untested. This is the combinatorial explosion problem BCC suffers from at scale."
   ],
   "test_set": [],
   "coverage_table": [
@@ -47,17 +47,18 @@
     { "id": "R15", "inputs": { "obstacle": false, "spd50": false, "dry": false, "no_brk": true }, "outcome": false, "required": false },
     { "id": "R16", "inputs": { "obstacle": false, "spd50": false, "dry": false, "no_brk": false }, "outcome": false, "required": false }
   ],
-  "correct_answer_explanation": "Debrief: You subpoenaed 3 logs, but you left 13 combinations completely untested! If this car had 10 variables, there would be 1,024 combinations. BCC is perfect, but physically impossible. There must be a mathematically cheaper way to test (Enter MC/DC in the next module!).",
-  "wrong_answer_explanation": "You must pick exactly 3 combinations to meet the court budget.",
+  "correct_answer_explanation": "Verdict: 3 of 16 combinations subpoenaed — 13 untested! With only 4 conditions you already need 16 BCC tests; double the conditions to 8 and you would need 256; reach 10 conditions and BCC explodes to 1,024 tests. BCC is mathematically perfect but practically infeasible for any non-trivial decision. This is precisely the gap that MC/DC fills in the next chapter: linear N+1 growth with strong fault-detection guarantees, instead of exponential 2^N.",
+  "wrong_answer_explanation": "Pick exactly 3 rows — the budget is hard-capped. The lesson is the size of the gap, not which specific rows you pick.",
   "hints": [
-    "Yargıç Notu: Elimizde sadece 3 celp hakkı var ve tabloda 16 olasılık duruyor.",
-    "Bu görevde hangi 3 logu seçtiğinin teknik olarak bir önemi yok. Amaç, kanunun gerektirdiği tüm kombinasyonların sınırlı bütçeyle test edilemeyeceğini mahkemeye kanıtlamak. Rastgele 3 kritik senaryo seç ve geride ne kadar büyük bir boşluk kaldığını izle."
+    "Court Budget: you can only subpoena 3 of the 16 rows. There is no single 'right' triplet — every choice leaves 13 rows untested.",
+    "Tip: pick the all-TRUE row (R1, the only outcome=TRUE case) plus two single-flip neighbours so the gap feels intuitive. But it is your call.",
+    "Worked solution: any 3 rows are accepted. The key takeaway is that BCC at 4 conditions already needs 16 logs, and at 10 conditions it explodes to 1,024. This is why the next chapter introduces MC/DC, which scales as N+1 instead of 2^N."
   ],
   "seeded_faults": [],
   "misconceptions": [
     {
       "id": "BCC-EXPLOSION",
-      "explanation_md": "As N grows, BCC becomes practically impossible due to 'combinatorial explosion' (2^N). This paves the way for MC/DC, which guarantees detection of critical interactions with only N+1 tests."
+      "explanation_md": "As the number of conditions N grows, BCC suffers from **combinatorial explosion**: the suite size doubles with every new condition (2^N). For N=10 that is already 1,024 tests, and for N=20 it is over a million. BCC is the mathematical gold standard for combination coverage, but it is rarely feasible in practice. MC/DC was introduced precisely to retain strong fault-detection guarantees while keeping the suite size linear (N+1)."
     }
   ]
 }

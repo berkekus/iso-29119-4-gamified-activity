@@ -11,7 +11,7 @@
   "estimated_time_sec": 180,
   "scenario": {
     "title": "The Bank Loan Scandal",
-    "narrative": "An AI approved a massive, illegal loan to a bankrupt applicant. The logic: salary_sufficient OR has_guarantor. You must visually prove that 100% Branch Condition (BC) coverage is an illusion that hides critical bugs.",
+    "narrative": "An AI loan officer approved a massive, illegal loan to a bankrupt applicant. The decision was: salary_sufficient OR has_guarantor. The defense pinned 4 evidence cards on the board and claims they achieved 100% Branch Condition coverage. Your job is to show that 100% BC can still hide an entire branch — the missing F-F case.",
     "code": "def approve_loan(salary_ok, has_guarantor):\n    if salary_ok or has_guarantor:\n        return grant_loan()\n    return reject_loan()",
     "conditions": [
       { "id": "salary_ok", "label": "Salary Sufficient" },
@@ -19,10 +19,11 @@
     ],
     "decision_expression": "salary_ok || has_guarantor"
   },
-  "claim": "Look at the Evidence Board! We tested Salary=True and Salary=False! We tested Guarantor=True and Guarantor=False! This is 100% BC coverage!",
+  "claim": "Look at the Evidence Board! We tested Salary=True and Salary=False! We tested Guarantor=True and Guarantor=False! That is 100% Branch Condition coverage!",
   "charges": [
-    "The defense has pinned two pieces of evidence to the board, claiming 100% Branch Condition coverage.",
-    "Connect two specific details from their tests to synthesize a new 'Blind Spot' card and expose the missing combination."
+    "The defense ran two tests — Test 1 (Salary=T, Guarantor=F) and Test 2 (Salary=F, Guarantor=T) — and claims full Branch Condition coverage.",
+    "Both conditions appear as TRUE and as FALSE somewhere across the suite, so BC is technically satisfied. But BCC demands the FULL 2^2 truth table, including the F-F row.",
+    "Connect two evidence cards whose FALSE values, when combined, reveal the untested F-F combination."
   ],
   "evidence_board_clues": [
     { "id": "t1_salary", "label": "Test 1: Salary = True" },
@@ -31,17 +32,18 @@
     { "id": "t2_guar", "label": "Test 2: Guarantor = True" }
   ],
   "required_connection": ["t2_salary", "t1_guar"],
-  "correct_answer_explanation": "Debrief: You slam the synthesized F-F card onto the Judge's desk! They never tested what happens when the applicant has NO salary and NO guarantor. The Judge realizes BC coverage is dangerously incomplete without BCC.",
-  "wrong_answer_explanation": "Those two clues don't expose the critical missing test. Which combination of False values was left entirely untested?",
+  "correct_answer_explanation": "You synthesized the missing F-F card and slammed it on the Judge's bench! Splicing \"Test 2: Salary = False\" with \"Test 1: Guarantor = False\" reconstructs the (Salary=F, Guarantor=F) combination — a row that was NEVER executed. The Judge realizes that 100% BC coverage is a dangerous illusion: each variable was observed as T and F, yet the entire F-F branch was skipped. Only BCC, which demands all 2^N combinations, would have caught this gap.",
+  "wrong_answer_explanation": "Those two clues don't reconstruct the missing combination. The defense already executed three of the four truth-table rows. Identify the one F-F combination that was never tested and connect the two FALSE evidence cards that point to it.",
   "hints": [
-    "Savcı Notu: Tahtadaki kanıtlara dikkatli bak. Savunma her iki değişkeni de bir kez True, bir kez False yapmış.",
-    "BCC Kanununu düşün: Savunma hangi kombinasyonu mahkemeden ustalıkla gizliyor? Her iki değişkenin de aynı anda 'False' olduğu durumu gösteren ipleri bağla."
+    "Prosecutor's Note: The defense ran exactly two tests. List the four possible (Salary, Guarantor) combinations and check which one is absent from their evidence.",
+    "Apply BCC (ISO 29119-4 §5.3.5): every combination in the 2x2 truth table must appear in the suite. Which combination of FALSE values did the defense never run?",
+    "Worked solution: The missing row is (Salary=F, Guarantor=F). Connect \"Test 2: Salary = False\" with \"Test 1: Guarantor = False\" — both FALSE clues — to reconstruct that untested combination."
   ],
   "seeded_faults": [],
   "misconceptions": [
     {
       "id": "BCC-VS-BC",
-      "explanation_md": "A very common mistake is confusing Branch Condition (BC) with Branch Condition Combination (BCC). BC only ensures each condition flips independently. BCC requires testing the entire truth table. As seen here, 100% BC can still completely miss the F-F branch!"
+      "explanation_md": "Branch Condition (BC) and Branch Condition Combination (BCC) are easy to confuse. **BC** only requires that each individual condition take both TRUE and FALSE values somewhere across the test suite — it can be satisfied by 2 tests for any predicate. **BCC** requires every cell of the 2^N truth table. As this case shows, a suite can hit 100% BC and still completely miss the F-F branch, leaving an entire equivalence class of inputs untested."
     }
   ]
 }

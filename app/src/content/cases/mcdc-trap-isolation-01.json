@@ -18,7 +18,7 @@
   "estimated_time_sec": 120,
   "scenario": {
     "title": "The Sabotaged Drone",
-    "narrative": "A security drone fired illegally. Logic: Target_Locked AND (Override_Key OR Auto_Confirm). The defense provides a suite of 4 tests and claims they have full MC/DC. You must find the two tests that form a valid pair for the Override_Key.",
+    "narrative": "A security drone fired a weapon illegally. The decision is Target_Locked AND (Override_Key OR Auto_Confirm). The defense submits four test logs and claims full MC/DC coverage. Your job is to find the INDEPENDENCE PAIR for Override_Key — two tests where only Override flips, the outcome flips, and Auto_Confirm is held in a state that doesn't mask the result.",
     "code": "if Target_Locked and (Override_Key or Auto_Confirm):\n    fire_weapon()",
     "conditions": [
       { "id": "Target_Locked", "label": "Target" },
@@ -29,22 +29,23 @@
   },
   "claim": "We tested everything! Connect the two tests that legally prove the Override_Key independently affects the weapon firing.",
   "charges": [
-    "You must find an Independence Pair for 'Override_Key'.",
-    "If Auto_Confirm is ON, the weapon fires anyway, masking the Override_Key.",
-    "Find the pair where only Override_Key flips, the outcome flips, and it's NOT masked."
+    "You must construct an Independence Pair for Override_Key — two tests where only Override flips and the outcome flips.",
+    "Watch out for masking: in (Override OR Auto), if Auto is TRUE the OR-clause is TRUE regardless of Override. Override is then masked and cannot demonstrate independent effect.",
+    "Pick a pair where Auto_Confirm is OFF in BOTH tests, so Override is the only thing that can change the outcome."
   ],
   "test_set": [],
-  "correct_answer_explanation": "Debrief: Got them! By selecting T2 and T4, you proved Override_Key's effect. In T2 it was ON (Fires), in T4 it was OFF (Fails). Crucially, you held Auto=OFF to prevent masking. If Auto was ON (like T1/T3), the drone fires regardless, masking the Override Key!",
-  "wrong_answer_explanation": "That pair doesn't isolate the Override Key. Make sure Auto_Confirm is held in a state that doesn't force the decision to True.",
+  "correct_answer_explanation": "Got them! T2 (Target=ON, Override=ON, Auto=OFF, Fires) paired with T4 (Target=ON, Override=OFF, Auto=OFF, Fails) is a valid MC/DC pair for Override_Key: only Override flips, Target stays ON, Auto stays OFF, and the outcome flips from Fires to Fails. Holding Auto=OFF was critical — if Auto had been ON in either log, the OR-clause would saturate to TRUE and Override's contribution would be invisible. This masking effect is exactly what MC/DC is designed to surface.",
+  "wrong_answer_explanation": "That pair doesn't isolate Override_Key. Two failure modes are common: (1) you picked tests where MORE than one condition flips, so the change cannot be attributed to Override alone; (2) you picked tests where Auto_Confirm was ON, which masks Override because the OR-clause stays TRUE no matter what Override does. Find a pair where ONLY Override flips and Auto stays OFF in both tests.",
   "hints": [
-    "Prosecutor's Note: If Auto_Confirm is ON, the drone fires no matter what the Override Key does.",
-    "You must find a pair where Auto_Confirm is strictly OFF, and only the Override_Key flips."
+    "Prosecutor's Note: For Override's independence pair, every other condition (Target_Locked AND Auto_Confirm) must be IDENTICAL across the two tests, and only Override may flip.",
+    "Watch the OR gate: in (Override OR Auto), if Auto is TRUE the result is TRUE regardless of Override. To see Override's effect, you MUST hold Auto=OFF in both tests so Override actually drives the outcome.",
+    "Worked solution: T2 (Tgt=ON, Ovr=ON, Auto=OFF → Fires) and T4 (Tgt=ON, Ovr=OFF, Auto=OFF → Fails). Target stays ON, Auto stays OFF, only Override flips, outcome flips. That's a clean Override independence pair."
   ],
   "seeded_faults": [],
   "misconceptions": [
     {
       "id": "MCDC-MASKING",
-      "explanation_md": "In an OR gate (A || B), if B is True, the whole expression is True. Therefore, to test A's independent effect, you MUST hold B as False. Otherwise, A is 'masked'."
+      "explanation_md": "**Masking** is the trap behind every MC/DC mistake. In an OR gate (A || B), if B is TRUE the whole expression is TRUE regardless of A — so flipping A cannot change the outcome and A's effect is hidden. The mirror rule applies to AND: in (A && B), if B is FALSE the whole expression is FALSE regardless of A. To prove A's independent effect you must place every other operand in its **non-controlling** value (FALSE for an OR, TRUE for an AND)."
     }
   ]
 }
