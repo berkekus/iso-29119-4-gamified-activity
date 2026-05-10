@@ -271,10 +271,10 @@ export default function MainMenuScreen({ onNavigate }: Props) {
         flexWrap:       'wrap',
       }}>
         {[
-          { src: '/assets/new_prosecutor.png', label: 'PROSECUTOR' },
-          { src: '/assets/new_judge.png',      label: 'JUDGE' },
-          { src: '/assets/new_defense.png',    label: 'DEFENSE ATTORNEY' },
-        ].map(({ src, label }) => (
+          { src: '/assets/new_prosecutor.png', label: 'PROSECUTOR',       size: CHAR_SIZE },
+          { src: '/assets/new_judge.png',      label: 'JUDGE',            size: 270 },
+          { src: '/assets/new_defense.png',    label: 'DEFENSE ATTORNEY', size: CHAR_SIZE },
+        ].map(({ src, label, size }) => (
           <div key={label} style={{
             display:       'flex',
             flexDirection: 'column',
@@ -285,8 +285,8 @@ export default function MainMenuScreen({ onNavigate }: Props) {
               src={src}
               alt={label}
               style={{
-                width:           CHAR_SIZE,
-                height:          CHAR_SIZE,
+                width:           size,
+                height:          size,
                 objectFit:       'contain',
                 imageRendering:  'pixelated',
               }}
