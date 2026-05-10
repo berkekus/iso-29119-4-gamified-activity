@@ -11,30 +11,35 @@
   "estimated_time_sec": 120,
   "scenario": {
     "title": "Simple Safety Gate",
-    "narrative": "A safety system activates when sensor A is triggered AND button B is pressed.",
+    "narrative": "A safety system activates when sensor sensorTriggered is triggered AND buttonPressed is pressed.",
     "code": "if (sensorTriggered && buttonPressed) activate();",
     "conditions": [
-      { "id": "A", "label": "sensorTriggered" },
-      { "id": "B", "label": "buttonPressed" }
+      { "id": "sensorTriggered", "label": "sensor has been triggered" },
+      { "id": "buttonPressed", "label": "button is pressed" }
     ],
-    "decision_expression": "A && B"
+    "decision_expression": "sensorTriggered && buttonPressed"
   },
   "claim": "This 3-test set satisfies MCDC for both conditions.",
+  "charges": [
+    "The defendant function activates a safety system only when sensorTriggered AND buttonPressed are both true.",
+    "The defendant submits a 3-test suite — (T,T), (F,T), (T,F) — and claims MC/DC coverage for the predicate `sensorTriggered && buttonPressed`.",
+    "The court must determine whether each condition has a valid independence pair within the submitted suite."
+  ],
   "test_set": [
-    { "id": "T1", "inputs": { "A": true,  "B": true  }, "outcome": true  },
-    { "id": "T2", "inputs": { "A": false, "B": true  }, "outcome": false },
-    { "id": "T3", "inputs": { "A": true,  "B": false }, "outcome": false }
+    { "id": "T1", "inputs": { "sensorTriggered": true,  "buttonPressed": true  }, "outcome": true  },
+    { "id": "T2", "inputs": { "sensorTriggered": false, "buttonPressed": true  }, "outcome": false },
+    { "id": "T3", "inputs": { "sensorTriggered": true,  "buttonPressed": false }, "outcome": false }
   ],
   "hints": [
-    "Re-read Law Card 6. An independence pair fixes every condition except one and the outcome must flip.",
-    "For condition A: which two tests differ ONLY in A and produce different outcomes? Same question for B.",
-    "Solution — A's pair: T1 vs T2 (only A flips, outcome flips). B's pair: T1 vs T3 (only B flips, outcome flips). Three tests are enough here because T1 is shared."
+    "An independence pair fixes every condition except one and the outcome must flip.",
+    "For sensorTriggered: which two tests differ ONLY in sensorTriggered and produce different outcomes? Same question for buttonPressed.",
+    "sensorTriggered's pair: T1 vs T2 (only sensorTriggered flips, outcome flips). buttonPressed's pair: T1 vs T3 (only buttonPressed flips, outcome flips). Three tests are enough here because T1 is shared."
   ],
   "seeded_faults": [
     {
       "id": "F1",
-      "description": "Button B check is bypassed when sensor A is triggered",
-      "trigger": { "condition": "B", "requiredDecisionFlip": true }
+      "description": "buttonPressed check is bypassed when sensorTriggered is triggered",
+      "trigger": { "condition": "buttonPressed", "requiredDecisionFlip": true }
     }
   ],
   "misconceptions": [

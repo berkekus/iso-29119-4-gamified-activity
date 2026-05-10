@@ -196,14 +196,12 @@ export default function TrialScreen({ onNavigate, onBack }: Props) {
             <PixelButton variant="primary" onClick={() => onNavigate('debrief')}>VIEW DEBRIEF →</PixelButton>
           </div>
 
-          {isGuilty && (
-            <div style={{ display: 'flex', justifyContent: 'center', marginTop: 40, paddingBottom: 40, animation: 'fadeIn 1s ease-in' }}>
-              <BugSprite 
-                mood="prisoned" 
-                className="!w-full !h-auto max-w-[240px] sm:max-w-[300px] md:max-w-[380px] opacity-90 transition-all" 
-              />
-            </div>
-          )}
+          <div style={{ display: 'flex', justifyContent: 'center', marginTop: 40, paddingBottom: 40, animation: 'fadeIn 1s ease-in' }}>
+            <BugSprite 
+              mood={isGuilty ? 'prisoned' : 'escaped'} 
+              className="!w-full !h-auto max-w-[240px] sm:max-w-[300px] md:max-w-[380px] opacity-90 transition-all" 
+            />
+          </div>
         </div>
       )}
     </div>

@@ -50,7 +50,7 @@ export function DefenseSprite({ size, pose = 'idle', className = '', isTalking }
 interface BugProps {
   size?: number | string
   type?: 'mcdc' | 'combinatorial' | 'dataflow' | 'bcc'
-  mood?: 'nervous' | 'caught' | 'prisoned'
+  mood?: 'nervous' | 'caught' | 'prisoned' | 'escaped'
   className?: string
   isTalking?: boolean
 }
@@ -59,6 +59,8 @@ export function BugSprite({ size, type = 'mcdc', mood = 'nervous', className = '
   let src = "/assets/bug-defendant.png"
   if (mood === 'prisoned') {
     src = "/assets/bug-defendant-prisoned.png"
+  } else if (mood === 'escaped') {
+    src = "/assets/bug-escaped.png"
   } else if (isTalking) {
     src = "/assets/bug-defendant-talk.png"
   }

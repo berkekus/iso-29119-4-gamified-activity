@@ -14,68 +14,73 @@
     "narrative": "Access to a high-security vault requires a valid badge AND a non-expired PIN AND the request to fall within the time window AND a positive biometric scan. BCC would need 2^4 = 16 tests; certify the vault with the MCDC minimum of 5. Pick exactly 5 rows from the 16-row truth table that satisfy MCDC for ALL FOUR conditions.",
     "code": "if (badge_valid and not pin_expired and time_window_ok and biometric_ok):\n    grant_access()",
     "conditions": [
-      { "id": "A", "label": "badge_valid" },
-      { "id": "B", "label": "!pin_expired" },
-      { "id": "C", "label": "time_window_ok" },
-      { "id": "D", "label": "biometric_ok" }
+      { "id": "badge_valid", "label": "badge is valid" },
+      { "id": "pin_expired", "label": "PIN has expired" },
+      { "id": "time_window_ok", "label": "request is within the allowed time window" },
+      { "id": "biometric_ok", "label": "biometric scan succeeded" }
     ],
-    "decision_expression": "A && B && C && D"
+    "decision_expression": "badge_valid && !pin_expired && time_window_ok && biometric_ok"
   },
-  "claim": "Choose exactly 5 of the 16 truth-table rows so that each of A, B, C, D has a valid MCDC independence pair.",
+  "claim": "Choose exactly 5 of the 16 truth-table rows so that each of badge_valid, pin_expired, time_window_ok, biometric_ok has a valid MCDC independence pair.",
+  "charges": [
+    "Vault access is granted only when the badge is valid AND the PIN is not expired AND the request falls within the time window AND the biometric scan is positive.",
+    "The court certifies the vault under MC/DC coverage of the four-condition predicate `badge_valid && !pin_expired && time_window_ok && biometric_ok`.",
+    "The prosecution alleges that any test selection other than the canonical 5-row N+1 pattern (one all-true baseline plus one row per condition flipped to false) leaves at least one condition without a valid independence pair."
+  ],
   "test_set": [
-    { "id": "R1",  "inputs": { "A": true,  "B": true,  "C": true,  "D": true  }, "outcome": true  },
-    { "id": "R2",  "inputs": { "A": false, "B": true,  "C": true,  "D": true  }, "outcome": false },
-    { "id": "R3",  "inputs": { "A": true,  "B": false, "C": true,  "D": true  }, "outcome": false },
-    { "id": "R4",  "inputs": { "A": true,  "B": true,  "C": false, "D": true  }, "outcome": false },
-    { "id": "R5",  "inputs": { "A": true,  "B": true,  "C": true,  "D": false }, "outcome": false }
+    { "id": "R1",  "inputs": { "badge_valid": true,  "pin_expired": false, "time_window_ok": true,  "biometric_ok": true  }, "outcome": true  },
+    { "id": "R2",  "inputs": { "badge_valid": false, "pin_expired": false, "time_window_ok": true,  "biometric_ok": true  }, "outcome": false },
+    { "id": "R3",  "inputs": { "badge_valid": true,  "pin_expired": true,  "time_window_ok": true,  "biometric_ok": true  }, "outcome": false },
+    { "id": "R4",  "inputs": { "badge_valid": true,  "pin_expired": false, "time_window_ok": false, "biometric_ok": true  }, "outcome": false },
+    { "id": "R5",  "inputs": { "badge_valid": true,  "pin_expired": false, "time_window_ok": true,  "biometric_ok": false }, "outcome": false }
   ],
   "coverage_table": [
-    { "id": "R1",  "inputs": { "A": true,  "B": true,  "C": true,  "D": true  }, "outcome": true,  "required": true  },
-    { "id": "R2",  "inputs": { "A": false, "B": true,  "C": true,  "D": true  }, "outcome": false, "required": true  },
-    { "id": "R3",  "inputs": { "A": true,  "B": false, "C": true,  "D": true  }, "outcome": false, "required": true  },
-    { "id": "R4",  "inputs": { "A": true,  "B": true,  "C": false, "D": true  }, "outcome": false, "required": true  },
-    { "id": "R5",  "inputs": { "A": true,  "B": true,  "C": true,  "D": false }, "outcome": false, "required": true  },
-    { "id": "R6",  "inputs": { "A": false, "B": false, "C": true,  "D": true  }, "outcome": false, "required": false },
-    { "id": "R7",  "inputs": { "A": false, "B": true,  "C": false, "D": true  }, "outcome": false, "required": false },
-    { "id": "R8",  "inputs": { "A": false, "B": true,  "C": true,  "D": false }, "outcome": false, "required": false },
-    { "id": "R9",  "inputs": { "A": true,  "B": false, "C": false, "D": true  }, "outcome": false, "required": false },
-    { "id": "R10", "inputs": { "A": true,  "B": false, "C": true,  "D": false }, "outcome": false, "required": false },
-    { "id": "R11", "inputs": { "A": true,  "B": true,  "C": false, "D": false }, "outcome": false, "required": false },
-    { "id": "R12", "inputs": { "A": false, "B": false, "C": false, "D": true  }, "outcome": false, "required": false },
-    { "id": "R13", "inputs": { "A": false, "B": false, "C": true,  "D": false }, "outcome": false, "required": false },
-    { "id": "R14", "inputs": { "A": false, "B": true,  "C": false, "D": false }, "outcome": false, "required": false },
-    { "id": "R15", "inputs": { "A": true,  "B": false, "C": false, "D": false }, "outcome": false, "required": false },
-    { "id": "R16", "inputs": { "A": false, "B": false, "C": false, "D": false }, "outcome": false, "required": false }
+    { "id": "R1",  "inputs": { "badge_valid": true,  "pin_expired": false, "time_window_ok": true,  "biometric_ok": true  }, "outcome": true,  "required": true  },
+    { "id": "R2",  "inputs": { "badge_valid": false, "pin_expired": false, "time_window_ok": true,  "biometric_ok": true  }, "outcome": false, "required": true  },
+    { "id": "R3",  "inputs": { "badge_valid": true,  "pin_expired": true,  "time_window_ok": true,  "biometric_ok": true  }, "outcome": false, "required": true  },
+    { "id": "R4",  "inputs": { "badge_valid": true,  "pin_expired": false, "time_window_ok": false, "biometric_ok": true  }, "outcome": false, "required": true  },
+    { "id": "R5",  "inputs": { "badge_valid": true,  "pin_expired": false, "time_window_ok": true,  "biometric_ok": false }, "outcome": false, "required": true  },
+    { "id": "R6",  "inputs": { "badge_valid": false, "pin_expired": true,  "time_window_ok": true,  "biometric_ok": true  }, "outcome": false, "required": false },
+    { "id": "R7",  "inputs": { "badge_valid": false, "pin_expired": false, "time_window_ok": false, "biometric_ok": true  }, "outcome": false, "required": false },
+    { "id": "R8",  "inputs": { "badge_valid": false, "pin_expired": false, "time_window_ok": true,  "biometric_ok": false }, "outcome": false, "required": false },
+    { "id": "R9",  "inputs": { "badge_valid": true,  "pin_expired": true,  "time_window_ok": false, "biometric_ok": true  }, "outcome": false, "required": false },
+    { "id": "R10", "inputs": { "badge_valid": true,  "pin_expired": true,  "time_window_ok": true,  "biometric_ok": false }, "outcome": false, "required": false },
+    { "id": "R11", "inputs": { "badge_valid": true,  "pin_expired": false, "time_window_ok": false, "biometric_ok": false }, "outcome": false, "required": false },
+    { "id": "R12", "inputs": { "badge_valid": false, "pin_expired": true,  "time_window_ok": false, "biometric_ok": true  }, "outcome": false, "required": false },
+    { "id": "R13", "inputs": { "badge_valid": false, "pin_expired": true,  "time_window_ok": true,  "biometric_ok": false }, "outcome": false, "required": false },
+    { "id": "R14", "inputs": { "badge_valid": false, "pin_expired": false, "time_window_ok": false, "biometric_ok": false }, "outcome": false, "required": false },
+    { "id": "R15", "inputs": { "badge_valid": true,  "pin_expired": true,  "time_window_ok": false, "biometric_ok": false }, "outcome": false, "required": false },
+    { "id": "R16", "inputs": { "badge_valid": false, "pin_expired": true,  "time_window_ok": false, "biometric_ok": false }, "outcome": false, "required": false }
   ],
   "required_pick_count": 5,
   "options": [
-    { "id": "opt-r1",  "label": "R1  (T,T,T,T → grant)", "is_correct": true,  "explanation": "Baseline. The shared 'all true' row that pairs with each of R2-R5 to form an independence pair." },
-    { "id": "opt-r2",  "label": "R2  (F,T,T,T → deny)",  "is_correct": true,  "explanation": "Pairs with R1: only A flips, outcome flips. Independence pair for A." },
-    { "id": "opt-r3",  "label": "R3  (T,F,T,T → deny)",  "is_correct": true,  "explanation": "Pairs with R1: only B flips, outcome flips. Independence pair for B." },
-    { "id": "opt-r4",  "label": "R4  (T,T,F,T → deny)",  "is_correct": true,  "explanation": "Pairs with R1: only C flips, outcome flips. Independence pair for C." },
-    { "id": "opt-r5",  "label": "R5  (T,T,T,F → deny)",  "is_correct": true,  "explanation": "Pairs with R1: only D flips, outcome flips. Independence pair for D." },
-    { "id": "opt-r6",  "label": "R6  (F,F,T,T → deny)",  "is_correct": false, "explanation": "Trap. R6 differs from R1 in TWO conditions (A and B), so it cannot be an independence pair for either alone." },
-    { "id": "opt-r12", "label": "R12 (F,F,F,T → deny)",  "is_correct": false, "explanation": "Trap. Three conditions differ from R1 — not a valid pair for any single condition." },
-    { "id": "opt-r16", "label": "R16 (F,F,F,F → deny)",  "is_correct": false, "explanation": "Trap. All four conditions differ from R1. Useful for BCC, useless for MCDC." }
+    { "id": "opt-r1",  "label": "R1  (badge=T, pin_expired=F, window=T, bio=T → grant)", "is_correct": true,  "explanation": "Baseline. The shared 'all-true-effective' row that pairs with each of R2-R5 to form an independence pair." },
+    { "id": "opt-r2",  "label": "R2  (badge=F, pin_expired=F, window=T, bio=T → deny)",  "is_correct": true,  "explanation": "Pairs with R1: only badge_valid flips, outcome flips. Independence pair for badge_valid." },
+    { "id": "opt-r3",  "label": "R3  (badge=T, pin_expired=T, window=T, bio=T → deny)",  "is_correct": true,  "explanation": "Pairs with R1: only pin_expired flips, outcome flips. Independence pair for pin_expired." },
+    { "id": "opt-r4",  "label": "R4  (badge=T, pin_expired=F, window=F, bio=T → deny)",  "is_correct": true,  "explanation": "Pairs with R1: only time_window_ok flips, outcome flips. Independence pair for time_window_ok." },
+    { "id": "opt-r5",  "label": "R5  (badge=T, pin_expired=F, window=T, bio=F → deny)",  "is_correct": true,  "explanation": "Pairs with R1: only biometric_ok flips, outcome flips. Independence pair for biometric_ok." },
+    { "id": "opt-r6",  "label": "R6  (badge=F, pin_expired=T, window=T, bio=T → deny)",  "is_correct": false, "explanation": "Trap. R6 differs from R1 in TWO conditions (badge_valid and pin_expired), so it cannot be an independence pair for either alone." },
+    { "id": "opt-r12", "label": "R12 (badge=F, pin_expired=T, window=F, bio=T → deny)",  "is_correct": false, "explanation": "Trap. Three conditions differ from R1 — not a valid pair for any single condition." },
+    { "id": "opt-r16", "label": "R16 (badge=F, pin_expired=T, window=F, bio=F → deny)",  "is_correct": false, "explanation": "Trap. All four conditions differ from R1. Useful for BCC, useless for MCDC." }
   ],
-  "correct_answer_explanation": "Pick {R1, R2, R3, R4, R5}. Each of R2-R5 differs from R1 in exactly one condition AND the outcome flips — that's the canonical N+1 = 5 MCDC pattern from Annex C.2.3.6.",
-  "wrong_answer_explanation": "MCDC needs, for each condition, a pair of tests where ONLY that condition flips and the outcome flips. With AND-chains, the outcome only flips between TTTT and a one-condition-false row. Anchor on R1 and add R2..R5.",
+  "correct_answer_explanation": "Pick {R1, R2, R3, R4, R5}. Each of R2-R5 differs from R1 in exactly one condition AND the outcome flips — that's the canonical N+1 = 5 MCDC pattern.",
+  "wrong_answer_explanation": "MCDC needs, for each condition, a pair of tests where ONLY that condition flips and the outcome flips. With AND-chains, the outcome only flips between the all-effective-true baseline and a one-condition-flipped row. Anchor on R1 and add R2..R5.",
   "hints": [
-    "MCDC needs, for each of A, B, C, D, two tests where ONLY that condition flips and the overall outcome flips. With AND-chains, the outcome flips only between TTTT and one-condition-false. Re-read Law Card 6.",
-    "Anchor on R1=(T,T,T,T) — the only TRUE outcome. The independence partner for each condition is the row where that single condition is flipped to F: R2 for A, R3 for B, R4 for C, R5 for D.",
-    "Solution — Pick {R1, R2, R3, R4, R5}. Each pair shares R1 as the baseline, flips exactly one condition, and flips the outcome from grant → deny. That's MCDC in 5 tests instead of BCC's 16. This is the canonical N+1 pattern from Annex C.2.3.6 and the cost-saving that DO-178C exploits."
+    "MCDC needs, for each of badge_valid, pin_expired, time_window_ok, biometric_ok, two tests where ONLY that condition flips and the overall outcome flips. With AND-chains, the outcome flips only between the all-effective-true baseline and one-condition-flipped.",
+    "Anchor on R1=(badge=T, pin_expired=F, window=T, bio=T) — the only TRUE outcome. The independence partner for each condition is the row where that single condition is flipped: R2 for badge_valid, R3 for pin_expired, R4 for time_window_ok, R5 for biometric_ok.",
+    "Pick {R1, R2, R3, R4, R5}. Each pair shares R1 as the baseline, flips exactly one condition, and flips the outcome from grant → deny. That's MCDC in 5 tests instead of BCC's 16. This is the canonical N+1 pattern and the cost-saving that DO-178C exploits."
   ],
   "seeded_faults": [
     {
       "id": "F1",
-      "description": "Biometric check D is silently bypassed when the badge is valid — the bug is invisible without an MCDC pair on D.",
-      "trigger": { "condition": "D", "requiredDecisionFlip": true }
+      "description": "biometric_ok check is silently bypassed when the badge is valid — the bug is invisible without an MCDC pair on biometric_ok.",
+      "trigger": { "condition": "biometric_ok", "requiredDecisionFlip": true }
     }
   ],
   "misconceptions": [
     {
       "id": "MCDC-INDEP-AS-ISOLATION",
-      "explanation_md": "The 5-test MCDC solution is the canonical N+1 pattern: one shared 'all true' baseline plus one row per condition where that condition alone flips to false. The temptation is to add 'isolation' rows like R6=(F,F,T,T) — but these flip TWO conditions, which is not a valid independence pair for either. MCDC's power is precisely this discipline: each pair must change exactly one condition while the others stay fixed."
+      "explanation_md": "The 5-test MCDC solution is the canonical N+1 pattern: one shared baseline plus one row per condition where that condition alone flips. The temptation is to add 'isolation' rows like R6 — but these flip TWO conditions, which is not a valid independence pair for either. MCDC's power is precisely this discipline: each pair must change exactly one condition while the others stay fixed."
     }
   ]
 }

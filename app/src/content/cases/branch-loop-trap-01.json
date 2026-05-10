@@ -14,13 +14,18 @@
     "narrative": "A batch processor walks through a list of items. A `for` loop has a TRUE edge (items present, body runs) and a FALSE edge (empty list, body skipped). Pick the candidate test set that achieves 100% BRANCH coverage of the loop guard.",
     "code": "def process_all(items):\n    count = 0\n    for item in items:\n        handle(item)\n        count += 1\n    return count",
     "conditions": [
-      { "id": "L", "label": "items is non-empty (loop body executed at least once)" }
+      { "id": "items", "label": "input list is non-empty (loop body executes at least once)" }
     ],
-    "decision_expression": "L"
+    "decision_expression": "items"
   },
   "claim": "Which candidate test set achieves 100% BRANCH coverage of the loop guard in process_all()?",
+  "charges": [
+    "The batch processor process_all(items) iterates over a list and counts handled items inside the loop body.",
+    "The defendant test suite exercises only the case where items is non-empty, so the loop body always runs.",
+    "The prosecution alleges the FALSE edge of the for-loop guard (empty list, body skipped) is never taken, leaving an empty-input fault undetectable."
+  ],
   "test_set": [
-    { "id": "T1", "inputs": { "L": true }, "outcome": true }
+    { "id": "T1", "inputs": { "items": [1, 2, 3] }, "outcome": 3 }
   ],
   "options": [
     {
@@ -49,17 +54,17 @@
     }
   ],
   "correct_answer_explanation": "Branch coverage of a loop requires BOTH a non-empty input (body executes) AND an empty input (body skipped). One alone leaves the other edge untested.",
-  "wrong_answer_explanation": "A `for` loop has two edges: enter the body, skip the body. Branch coverage demands both. Re-read Law Card 2.",
+  "wrong_answer_explanation": "A `for` loop has two edges: enter the body, skip the body. Branch coverage demands both.",
   "hints": [
-    "A `for` (or `while`) loop has a TRUE edge (enter the body) and a FALSE edge (skip the body / exit immediately). Re-read Law Card 2.",
+    "A `for` (or `while`) loop has a TRUE edge (enter the body) and a FALSE edge (skip the body / exit immediately). Branch coverage demands tests for both edges.",
     "T1=[1,2,3] enters the loop body — so the TRUE edge is covered. Which test set ALSO covers the FALSE edge?",
-    "Solution — Set C is the only candidate that includes both items=[non-empty] (TRUE edge) AND items=[] (FALSE edge). That's 100% Branch coverage."
+    "Set C is the only candidate that includes both items=[non-empty] (TRUE edge) AND items=[] (FALSE edge). That's 100% Branch coverage."
   ],
   "seeded_faults": [
     {
       "id": "F1",
       "description": "process_all returns the wrong default (e.g. None) when items is empty.",
-      "trigger": { "condition": "L", "requiredDecisionFlip": true }
+      "trigger": { "condition": "items", "requiredDecisionFlip": true }
     }
   ],
   "misconceptions": [
