@@ -116,7 +116,7 @@ function PixelDivider() {
 // Title word — thick outline via dual-layer (DON'T TOUCH)
 // ─────────────────────────────────────────────────────────────────────────────
 
-function TitleWord({ text, fontSize }: { text: string; fontSize: string }) {
+function TitleWord({ text, fontSize, color = '#F5F0E1' }: { text: string; fontSize: string; color?: string }) {
   const shared: React.CSSProperties = {
     fontFamily:    PIXEL_FONT,
     fontSize,
@@ -137,7 +137,7 @@ function TitleWord({ text, fontSize }: { text: string; fontSize: string }) {
       }}>{text}</span>
       <span style={{
         ...shared,
-        color:    '#F5F0E1',
+        color,
         position: 'absolute',
         inset:    0,
       }}>{text}</span>
@@ -236,10 +236,10 @@ export default function MainMenuScreen({ onNavigate }: Props) {
       {/* ── Title (DO NOT TOUCH) ───────────────────────────────── */}
       <div style={{ textAlign: 'center', lineHeight: 1.1, marginBottom: 8 }}>
         <div style={{ display: 'flex', justifyContent: 'center' }}>
-          <TitleWord text="TEST" fontSize={titleSize} />
+          <TitleWord text="TEST" fontSize={titleSize} color="#CC2222" />
         </div>
         <div style={{ display: 'flex', justifyContent: 'center' }}>
-          <TitleWord text="COURTHOUSE" fontSize={titleSize} />
+          <TitleWord text="COURTHOUSE" fontSize={titleSize} color="#2C6FBB" />
         </div>
       </div>
 
@@ -264,42 +264,60 @@ export default function MainMenuScreen({ onNavigate }: Props) {
       {/* ── Character row ─────────────────────────────────────── */}
       <div style={{
         display:        'flex',
-        gap:            'clamp(28px, 6vw, 72px)',
+        gap:            'clamp(16px, 4vw, 52px)',
         marginBottom:   'clamp(18px, 2.5vw, 30px)',
         alignItems:     'flex-end',
         justifyContent: 'center',
         flexWrap:       'wrap',
       }}>
-        {[
-          { src: '/assets/new_prosecutor.png', label: 'PROSECUTOR',       size: CHAR_SIZE },
-          { src: '/assets/new_judge.png',      label: 'JUDGE',            size: 270 },
-          { src: '/assets/new_defense.png',    label: 'DEFENSE ATTORNEY', size: CHAR_SIZE },
-        ].map(({ src, label, size }) => (
+        {([
+          { src: '/assets/new_judge.png',      label: 'JUDGE',            size: 255 },
+          { src: '/assets/new_prosecutor.png', label: 'PROSECUTOR',       size: 205, isPlayer: true },
+          { src: '/assets/new_defense.png',    label: 'DEFENSE ATTORNEY', size: 180 },
+          { src: '/assets/bug-defendant.png',  label: 'DEFENDANT',        size: 180 },
+        ] as { src: string; label: string; size: number; isPlayer?: boolean }[]).map(({ src, label, size, isPlayer }) => (
           <div key={label} style={{
             display:       'flex',
             flexDirection: 'column',
             alignItems:    'center',
             gap:           10,
+            position:      'relative',
+            paddingTop:    28,
           }}>
+            {isPlayer && (
+              <div style={{
+                position:      'absolute',
+                top:           0,
+                fontFamily:    PIXEL_FONT,
+                fontSize:      7,
+                color:         '#fff',
+                background:    '#2C6FBB',
+                padding:       '3px 10px',
+                letterSpacing: 1,
+              }}>▶ YOU</div>
+            )}
             <img
               src={src}
               alt={label}
               style={{
-                width:           size,
-                height:          size,
-                objectFit:       'contain',
-                imageRendering:  'pixelated',
+                width:          size,
+                height:         size,
+                objectFit:      'contain',
+                imageRendering: 'pixelated',
+                filter:         isPlayer
+                  ? 'drop-shadow(0 0 10px rgba(44,111,187,0.55))'
+                  : undefined,
               }}
             />
             <div style={{
-              fontFamily:  PIXEL_FONT,
-              fontSize:    8,
-              color:       '#111111',
-              border:      '2px solid #111111',
-              background:  '#f7f1df',
-              padding:     '5px 12px',
+              fontFamily:    PIXEL_FONT,
+              fontSize:      8,
+              color:         isPlayer ? '#fff' : '#111111',
+              border:        `2px solid ${isPlayer ? '#2C6FBB' : '#111111'}`,
+              background:    isPlayer ? '#2C6FBB' : '#f7f1df',
+              padding:       '5px 12px',
               letterSpacing: 1,
-              whiteSpace:  'nowrap',
+              whiteSpace:    'nowrap',
             }}>
               {label}
             </div>
