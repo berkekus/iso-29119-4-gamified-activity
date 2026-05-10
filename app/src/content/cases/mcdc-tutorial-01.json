@@ -20,7 +20,7 @@
   ],
   "scenario": {
     "title": "The Single Flip",
-    "narrative": "A secure lab door failed, letting a spy inside. The logic: Has_Badge AND Fingerprint_Match. The defense submits 2 test logs and says 'The door was thoroughly tested!' You must prove their tests are legally invalid.",
+    "narrative": "A secure lab door failed and a spy walked inside. The decision is Has_Badge AND Fingerprint_Match. The defense submits two test logs — (Badge=T, Finger=T) and (Badge=F, Finger=F) — and claims the door was thoroughly tested. You must prove that no single condition was tested for INDEPENDENT effect: both inputs flipped at once, so neither one was isolated.",
     "code": "if has_badge and fingerprint_match:\n    open_lab_door()",
     "conditions": [
       { "id": "has_badge", "label": "Badge" },
@@ -30,22 +30,23 @@
   },
   "claim": "Test 1: Badge=True, Finger=True (Door Opened). Test 2: Badge=False, Finger=False (Door Closed). Our testing is flawless!",
   "charges": [
-    "The defense claims they proved the Fingerprint scanner works.",
-    "However, their 'failing' test changed BOTH the badge and the fingerprint.",
-    "Form an objection to show why this invalidates their proof of independent effect."
+    "The defense submits two tests in which both conditions changed simultaneously between the runs.",
+    "MC/DC requires an independence pair: two tests where exactly ONE condition flips while every other condition is held constant, AND the decision outcome flips.",
+    "Build an objection that names the flaw — the defense flipped both variables together, so neither has been shown to independently affect the outcome."
   ],
   "test_set": [],
-  "correct_answer_explanation": "Debrief: You shattered their defense! By changing multiple variables, they masked the fingerprint scanner's failure. Welcome to the rule of the 'Single Flip'. Note: In this mission, 'only one condition changes' is an easy beginner-friendly way to introduce MC/DC. In deeper logic, we will look at 'independent effect' even if non-essential things change.",
-  "wrong_answer_explanation": "That objection doesn't hit the mathematical flaw. Focus on how many variables they flipped at once.",
+  "correct_answer_explanation": "Objection sustained! By stringing \"In your two tests... Both Badge AND Fingerprint changed... so we can't prove WHICH ONE opened the door!\" you exposed the structural flaw: when two variables move together, you cannot attribute the outcome change to either of them. MC/DC requires an INDEPENDENCE PAIR — two tests that differ in exactly one condition while all others stay fixed, and where the decision flips. The defense never produced such a pair for either Badge or Fingerprint.",
+  "wrong_answer_explanation": "That objection misses the MC/DC rule. The defense reached both TRUE and FALSE outcomes — that satisfies Decision Coverage, not MC/DC. To break their proof, point out that they flipped TWO variables at once, so neither one has been isolated.",
   "hints": [
-    "Judge's Note: Look at the defense's logs. Did they change just the fingerprint, or did they swap the badge too?",
-    "A valid MC/DC pair must flip EXACTLY ONE variable to prove that specific variable caused the outcome change."
+    "Judge's Note: Look at the defense's two logs side by side. List which variables changed between Test 1 and Test 2 — was it just one, or both?",
+    "MC/DC requires an INDEPENDENCE PAIR for each condition: exactly ONE variable flips, every other variable is held constant, and the decision outcome flips. Did the defense produce such a pair for Badge? For Fingerprint?",
+    "Worked solution: Build \"In your two tests... Both Badge AND Fingerprint changed... so we can't prove WHICH ONE opened the door!\". This calls out that two simultaneous flips cannot isolate the independent effect of either condition."
   ],
   "seeded_faults": [],
   "misconceptions": [
     {
       "id": "MCDC-SINGLE-FLIP",
-      "explanation_md": "To prove independent effect, you must hold all other variables constant while flipping the target variable. If you change two things at once, you cannot prove which one caused the decision to change."
+      "explanation_md": "MC/DC's central rule is the **independence pair**: to prove that condition X independently affects the decision, you must hold every other condition constant and flip ONLY X, then observe the decision change. If two or more conditions move together between two tests, neither one has been isolated, so neither contributes to MC/DC — even if the outcome happens to change."
     }
   ]
 }

@@ -28,8 +28,9 @@
       "title": "Combinatorial Insight",
       "description": "Completed all ACT III cases — BCC mastered.",
       "required_cases": [
-        "bcc-three-and-01",
-        "bcc-cost-intuition-01"
+        "bcc-intro-01",
+        "bcc-vs-bc-01",
+        "bcc-explosion-01"
       ]
     },
     {

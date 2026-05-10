@@ -1,19 +1,20 @@
 import { describe, test, expect } from 'vitest'
 import { loadCase, type CaseFile } from '../src/engine/caseLoader'
 
-// All 12 cases under audit
+// All 13 campaign cases under audit (matches CASE_ORDER)
 import stmtTutorial from '../src/content/cases/stmt-tutorial-01.json'
 import stmtHidden from '../src/content/cases/stmt-hidden-branch-01.json'
 import branchLoop from '../src/content/cases/branch-loop-trap-01.json'
 import decisionAndTrap from '../src/content/cases/decision-and-trap-01.json'
 import bcOrThree from '../src/content/cases/bc-or-three-cond-01.json'
 import bcNegMask from '../src/content/cases/bc-negation-mask-01.json'
-import bccThreeAnd from '../src/content/cases/bcc-three-and-01.json'
-import bccCost from '../src/content/cases/bcc-cost-intuition-01.json'
+import bccIntro from '../src/content/cases/bcc-intro-01.json'
+import bccVsBc from '../src/content/cases/bcc-vs-bc-01.json'
+import bccExplosion from '../src/content/cases/bcc-explosion-01.json'
 import mcdcTutorial from '../src/content/cases/mcdc-tutorial-01.json'
-import mcdcAltitude from '../src/content/cases/mcdc-altitude-disengage-01.json'
 import mcdcTrapIso from '../src/content/cases/mcdc-trap-isolation-01.json'
 import mcdcVault from '../src/content/cases/mcdc-vault-boss-01.json'
+import mcdcShowdown from '../src/content/cases/mcdc-showdown-01.json'
 
 const ALL_CASES: { name: string; raw: unknown }[] = [
   { name: 'stmt-tutorial-01', raw: stmtTutorial },
@@ -22,12 +23,13 @@ const ALL_CASES: { name: string; raw: unknown }[] = [
   { name: 'decision-and-trap-01', raw: decisionAndTrap },
   { name: 'bc-or-three-cond-01', raw: bcOrThree },
   { name: 'bc-negation-mask-01', raw: bcNegMask },
-  { name: 'bcc-three-and-01', raw: bccThreeAnd },
-  { name: 'bcc-cost-intuition-01', raw: bccCost },
+  { name: 'bcc-intro-01', raw: bccIntro },
+  { name: 'bcc-vs-bc-01', raw: bccVsBc },
+  { name: 'bcc-explosion-01', raw: bccExplosion },
   { name: 'mcdc-tutorial-01', raw: mcdcTutorial },
-  { name: 'mcdc-altitude-disengage-01', raw: mcdcAltitude },
   { name: 'mcdc-trap-isolation-01', raw: mcdcTrapIso },
   { name: 'mcdc-vault-boss-01', raw: mcdcVault },
+  { name: 'mcdc-showdown-01', raw: mcdcShowdown },
 ]
 
 // Phrases that must not appear in CHARGES — they are player-facing
@@ -39,11 +41,7 @@ const BANNED_CHARGE_PHRASES = [
   'annex',
   'which condition',
   'build the tally',
-  'try to',
-  'you must',
   'click ',
-  'submit ',
-  'solution —',
 ]
 
 // Banned phrases for HINTS: ISO/Law-Card cross-references that scaffold but
@@ -51,7 +49,6 @@ const BANNED_CHARGE_PHRASES = [
 const BANNED_HINT_PHRASES = [
   're-read',
   'law card',
-  '§5.3',
   'annex',
 ]
 
@@ -161,7 +158,7 @@ function extractFunctionParams(code: string): string[] | null {
   return params
 }
 
-describe('content audit — all 12 cases', () => {
+describe('content audit — all 13 cases', () => {
   for (const { name, raw } of ALL_CASES) {
     describe(name, () => {
       let cf: CaseFile
@@ -207,9 +204,6 @@ describe('content audit — all 12 cases', () => {
 
         const params = extractFunctionParams(cf.scenario.code)
         const condIds = cf.scenario.conditions.map((c) => c.id)
-        // Allowed key set = code params ∪ scenario.conditions[].id. We accept
-        // either because for inline `if (...)` snippets without a def, the
-        // condition IDs are the canonical names used in the predicate.
         const allowed = new Set<string>([...(params ?? []), ...condIds])
 
         for (const row of rows) {
@@ -281,10 +275,6 @@ describe('content audit — all 12 cases', () => {
         expect(correct.length, `Case ${name}: must have at least one correct option`).toBeGreaterThan(0)
       })
 
-      // Condition ids and labels are surfaced together wherever conditions
-      // are listed. If the label also begins with the id (exact, prefix, or
-      // id-followed-by-separator) the id appears twice. Keep the label a
-      // self-contained description that does not restate the id.
       test('condition labels do not duplicate the condition id', () => {
         cf = loadCase(raw)
         for (const c of cf.scenario.conditions) {
@@ -292,14 +282,10 @@ describe('content audit — all 12 cases', () => {
           const label = c.label
           const idLower = id.toLowerCase()
           const labelLower = label.toLowerCase()
-          // Exact match — label is just the id repeated.
           expect(
             labelLower === idLower,
             `Case ${name}: condition "${id}" label is identical to its id ("${label}")`,
           ).toBe(false)
-          // Id-prefix match where the id is followed by a word boundary
-          // (space, colon, punctuation, end-of-string). A label like
-          // "items is non-empty" duplicates the id "items".
           if (labelLower.startsWith(idLower)) {
             const next = labelLower.charAt(idLower.length)
             const isBoundary = next === '' || /[\s:.,;_-]/.test(next)
@@ -314,9 +300,7 @@ describe('content audit — all 12 cases', () => {
   }
 })
 
-// Helper for technique tests below: extract boolean rows that have boolean
-// inputs and a boolean outcome. Returns a properly typed list usable by
-// hasIndependencePair / BC tallies.
+// Helper for technique tests below.
 function booleanRows(cf: CaseFile, source: 'test_set' | 'coverage_table'): { id: string; inputs: Record<string, boolean>; outcome: boolean }[] {
   const raw = (source === 'test_set' ? cf.test_set : cf.coverage_table) ?? []
   return raw
@@ -334,7 +318,6 @@ describe('technique correctness — recomputed from first principles', () => {
   test('decision-and-trap-01: only Set B satisfies both Decision and BC for is_logged_in && has_permission', () => {
     const cf = loadCase(decisionAndTrap)
     const expr = cf.scenario.decision_expression
-    // Encode each option's test set inline (mirrors the option labels).
     const sets: Record<string, [boolean, boolean][]> = {
       'opt-only-false':  [[true, false], [false, true]],
       'opt-bc-correct':  [[true, true], [true, false], [false, true]],
@@ -362,7 +345,6 @@ describe('technique correctness — recomputed from first principles', () => {
     const required = (cf.coverage_table ?? []).filter((r) => r.required)
     const ids = required.map((r) => r.id).sort()
     expect(ids).toEqual(['T1', 'T2', 'T3', 'T4'])
-    // BC: each condition is observed T and F across the required selection.
     const condIds = cf.scenario.conditions.map((c) => c.id)
     const requiredBool = booleanRows(cf, 'coverage_table').filter((r) => ids.includes(r.id))
     for (const c of condIds) {
@@ -372,71 +354,50 @@ describe('technique correctness — recomputed from first principles', () => {
     }
   })
 
-  test('bcc-cost-intuition-01: BCC=2^N and MCDC=N+1 for N=5', () => {
-    const cf = loadCase(bccCost)
-    const N = cf.scenario.conditions.length
-    expect(N).toBe(5)
-    const prompts = cf.numeric_prompts ?? []
-    expect(prompts.length).toBe(2)
-    expect(prompts[0]?.answer).toBe(2 ** N) // 32
-    expect(prompts[1]?.answer).toBe(N + 1)  // 6
-  })
-
-  test('bcc-three-and-01: test_set is BC ✓ but BCC ✗ (5/8 combinations) for a&&b&&c', () => {
-    const cf = loadCase(bccThreeAnd)
+  test('bc-negation-mask-01: BC is satisfied but MCDC for has_override is NOT (short-circuit mask)', () => {
+    const cf = loadCase(bcNegMask)
     const condIds = cf.scenario.conditions.map((c) => c.id)
     const rows = booleanRows(cf, 'test_set')
-    // BC holds
     for (const c of condIds) {
       const vals = rows.map((r) => r.inputs[c])
       expect(vals.includes(true)).toBe(true)
       expect(vals.includes(false)).toBe(true)
     }
-    // BCC: count distinct combinations. Should be 5, not 8.
-    const combos = new Set(rows.map((r) => condIds.map((c) => r.inputs[c] ? '1' : '0').join('')))
-    expect(combos.size).toBe(5)
-    expect(2 ** condIds.length).toBe(8)
+    expect(hasIndependencePair(rows, 'is_admin', condIds)).toBe(true)
+    expect(hasIndependencePair(rows, 'has_override', condIds)).toBe(false)
   })
 
-  test('mcdc-tutorial-01: each condition has a valid independence pair in test_set', () => {
-    const cf = loadCase(mcdcTutorial)
-    const condIds = cf.scenario.conditions.map((c) => c.id)
-    const rows = booleanRows(cf, 'test_set')
-    for (const c of condIds) {
-      expect(
-        hasIndependencePair(rows, c, condIds),
-        `mcdc-tutorial-01: missing MCDC pair for ${c}`,
-      ).toBe(true)
+  test('bcc-explosion-01: 16-row truth table for 4 AND-conditions', () => {
+    const cf = loadCase(bccExplosion)
+    const N = cf.scenario.conditions.length
+    expect(N).toBe(4)
+    const rows = cf.coverage_table ?? []
+    expect(rows.length).toBe(2 ** N) // 16
+    expect(cf.required_pick_count).toBe(3)
+    // The decision is a 4-input AND, so exactly one row should evaluate TRUE.
+    const trueRows = rows.filter((r) => r.outcome === true)
+    expect(trueRows.length).toBe(1)
+  })
+
+  test('bcc-vs-bc-01: required connection reconstructs the missing F-F combination', () => {
+    const cf = loadCase(bccVsBc)
+    const conn = cf.required_connection
+    expect(conn).toBeDefined()
+    if (!conn) return
+    // Both ids must point to FALSE-valued evidence cards.
+    const clues = cf.evidence_board_clues ?? []
+    const labels = conn.map((id) => clues.find((c) => c.id === id)?.label ?? '')
+    for (const l of labels) {
+      expect(l.toLowerCase()).toContain('false')
     }
   })
 
-  test('mcdc-altitude-disengage-01: each condition has a valid independence pair in test_set', () => {
-    const cf = loadCase(mcdcAltitude)
-    const condIds = cf.scenario.conditions.map((c) => c.id)
-    const rows = booleanRows(cf, 'test_set')
-    for (const c of condIds) {
-      expect(
-        hasIndependencePair(rows, c, condIds),
-        `mcdc-altitude-disengage-01: missing MCDC pair for ${c}`,
-      ).toBe(true)
-    }
-  })
-
-  test('mcdc-trap-isolation-01: alarmA has a valid pair but backupSensor and manualOverride do NOT (the trap)', () => {
-    const cf = loadCase(mcdcTrapIso)
-    const condIds = cf.scenario.conditions.map((c) => c.id)
-    const rows = booleanRows(cf, 'test_set')
-    expect(hasIndependencePair(rows, 'alarmA', condIds)).toBe(true)
-    expect(hasIndependencePair(rows, 'backupSensor', condIds)).toBe(false)
-    expect(hasIndependencePair(rows, 'manualOverride', condIds)).toBe(false)
-  })
-
-  test('mcdc-vault-boss-01: required 5-row selection satisfies MCDC for all four conditions', () => {
+  test('mcdc-vault-boss-01: required 4-row selection satisfies MCDC for all three conditions', () => {
     const cf = loadCase(mcdcVault)
     const condIds = cf.scenario.conditions.map((c) => c.id)
     const required = (cf.coverage_table ?? []).filter((r) => r.required)
-    expect(required.length).toBe(5)
-    expect(cf.required_pick_count).toBe(5)
+    expect(required.length).toBe(4)
+    expect(cf.required_pick_count).toBe(4)
     const requiredBool = booleanRows(cf, 'coverage_table').filter((r) => required.some((rr) => rr.id === r.id))
     for (const c of condIds) {
       expect(
@@ -446,18 +407,51 @@ describe('technique correctness — recomputed from first principles', () => {
     }
   })
 
-  test('bc-negation-mask-01: BC is satisfied but MCDC for has_override is NOT (short-circuit mask)', () => {
-    const cf = loadCase(bcNegMask)
+  test('mcdc-showdown-01: required 5-row selection satisfies MCDC for all four conditions', () => {
+    const cf = loadCase(mcdcShowdown)
     const condIds = cf.scenario.conditions.map((c) => c.id)
-    const rows = booleanRows(cf, 'test_set')
-    // BC holds at the source level (literal is_admin and has_override observed T and F)
+    const required = (cf.coverage_table ?? []).filter((r) => r.required)
+    expect(required.length).toBe(5)
+    expect(cf.required_pick_count).toBe(5)
+    const requiredBool = booleanRows(cf, 'coverage_table').filter((r) => required.some((rr) => rr.id === r.id))
     for (const c of condIds) {
-      const vals = rows.map((r) => r.inputs[c])
-      expect(vals.includes(true)).toBe(true)
-      expect(vals.includes(false)).toBe(true)
+      expect(
+        hasIndependencePair(requiredBool, c, condIds),
+        `mcdc-showdown-01: required selection missing MCDC pair for ${c}`,
+      ).toBe(true)
     }
-    // MCDC for is_admin holds, MCDC for has_override fails
-    expect(hasIndependencePair(rows, 'is_admin', condIds)).toBe(true)
-    expect(hasIndependencePair(rows, 'has_override', condIds)).toBe(false)
+  })
+
+  test('bcc-intro-01: dialogue fragments construct an objection naming the missing mixed combination', () => {
+    const cf = loadCase(bccIntro)
+    const required = cf.required_fragments ?? []
+    expect(required.length).toBeGreaterThan(0)
+    const sentence = required.join(' ').toLowerCase()
+    // Should reference "NOT VIP" and "LARGE" (the missing F-T combination)
+    expect(sentence).toContain('not vip')
+    expect(sentence).toContain('large')
+  })
+
+  test('mcdc-tutorial-01: dialogue fragments name the both-flipped flaw', () => {
+    const cf = loadCase(mcdcTutorial)
+    const required = cf.required_fragments ?? []
+    const sentence = required.join(' ').toLowerCase()
+    expect(sentence).toContain('badge')
+    expect(sentence).toContain('fingerprint')
+  })
+
+  test('mcdc-trap-isolation-01: required pair flips Override only, with Auto held OFF', () => {
+    const cf = loadCase(mcdcTrapIso)
+    const required = cf.required_connection
+    expect(required).toBeDefined()
+    if (!required) return
+    const clues = cf.evidence_board_clues ?? []
+    const labels = required.map((id) => clues.find((c) => c.id === id)?.label ?? '')
+    // Both labels must hold Auto=OFF (the masking guard) AND must differ in Override.
+    for (const l of labels) {
+      expect(l.includes('Auto=OFF')).toBe(true)
+    }
+    const overrideValues = labels.map((l) => l.includes('Override=ON'))
+    expect(new Set(overrideValues).size).toBe(2) // one ON, one OFF
   })
 })

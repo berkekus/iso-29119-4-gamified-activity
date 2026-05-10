@@ -11,7 +11,7 @@
   "estimated_time_sec": 120,
   "scenario": {
     "title": "The VIP Exploit",
-    "narrative": "A major e-commerce site lost $50,000 during a Black Friday sale. The discount logic relies on 2 conditions: is_vip AND cart_large. You are cross-examining the Lead QA engineer.",
+    "narrative": "A major e-commerce site lost $50,000 during a Black Friday sale. The discount logic relies on TWO conditions: is_vip AND cart_large. The defense claims that two test runs were enough to prove the system safe. You are cross-examining the Lead QA engineer.",
     "code": "def apply_discount(is_vip, cart_large):\n    if is_vip and cart_large:\n        return apply_20_percent()\n    return None",
     "conditions": [
       { "id": "is_vip", "label": "User is VIP" },
@@ -21,8 +21,9 @@
   },
   "claim": "I tested the happy path (VIP + Large Cart) and the rejection path (No VIP + Small Cart). The system worked perfectly both times. What more do you want?",
   "charges": [
-    "The defense team only tested T-T (VIP, Large Cart) and F-F (Not VIP, Small Cart), claiming the system is thoroughly tested because both True and False outcomes were reached.",
-    "The prosecution alleges that relying on just 2 tests leaves dangerous gaps in the combinatorial space."
+    "The defense team only tested T-T (VIP, Large Cart) and F-F (Not VIP, Small Cart), claiming the system is thoroughly tested because both TRUE and FALSE outcomes were reached.",
+    "The prosecution alleges that BCC requires every combination in the 2^N truth table — and the two MIXED combinations (T-F and F-T) were never executed.",
+    "Build an objection that names a specific missing mixed combination and forces the engineer to admit the gap."
   ],
   "fragments": [
     "User is VIP", "User is NOT VIP", "Cart is LARGE", "Cart is SMALL", "What happens if...", "but..."
@@ -30,17 +31,18 @@
   "required_fragments": [
     "What happens if...", "User is NOT VIP", "but...", "Cart is LARGE"
   ],
-  "correct_answer_explanation": "Debrief: The QA engineer breaks down, admitting that a non-VIP with a large cart caused an integer overflow, giving everything away for free. The Judge rules that BCC requires all 2^2 = 4 combinations. You cannot just test the extremes!",
-  "wrong_answer_explanation": "That objection is weak. They already tested the extremes. Point out a mixed combination they missed.",
+  "correct_answer_explanation": "Objection sustained! By assembling \"What happens if... User is NOT VIP but... Cart is LARGE\", you forced the engineer to confront the (F, T) combination — the exact case that was never tested. He breaks down and admits: a non-VIP customer with a large cart triggered an integer overflow, granting a 100% discount. The Judge rules that BCC requires all 2^2 = 4 combinations: T-T, T-F, F-T, AND F-F. Testing only the two extremes leaves half the truth table untouched.",
+  "wrong_answer_explanation": "That objection misses the mathematical gap. The defense already covered T-T and F-F. To prove BCC is incomplete you must point at a MIXED combination they never ran — start with \"What happens if...\" and describe one variable at TRUE while the other is FALSE.",
   "hints": [
-    "Savcı notu: Savunma sadece iki zıt ucu (T-T ve F-F) test ettiğini itiraf ediyor.",
-    "Kanun 5.3.5'i hatırla: Sadece uç noktaları değil, aradaki kombinasyonları da sorgulamalısın. Mesela bir koşul False iken diğerinin True olduğu durumlara ne oldu?"
+    "Prosecutor's Note: The defense only ran two tests — both extremes (T-T and F-F). The two MIXED rows of the 2x2 truth table are still missing.",
+    "Recall ISO 29119-4 §5.3.5 (BCC): you must exercise every combination of the input conditions, not just the corner cases. Which mixed pair would expose the bug — VIP with a small cart, or a non-VIP with a large cart?",
+    "Worked solution: Build \"What happens if... User is NOT VIP but... Cart is LARGE\". This calls out the (is_vip=F, cart_large=T) row — the exact combination the engineer skipped, and the one that triggered the overflow."
   ],
   "seeded_faults": [],
   "misconceptions": [
     {
       "id": "BCC-COMBINATIONS",
-      "explanation_md": "BCC requires 2^N tests regardless of how many outcomes there are. Just covering the True and False branches is Decision Coverage, not BCC."
+      "explanation_md": "BCC (Branch Condition Combination) requires testing **all 2^N combinations** of the conditions in a decision, regardless of how many distinct outcomes the decision produces. Hitting only the TRUE branch and the FALSE branch is Decision Coverage — a much weaker level. BCC closes the gap by exercising every cell of the truth table, exposing interaction bugs that single-branch tests cannot reach."
     }
   ]
 }

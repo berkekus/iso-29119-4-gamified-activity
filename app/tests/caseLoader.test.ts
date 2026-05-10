@@ -1,17 +1,19 @@
 import { describe, test, expect } from 'vitest'
 import { CaseFileSchema, loadCase } from '../src/engine/caseLoader'
-import validCaseJson from '../src/content/cases/mcdc-altitude-disengage-01.json'
+import validCaseJson from '../src/content/cases/mcdc-vault-boss-01.json'
 import stmtTutorialJson from '../src/content/cases/stmt-tutorial-01.json'
 import stmtHiddenBranchJson from '../src/content/cases/stmt-hidden-branch-01.json'
 import branchLoopTrapJson from '../src/content/cases/branch-loop-trap-01.json'
 import decisionAndTrapJson from '../src/content/cases/decision-and-trap-01.json'
 import bcOrThreeCondJson from '../src/content/cases/bc-or-three-cond-01.json'
 import bcNegationMaskJson from '../src/content/cases/bc-negation-mask-01.json'
-import bccThreeAndJson from '../src/content/cases/bcc-three-and-01.json'
-import bccCostIntuitionJson from '../src/content/cases/bcc-cost-intuition-01.json'
+import bccIntroJson from '../src/content/cases/bcc-intro-01.json'
+import bccVsBcJson from '../src/content/cases/bcc-vs-bc-01.json'
+import bccExplosionJson from '../src/content/cases/bcc-explosion-01.json'
 import mcdcVaultBossJson from '../src/content/cases/mcdc-vault-boss-01.json'
 import mcdcTutorialJson from '../src/content/cases/mcdc-tutorial-01.json'
 import mcdcTrapIsolationJson from '../src/content/cases/mcdc-trap-isolation-01.json'
+import mcdcShowdownJson from '../src/content/cases/mcdc-showdown-01.json'
 
 const validCase = validCaseJson as Record<string, unknown>
 
@@ -56,14 +58,16 @@ describe('CaseFile schema', () => {
     expect(() => loadCase(bcNegationMaskJson)).not.toThrow()
   })
 
-  test('Layer 4 BCC ve MCDC vault-boss case dosyalarını parse eder', () => {
-    expect(() => loadCase(bccThreeAndJson)).not.toThrow()
-    expect(() => loadCase(bccCostIntuitionJson)).not.toThrow()
-    expect(() => loadCase(mcdcVaultBossJson)).not.toThrow()
+  test('Layer 4 BCC case dosyalarını parse eder', () => {
+    expect(() => loadCase(bccIntroJson)).not.toThrow()
+    expect(() => loadCase(bccVsBcJson)).not.toThrow()
+    expect(() => loadCase(bccExplosionJson)).not.toThrow()
   })
 
-  test('zenginleştirilmiş MCDC case dosyaları hala parse edilir', () => {
+  test('Layer 5 MCDC case dosyalarını parse eder', () => {
     expect(() => loadCase(mcdcTutorialJson)).not.toThrow()
     expect(() => loadCase(mcdcTrapIsolationJson)).not.toThrow()
+    expect(() => loadCase(mcdcVaultBossJson)).not.toThrow()
+    expect(() => loadCase(mcdcShowdownJson)).not.toThrow()
   })
 })
