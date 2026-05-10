@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { TC, PIXEL_FONT, HAND_FONT, MONO_FONT } from '../ui/tokens'
 import PixelButton from '../ui/PixelButton'
 import CoverageMeter from '../ui/CoverageMeter'
@@ -73,6 +73,14 @@ export default function DebriefScreen({ onNavigate, onBack }: Props) {
     if (isGuilty && caseFile?.id) markCaseCompleted(caseFile.id)
   }, [isGuilty, caseFile?.id, markCaseCompleted])
 
+  const [savedFlash, setSavedFlash] = useState(false)
+  useEffect(() => {
+    if (!isGuilty) return
+    setSavedFlash(true)
+    const t = setTimeout(() => setSavedFlash(false), 3000)
+    return () => clearTimeout(t)
+  }, [isGuilty])
+
   const techniqueLabel =
     (caseFile?.technique && TECHNIQUE_LABEL[caseFile.technique]) ??
     (caseFile?.act ? caseFile.act.replace(/_/g, ' ') : 'CASE')
@@ -117,9 +125,18 @@ export default function DebriefScreen({ onNavigate, onBack }: Props) {
           <PixelButton small variant="secondary" onClick={() => onNavigate('campaign')}>CAMPAIGN</PixelButton>
           <PixelButton small variant="secondary" onClick={() => onNavigate('menu')}>⌂ MENU</PixelButton>
         </div>
-        <div style={{ display: 'flex', gap: 8 }}>
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
           <span style={{ fontFamily: PIXEL_FONT, fontSize: 8, color: TC.magenta, padding: '4px 10px', border: `2px solid ${TC.magenta}` }}>{techniqueLabel}</span>
           <span style={{ fontFamily: PIXEL_FONT, fontSize: 8, color: TC.grey, padding: '4px 10px', border: `2px solid ${TC.grid}` }}>PHASE 5: DEBRIEF</span>
+          {savedFlash && (
+            <span style={{
+              fontFamily: PIXEL_FONT, fontSize: 8, color: TC.green,
+              border: `1px solid ${TC.green}`, padding: '4px 8px',
+              animation: 'fadeIn 0.2s steps(2)',
+            }}>
+              PROGRESS SAVED ✓
+            </span>
+          )}
         </div>
       </div>
 

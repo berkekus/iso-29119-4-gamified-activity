@@ -123,6 +123,7 @@ export default function HowToPlayScreen({ onBack }: Props) {
             <button
               key={i}
               onClick={() => setCurrent(i)}
+              aria-label={`Phase ${i + 1}: ${s.title}`}
               style={{
                 width: i === current ? 28 : 12,
                 height: 12,

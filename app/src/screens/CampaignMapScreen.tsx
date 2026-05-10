@@ -117,6 +117,7 @@ function isCaseUnlocked(caseId: string, completed: string[]): boolean {
 
 export default function CampaignMapScreen({ onNavigate, onBack, completedCases, onSelectCase }: Props) {
   const [selectedAct, setSelectedAct] = useState<string | null>(null)
+  const [lockedFeedback, setLockedFeedback] = useState<string | null>(null)
   const completedCount = completedCases.filter((id) =>
     acts.some((a) => a.cases.some((c) => c.id === id)),
   ).length
@@ -176,7 +177,15 @@ export default function CampaignMapScreen({ onNavigate, onBack, completedCases, 
                 const isComplete = completedCases.includes(c.id)
                 const isLocked = !isComplete && !isCaseUnlocked(c.id, completedCases)
                 const handleClick = () => {
-                  if (isLocked) return
+                  if (isLocked) {
+                    const idx = CASE_ORDER.indexOf(c.id as (typeof CASE_ORDER)[number])
+                    const prevId = idx > 0 ? CASE_ORDER[idx - 1] : undefined
+                    const prevName = prevId ? acts.flatMap(a => a.cases).find(x => x.id === prevId)?.name : null
+                    setLockedFeedback(prevName ? `Önce "${prevName}" vakasını tamamla.` : 'Bu vaka henüz kilitli.')
+                    setTimeout(() => setLockedFeedback(null), 3000)
+                    return
+                  }
+                  setLockedFeedback(null)
                   if (onSelectCase) onSelectCase(c.id)
                   onNavigate('briefing')
                 }
@@ -216,7 +225,7 @@ export default function CampaignMapScreen({ onNavigate, onBack, completedCases, 
                         {c.name}
                       </div>
                       {c.isBoss && (
-                        <div style={{ fontFamily: PIXEL_FONT, fontSize: 7, color: TC.magenta }}>
+                        <div style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: TC.magenta }}>
                           ★ FINAL BOSS
                         </div>
                       )}
@@ -225,7 +234,7 @@ export default function CampaignMapScreen({ onNavigate, onBack, completedCases, 
                         const prevId = idx > 0 ? CASE_ORDER[idx - 1] : undefined
                         const prevName = prevId ? acts.flatMap(a => a.cases).find(x => x.id === prevId)?.name : null
                         return prevName ? (
-                          <div style={{ fontFamily: PIXEL_FONT, fontSize: 7, color: TC.grey, lineHeight: 1.5 }}>
+                          <div style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: TC.grey, lineHeight: 1.5 }}>
                             Needs: {prevName}
                           </div>
                         ) : null
@@ -251,6 +260,17 @@ export default function CampaignMapScreen({ onNavigate, onBack, completedCases, 
           </div>
         ))}
       </div>
+
+      {/* Locked-case inline feedback */}
+      {lockedFeedback && (
+        <div style={{
+          marginTop: 16, padding: '10px 16px',
+          background: `${TC.orange}15`, border: `2px solid ${TC.orange}`,
+          fontFamily: PIXEL_FONT, fontSize: 9, color: TC.orange, textAlign: 'center',
+        }}>
+          🔒 {lockedFeedback}
+        </div>
+      )}
 
       {/* Legend / hint footer */}
       <div

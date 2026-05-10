@@ -7,6 +7,7 @@ import { ProsecutorSprite } from '../ui/CharacterSprites'
 import { TRUTH_TABLE, isValidIndependencePair } from '../engine/coverage/mcdc'
 import { useGameStore } from '../stores/gameStore'
 import type { Screen } from '../stores/gameStore'
+import { lawCardForCase } from '../content/lawCards'
 
 interface Props {
   onNavigate: (screen: Screen) => void
@@ -38,8 +39,12 @@ export default function EvidenceScreen({ onNavigate, onBack }: Props) {
   const { mcdc, addPair, clearPairs, caseFile } = useGameStore()
   const [selecting, setSelecting] = useState<number | null>(null)
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; msg: string } | null>(null)
+  const [clearConfirm, setClearConfirm] = useState(false)
+  const [showLawCard, setShowLawCard] = useState(false)
   const techniqueLabel =
     (caseFile?.technique && TECHNIQUE_LABEL[caseFile.technique]) ?? 'CASE'
+  const decisionExpr = caseFile?.scenario.decision_expression || 'A && (B || C)'
+  const lawCard = lawCardForCase(caseFile?.id)
 
   const handleRowClick = (rowId: number) => {
     if (selecting === null) {
@@ -73,9 +78,20 @@ export default function EvidenceScreen({ onNavigate, onBack }: Props) {
         setFeedback({ type: 'error', msg: `Pair for condition ${found} already logged.` })
       }
     } else {
+      const rowA = TRUTH_TABLE.find(r => r.id === selecting)
+      const rowB = TRUTH_TABLE.find(r => r.id === rowId)
+      let detail = ''
+      if (rowA && rowB) {
+        const diffs = (['A', 'B', 'C'] as const).filter(k => rowA[k] !== rowB[k])
+        if (diffs.length !== 1) {
+          detail = ` (${diffs.length === 0 ? 'no condition changes' : `${diffs.length} conditions change: ${diffs.join(', ')}`})`
+        } else if (rowA.D === rowB.D) {
+          detail = ` (condition ${diffs[0]} flips but D does not flip)`
+        }
+      }
       setFeedback({
         type: 'error',
-        msg: 'Invalid independence pair. Check: does exactly one condition change? Do the others stay fixed? Does the decision flip?',
+        msg: `Invalid pair: TC${selecting} & TC${rowId}${detail}. Need exactly one condition flip + D must flip.`,
       })
     }
     setSelecting(null)
@@ -86,11 +102,12 @@ export default function EvidenceScreen({ onNavigate, onBack }: Props) {
   return (
     <div style={{ minHeight: '100vh', position: 'relative', zIndex: 1, padding: 'clamp(16px, 3vw, 30px) clamp(16px, 4vw, 40px)' }}>
       {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
         <div style={{ display: 'flex', gap: 6 }}>
           <PixelButton small variant="secondary" onClick={onBack}>← INVESTIGATION</PixelButton>
           <PixelButton small variant="secondary" onClick={() => onNavigate('campaign')}>CAMPAIGN</PixelButton>
           <PixelButton small variant="secondary" onClick={() => onNavigate('menu')}>⌂ MENU</PixelButton>
+          <PixelButton small variant="secondary" onClick={() => onNavigate('how-to-play')}>? HELP</PixelButton>
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
           <span style={{ fontFamily: PIXEL_FONT, fontSize: 8, color: TC.magenta, padding: '4px 10px', border: `2px solid ${TC.magenta}` }}>{techniqueLabel}</span>
@@ -98,12 +115,40 @@ export default function EvidenceScreen({ onNavigate, onBack }: Props) {
         </div>
         <ScoreChip label="PAIRS" value={`${pairs.length}/3`} color={TC.blue} />
       </div>
+      {/* Phase breadcrumb */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexWrap: 'wrap', marginBottom: 20 }}>
+        {[
+          { label: 'BRIEFING', color: '#5A5448' },
+          { label: 'INVESTIGATION', color: '#5A5448' },
+          { label: 'EVIDENCE', color: TC.green },
+          { label: 'TRIAL', color: TC.blue },
+          { label: 'DEBRIEF', color: '#5A5448' },
+        ].map((s, i) => (
+          <span key={s.label} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+            <span style={{
+              fontFamily: PIXEL_FONT, fontSize: 7, padding: '3px 7px',
+              background: i === 2 ? s.color : 'transparent',
+              color: i === 2 ? '#fff' : i < 2 ? TC.grey : TC.greyLight,
+              border: `1.5px solid ${i <= 2 ? s.color : TC.greyLight}`,
+            }}>{i + 1}. {s.label}</span>
+            {i < 4 && <span style={{ fontFamily: PIXEL_FONT, fontSize: 7, color: TC.greyLight }}>›</span>}
+          </span>
+        ))}
+      </div>
 
       <div className="responsive-row" style={{ gap: 30, maxWidth: 1100, margin: '0 auto' }}>
         {/* Main */}
         <div style={{ flex: 1 }}>
           <div style={{ fontFamily: PIXEL_FONT, fontSize: 10, color: TC.grey, marginBottom: 8 }}>
             INDEPENDENCE PAIRS — Click two rows to form a pair
+          </div>
+          {/* Decision expression reminder — H05/H13 */}
+          <div style={{
+            background: '#1e1e2e', color: '#cdd6f4', fontFamily: MONO_FONT, fontSize: 12,
+            padding: '8px 16px', border: `2px solid ${TC.ink}`, marginBottom: 10,
+            whiteSpace: 'pre-wrap',
+          }}>
+            <span style={{ color: '#cba6f7' }}>if</span>{' '}(<span style={{ color: '#f9e2af' }}>{decisionExpr}</span>) → Decision <span style={{ color: '#a6e3a1' }}>D</span>
           </div>
           <div style={{ fontFamily: HAND_FONT, fontSize: 16, color: TC.grey, marginBottom: 16, lineHeight: 1.55 }}>
             Select pairs where exactly one condition changes and the decision flips.
@@ -133,11 +178,16 @@ export default function EvidenceScreen({ onNavigate, onBack }: Props) {
                   return (
                     <tr
                       key={row.id}
+                      tabIndex={0}
+                      role="option"
+                      aria-selected={isSelected}
                       onClick={() => handleRowClick(row.id)}
+                      onKeyDown={(e) => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); handleRowClick(row.id) } }}
                       style={{
                         borderBottom: `1px solid ${TC.grid}`,
                         background: isSelected ? `${TC.orange}20` : inPair ? `${TC.green}08` : 'transparent',
                         cursor: 'pointer',
+                        outline: 'none',
                         transition: 'background 0.06s steps(2)',
                       }}
                     >
@@ -196,18 +246,13 @@ export default function EvidenceScreen({ onNavigate, onBack }: Props) {
 
           {/* Actions */}
           <div style={{ marginTop: 20, display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
-            <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-              <div style={{ fontFamily: MONO_FONT, fontSize: 11, color: TC.grey }}>
-                Pairs: <strong style={{ color: TC.blue }}>{pairs.length}</strong> / Need: <strong>3</strong> (one per condition)
-              </div>
-              {pairs.length > 0 && (
-                <PixelButton small variant="danger" onClick={clearPairs}>CLEAR</PixelButton>
-              )}
+            <div style={{ fontFamily: MONO_FONT, fontSize: 11, color: TC.grey }}>
+              Pairs: <strong style={{ color: TC.blue }}>{pairs.length}</strong> / Need: <strong>3</strong> (one per condition)
             </div>
             <PixelButton
               variant={pairs.length >= 3 ? 'success' : 'primary'}
               onClick={() => onNavigate('trial')}
-              disabled={pairs.length < 1}
+              disabled={pairs.length < 3}
             >
               SUBMIT EVIDENCE →
             </PixelButton>
@@ -216,8 +261,24 @@ export default function EvidenceScreen({ onNavigate, onBack }: Props) {
 
         {/* Side panel */}
         <div style={{ width: 280, display: 'flex', flexDirection: 'column', gap: 16 }}>
+          {/* Evidence Log + CLEAR (moved here — H12) */}
           <div style={{ padding: 14, border: `3px solid ${TC.ink}`, background: TC.cream, boxShadow: `4px 4px 0 ${TC.ink}` }}>
-            <div style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: TC.blue, marginBottom: 10 }}>EVIDENCE LOG</div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+              <div style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: TC.blue }}>EVIDENCE LOG</div>
+              {pairs.length > 0 && !clearConfirm && (
+                <PixelButton small variant="danger" onClick={() => setClearConfirm(true)}>CLEAR</PixelButton>
+              )}
+            </div>
+            {/* CLEAR confirmation inline — H06 */}
+            {clearConfirm && (
+              <div style={{ marginBottom: 10, padding: '8px 10px', background: `${TC.magenta}10`, border: `2px solid ${TC.magenta}` }}>
+                <div style={{ fontFamily: PIXEL_FONT, fontSize: 8, color: TC.magenta, marginBottom: 8 }}>Delete all pairs?</div>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <PixelButton small variant="danger" onClick={() => { clearPairs(); setClearConfirm(false) }}>YES, CLEAR</PixelButton>
+                  <PixelButton small variant="secondary" onClick={() => setClearConfirm(false)}>CANCEL</PixelButton>
+                </div>
+              </div>
+            )}
             {pairs.length === 0 ? (
               <div style={{ fontFamily: HAND_FONT, fontSize: 16, color: TC.grey, fontStyle: 'italic', lineHeight: 1.5 }}>No pairs submitted yet...</div>
             ) : (
@@ -241,6 +302,28 @@ export default function EvidenceScreen({ onNavigate, onBack }: Props) {
           </div>
 
           <CoverageMeter value={Math.round((pairs.length / 3) * 100)} max={100} label={`${techniqueLabel} COVERAGE`} color={TC.green} width={250} />
+
+          {/* Law card reference — H22 */}
+          {lawCard && (
+            <div>
+              <PixelButton small variant="secondary" onClick={() => setShowLawCard(v => !v)}>
+                {showLawCard ? '▲ HIDE LAW REF' : '▼ LAW REFERENCE'}
+              </PixelButton>
+              {showLawCard && (
+                <div style={{ marginTop: 8, background: `${TC.orange}08`, border: `2px solid ${TC.orange}`, padding: 12 }}>
+                  <div style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: TC.orange, marginBottom: 6 }}>
+                    {lawCard.iso_clause}
+                  </div>
+                  <div style={{ fontFamily: PIXEL_FONT, fontSize: 10, color: TC.ink, marginBottom: 8, lineHeight: 1.4 }}>
+                    {lawCard.title}
+                  </div>
+                  <div style={{ fontFamily: HAND_FONT, fontSize: 15, color: TC.ink, lineHeight: 1.55 }}>
+                    {lawCard.short_definition}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
 
           <div style={{ textAlign: 'center' }}>
             <ProsecutorSprite size={90} pose={pairs.length >= 2 ? 'pointing' : 'idle'} />

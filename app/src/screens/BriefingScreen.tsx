@@ -224,21 +224,30 @@ export default function BriefingScreen({ onNavigate, onBack }: Props) {
             const currentDialog = dialogs[dialogIdx]
             if (!currentDialog) return null
             return (
-              <DialogBox
-                speaker={currentDialog.speaker}
-                text={currentDialog.text}
-                onTypingChange={setIsTyping}
-                portrait={
-                  dialogIdx === 0 || dialogIdx === 2
-                    ? <JudgeSprite size={60} isTalking={isTyping} />
-                    : <ProsecutorSprite size={60} isTalking={isTyping} />
-                }
-                onNext={() => {
-                  if (dialogIdx < dialogs.length - 1) setDialogIdx(dialogIdx + 1)
-                  else onNavigate('investigation')
-                }}
-                isLast={dialogIdx === dialogs.length - 1}
-              />
+              <>
+                <DialogBox
+                  speaker={currentDialog.speaker}
+                  text={currentDialog.text}
+                  onTypingChange={setIsTyping}
+                  portrait={
+                    dialogIdx === 0 || dialogIdx === 2
+                      ? <JudgeSprite size={60} isTalking={isTyping} />
+                      : <ProsecutorSprite size={60} isTalking={isTyping} />
+                  }
+                  onNext={() => {
+                    if (dialogIdx < dialogs.length - 1) setDialogIdx(dialogIdx + 1)
+                    else onNavigate('investigation')
+                  }}
+                  isLast={dialogIdx === dialogs.length - 1}
+                />
+                {dialogIdx < dialogs.length - 1 && (
+                  <div style={{ textAlign: 'right' }}>
+                    <PixelButton small variant="secondary" onClick={() => onNavigate('investigation')}>
+                      SKIP DIALOGS →
+                    </PixelButton>
+                  </div>
+                )}
+              </>
             )
           })()}
 

@@ -69,13 +69,18 @@ export default function DialogBox({ speaker, text, portrait, onNext, isLast, onT
             <span style={{ animation: 'blink 0.5s steps(2) infinite' }}>▋</span>
           )}
         </div>
-        {done && (
-          <div style={{ textAlign: 'right', marginTop: 8 }}>
+        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 8 }}>
+          {!done && (
+            <PixelButton small variant="secondary" onClick={() => { setDisplayed(text); setDone(true) }}>
+              SKIP ▶▶
+            </PixelButton>
+          )}
+          {done && (
             <PixelButton small variant="secondary" onClick={onNext}>
               {isLast ? 'PROCEED' : 'NEXT ▶'}
             </PixelButton>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </div>
   )

@@ -89,7 +89,7 @@ export default function MainMenuScreen({ onNavigate }: Props) {
                 <span style={{ fontSize: 24 }}>{item.icon}</span>
                 <span style={{ fontFamily: PIXEL_FONT, fontSize: 10, color: item.color }}>{item.label}</span>
                 {disabled && (
-                  <span style={{ fontFamily: PIXEL_FONT, fontSize: 7, color: TC.grey, border: `1px solid ${TC.greyLight}`, padding: '2px 6px' }}>COMING SOON</span>
+                  <span style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: TC.grey, border: `1px solid ${TC.greyLight}`, padding: '2px 6px' }}>COMING SOON</span>
                 )}
               </div>
               <div style={{ fontFamily: HAND_FONT, fontSize: 17, color: TC.grey }}>{item.desc}</div>
@@ -103,11 +103,13 @@ export default function MainMenuScreen({ onNavigate }: Props) {
         SENG 436 · Learner-as-Designer Project · v0.1.0
       </div>
 
-      <div style={{ marginTop: 8 }}>
-        <PixelButton small variant="secondary" onClick={() => onNavigate('briefing')}>
-          QUICK START → ACT III
-        </PixelButton>
-      </div>
+      {import.meta.env.DEV && (
+        <div style={{ marginTop: 8 }}>
+          <PixelButton small variant="secondary" onClick={() => onNavigate('briefing')}>
+            DEV: SKIP TO ACT III
+          </PixelButton>
+        </div>
+      )}
     </div>
   )
 }
