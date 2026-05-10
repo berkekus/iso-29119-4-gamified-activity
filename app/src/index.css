@@ -2,15 +2,27 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ── CSS variables ─────────────────────────────────────────── */
+:root {
+  --cream:  #f7f1df;
+  --paper:  #f3ead6;
+  --ink:    #111111;
+  --muted:  #8a8171;
+  --blue:   #2f6db3;
+  --green:  #269650;
+  --orange: #e57b2c;
+  --pink:   #c23b83;
+}
+
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 html {
-  background: #ffffff;
+  background: var(--cream);
 }
 
 body {
   font-family: 'IBM Plex Serif', Georgia, serif;
-  color: #1A1A1A;
+  color: var(--ink);
   overflow-x: hidden;
 }
 
@@ -21,6 +33,39 @@ button {
 ::selection {
   background: #C1358440;
 }
+
+/* ── Pixel utility classes ──────────────────────────────────── */
+
+.pixel-border {
+  border: 5px solid var(--ink);
+}
+
+.pixel-shadow {
+  box-shadow: 8px 8px 0 var(--ink);
+}
+
+/* Menu buttons — hover / active via CSS (inline hover not possible in React) */
+.menu-btn {
+  transition: transform 0.06s steps(2), box-shadow 0.06s steps(2);
+  box-shadow: 8px 8px 0 var(--ink);
+  cursor: pointer;
+}
+.menu-btn:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 10px 10px 0 var(--ink);
+}
+.menu-btn:active {
+  transform: translate(4px, 4px);
+  box-shadow: 4px 4px 0 var(--ink);
+}
+.menu-btn:disabled,
+.menu-btn[data-disabled="true"] {
+  opacity: 0.42;
+  pointer-events: none;
+  box-shadow: 6px 6px 0 #999;
+}
+
+/* ── Keyframes ──────────────────────────────────────────────── */
 
 @keyframes blink {
   0%, 100% { opacity: 1; }
@@ -51,7 +96,6 @@ button {
   width: 100%;
 }
 
-/* Two-column layouts that stack vertically on tablet/mobile */
 .responsive-row {
   display: flex;
 }
@@ -66,31 +110,19 @@ button {
   }
 }
 
-/* Campaign map acts — 2×2 on tablet, stack on mobile */
 .acts-row {
   display: flex;
   align-items: stretch;
 }
 @media (max-width: 900px) {
-  .acts-row {
-    flex-wrap: wrap;
-  }
-  .acts-row > * {
-    flex: 1 1 calc(50% - 10px) !important;
-    min-width: 160px;
-  }
+  .acts-row { flex-wrap: wrap; }
+  .acts-row > * { flex: 1 1 calc(50% - 10px) !important; min-width: 160px; }
 }
 @media (max-width: 600px) {
-  .acts-row {
-    flex-direction: column;
-  }
-  .acts-row > * {
-    flex: 1 1 auto !important;
-    min-width: auto;
-  }
+  .acts-row { flex-direction: column; }
+  .acts-row > * { flex: 1 1 auto !important; min-width: auto; }
 }
 
-/* Law library grid — 3 → 2 → 1 columns */
 .law-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -98,18 +130,9 @@ button {
   max-width: 1100px;
   margin: 0 auto;
 }
-@media (max-width: 900px) {
-  .law-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-@media (max-width: 600px) {
-  .law-grid {
-    grid-template-columns: 1fr;
-  }
-}
+@media (max-width: 900px) { .law-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 600px) { .law-grid { grid-template-columns: 1fr; } }
 
-/* Main menu items grid — 2 → 1 column on small screens */
 .menu-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -119,7 +142,5 @@ button {
   margin: 0 auto;
 }
 @media (max-width: 500px) {
-  .menu-grid {
-    grid-template-columns: 1fr;
-  }
+  .menu-grid { grid-template-columns: 1fr; }
 }
