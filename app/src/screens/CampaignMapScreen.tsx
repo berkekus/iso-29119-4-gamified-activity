@@ -95,7 +95,20 @@ const acts: ActEntry[] = [
       { id: 'mcdc-tutorial-01',           name: 'The Single Flip',        difficulty: 1 },
       { id: 'mcdc-trap-isolation-01',     name: 'The Sabotaged Drone',    difficulty: 2 },
       { id: 'mcdc-vault-boss-01',         name: 'The Casino Vault',       difficulty: 3 },
-      { id: 'mcdc-showdown-01',           name: 'BCC vs MC/DC Showdown',  difficulty: 3, isBoss: true },
+    ],
+  },
+  {
+    id: 'coverage-trial',
+    name: 'ACT V',
+    title: 'Coverage Trial',
+    subtitle: 'Final Examination',
+    color: TC.magenta,
+    bugType: 'dataflow',
+    clauses: '§5.3.1 – §5.3.6',
+    cases: [
+      { id: 'coverage-mix-01', name: 'The Logging Glitch', difficulty: 1 },
+      { id: 'coverage-mix-02', name: 'Insurance Rule Engine', difficulty: 2 },
+      { id: 'coverage-mix-03', name: 'Life-Support Controller', difficulty: 3, isBoss: true },
     ],
   },
 ]

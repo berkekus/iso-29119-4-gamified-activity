@@ -5,7 +5,7 @@ import ScoreChip from '../ui/ScoreChip'
 import CoverageMeter from '../ui/CoverageMeter'
 import { JudgeSprite } from '../ui/CharacterSprites'
 import { TRUTH_TABLE } from '../engine/coverage/mcdc'
-import { useGameStore } from '../stores/gameStore'
+import { useGameStore, getDialogueObjectionSuccessExplanation } from '../stores/gameStore'
 import type { AnswerPayload, Screen } from '../stores/gameStore'
 import {
   OptionListPicker,
@@ -400,6 +400,9 @@ function pickOptionExplanation(
   if (payload.kind === 'binary_verdict' || payload.kind === 'level_picker') {
     const opt = (caseFile.options ?? []).find((o) => o.id === payload.optionId)
     return opt?.explanation ?? null
+  }
+  if (payload.kind === 'dialogue_objection' && isCorrect) {
+    return getDialogueObjectionSuccessExplanation(caseFile, payload.selectedFragments)
   }
   // For other types, prefer the case-level explanation.
   return isCorrect

@@ -27,17 +27,17 @@
     ],
     "decision_expression": "Target_Locked && (Override_Key || Auto_Confirm)"
   },
+  "defendant_subtitle": "Weapons Test Lead",
   "claim": "We tested everything! Connect the two tests that legally prove the Override_Key independently affects the weapon firing.",
   "charges": [
-    "You must construct an Independence Pair for Override_Key — two tests where only Override flips and the outcome flips.",
-    "Watch out for masking: in (Override OR Auto), if Auto is TRUE the OR-clause is TRUE regardless of Override. Override is then masked and cannot demonstrate independent effect.",
-    "Pick a pair where Auto_Confirm is OFF in BOTH tests, so Override is the only thing that can change the outcome."
+    "The defense claims their four tests are enough to prove the Override_Key was properly tested.",
+    "As Prosecutor, you must decide whether the Override_Key has really been shown to affect the firing decision on its own."
   ],
   "test_set": [],
   "correct_answer_explanation": "Got them! T2 (Target=ON, Override=ON, Auto=OFF, Fires) paired with T4 (Target=ON, Override=OFF, Auto=OFF, Fails) is a valid MC/DC pair for Override_Key: only Override flips, Target stays ON, Auto stays OFF, and the outcome flips from Fires to Fails. Holding Auto=OFF was critical — if Auto had been ON in either log, the OR-clause would saturate to TRUE and Override's contribution would be invisible. This masking effect is exactly what MC/DC is designed to surface.",
   "wrong_answer_explanation": "That pair doesn't isolate Override_Key. Two failure modes are common: (1) you picked tests where MORE than one condition flips, so the change cannot be attributed to Override alone; (2) you picked tests where Auto_Confirm was ON, which masks Override because the OR-clause stays TRUE no matter what Override does. Find a pair where ONLY Override flips and Auto stays OFF in both tests.",
   "hints": [
-    "Prosecutor's Note: For Override's independence pair, every other condition (Target_Locked AND Auto_Confirm) must be IDENTICAL across the two tests, and only Override may flip.",
+    "For Override's independence pair, every other condition (Target_Locked AND Auto_Confirm) must be IDENTICAL across the two tests, and only Override may flip.",
     "Watch the OR gate: in (Override OR Auto), if Auto is TRUE the result is TRUE regardless of Override. To see Override's effect, you MUST hold Auto=OFF in both tests so Override actually drives the outcome.",
     "Worked solution: T2 (Tgt=ON, Ovr=ON, Auto=OFF → Fires) and T4 (Tgt=ON, Ovr=OFF, Auto=OFF → Fails). Target stays ON, Auto stays OFF, only Override flips, outcome flips. That's a clean Override independence pair."
   ],

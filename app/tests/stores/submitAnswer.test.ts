@@ -100,6 +100,14 @@ describe('submitAnswer + evaluateAnswer — correct answers mark the case comple
     expect(
       useGameStore.getState().submitAnswer({ kind: 'budget_strategy', selectedRowIds: threeRows }),
     ).toBe(true)
+    expect(useGameStore.getState().lastBudgetStrategyIncludedHighRisk).toBe(true)
+
+    // Low-risk-only triplet: no row with obstacle+spd50 both true.
+    const lowRisk = ['R13', 'R14', 'R15'] as const
+    expect(
+      useGameStore.getState().submitAnswer({ kind: 'budget_strategy', selectedRowIds: [...lowRisk] }),
+    ).toBe(true)
+    expect(useGameStore.getState().lastBudgetStrategyIncludedHighRisk).toBe(false)
 
     // Two rows — under budget cap.
     expect(
@@ -108,6 +116,7 @@ describe('submitAnswer + evaluateAnswer — correct answers mark the case comple
         selectedRowIds: threeRows.slice(0, 2),
       }),
     ).toBe(false)
+    expect(useGameStore.getState().lastBudgetStrategyIncludedHighRisk).toBe(null)
   })
 
   test('mcdc_pair_builder: canonical 4-row set passes (vault-boss); wrong row fails', () => {

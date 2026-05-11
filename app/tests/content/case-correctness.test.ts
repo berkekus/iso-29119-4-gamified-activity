@@ -84,11 +84,21 @@ describe('case correctness data is parseable for every campaign case', () => {
           break
         }
         case 'dialogue_objection': {
-          // Required fragments must form a unique correctness key — at least
-          // one fragment, and every required fragment must appear in the
-          // larger fragment pool the player picks from.
-          const required = c.required_fragments ?? []
           const pool = c.fragments ?? []
+          const multi = c.dialogue_valid_sequences
+          if (multi && multi.length > 0) {
+            const len0 = multi[0].length
+            expect(len0).toBeGreaterThan(0)
+            for (const seq of multi) {
+              expect(seq.length).toBe(len0)
+              for (const f of seq) expect(pool).toContain(f)
+            }
+            if (c.dialogue_correct_explanations && c.dialogue_correct_explanations.length > 0) {
+              expect(c.dialogue_correct_explanations.length).toBe(multi.length)
+            }
+            break
+          }
+          const required = c.required_fragments ?? []
           expect(required.length).toBeGreaterThan(0)
           for (const f of required) expect(pool).toContain(f)
           break

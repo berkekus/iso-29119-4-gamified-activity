@@ -11,7 +11,7 @@
   "estimated_time_sec": 120,
   "scenario": {
     "title": "The VIP Exploit",
-    "narrative": "A major e-commerce site lost $50,000 during a Black Friday sale. The discount logic relies on TWO conditions: is_vip AND cart_large. The defense claims that two test runs were enough to prove the system safe. You are cross-examining the Lead QA engineer.",
+    "narrative": "A major e-commerce site reported a serious anomaly during a Black Friday sale. The discount logic for a 20% offer depends on TWO inputs: is_vip and cart_large.\n\nThe defense claims that running just two tests was enough to prove the system safe. You are cross-examining the Lead QA engineer to see whether any important input combination was ignored.",
     "code": "def apply_discount(is_vip, cart_large):\n    if is_vip and cart_large:\n        return apply_20_percent()\n    return None",
     "conditions": [
       { "id": "is_vip", "label": "User is VIP" },
@@ -19,24 +19,28 @@
     ],
     "decision_expression": "is_vip && cart_large"
   },
-  "claim": "I tested the happy path (VIP + Large Cart) and the rejection path (No VIP + Small Cart). The system worked perfectly both times. What more do you want?",
+  "defendant_subtitle": "Lead QA Engineer",
+  "claim": "I tested what really matters: VIPs with big carts and regular users with small ones. The system behaved perfectly. Isn't that enough?",
   "charges": [
-    "The defense team only tested T-T (VIP, Large Cart) and F-F (Not VIP, Small Cart), claiming the system is thoroughly tested because both TRUE and FALSE outcomes were reached.",
-    "The prosecution alleges that BCC requires every combination in the 2^N truth table — and the two MIXED combinations (T-F and F-T) were never executed.",
-    "Build an objection that names a specific missing mixed combination and forces the engineer to admit the gap."
+    "The defense only ran two tests and still claimed the system was \"fully tested.\"",
+    "You suspect at least one mixed input combination was never tried and may hide a serious risk."
   ],
   "fragments": [
     "User is VIP", "User is NOT VIP", "Cart is LARGE", "Cart is SMALL", "What happens if...", "but..."
   ],
-  "required_fragments": [
-    "What happens if...", "User is NOT VIP", "but...", "Cart is LARGE"
+  "dialogue_valid_sequences": [
+    ["What happens if...", "User is VIP", "but...", "Cart is SMALL"],
+    ["What happens if...", "User is NOT VIP", "but...", "Cart is LARGE"]
   ],
-  "correct_answer_explanation": "Objection sustained! By assembling \"What happens if... User is NOT VIP but... Cart is LARGE\", you forced the engineer to confront the (F, T) combination — the exact case that was never tested. He breaks down and admits: a non-VIP customer with a large cart triggered an integer overflow, granting a 100% discount. The Judge rules that BCC requires all 2^2 = 4 combinations: T-T, T-F, F-T, AND F-F. Testing only the two extremes leaves half the truth table untouched.",
-  "wrong_answer_explanation": "That objection misses the mathematical gap. The defense already covered T-T and F-F. To prove BCC is incomplete you must point at a MIXED combination they never ran — start with \"What happens if...\" and describe one variable at TRUE while the other is FALSE.",
+  "dialogue_correct_explanations": [
+    "Objection sustained! You pressed the engineer on what happens for a VIP whose cart never crossed the large threshold — the VIP-with-small-cart mixed case that never appeared in their two scripted runs.\n\nThose runs only demonstrated the opposite corners: both inputs true together, and both false together. Your question names a row that sits between those corners: one input true and the other false. Branch Condition Combination (BCC), per ISO 29119-4 §5.3.5, requires every pairing of true/false across the decision's conditions. With two inputs that is four combinations, not two; skipping mixed rows like this one leaves a hole the defense cannot hand-wave away as \"fully tested.\"",
+    "Objection sustained! You pressed the engineer on what happens for a non-VIP shopper whose cart still clears the large threshold — the non-VIP-with-large-cart mixed case that never appeared in their two scripted runs.\n\nThose runs only demonstrated the opposite corners: both inputs true together, and both false together. Your question names a row that sits between those corners: one input true and the other false. Under cross-examination the gap shows up in the record: that combination simply never ran. Branch Condition Combination (BCC), per ISO 29119-4 §5.3.5, requires every pairing of true/false across the decision's conditions — four combinations for two inputs, not two — which is how a defect such as an arithmetic edge case on oversized carts could stay invisible until production."
+  ],
+  "wrong_answer_explanation": "That objection does not isolate a mixed input the defense skipped. Open with \"What happens if...\" and then spell out one true / one false pairing they never demoed: VIP with a small cart, or a non-VIP with a large cart.",
   "hints": [
-    "Prosecutor's Note: The defense only ran two tests — both extremes (T-T and F-F). The two MIXED rows of the 2x2 truth table are still missing.",
-    "Recall ISO 29119-4 §5.3.5 (BCC): you must exercise every combination of the input conditions, not just the corner cases. Which mixed pair would expose the bug — VIP with a small cart, or a non-VIP with a large cart?",
-    "Worked solution: Build \"What happens if... User is NOT VIP but... Cart is LARGE\". This calls out the (is_vip=F, cart_large=T) row — the exact combination the engineer skipped, and the one that triggered the overflow."
+    "Two tests can only cover two rows of the input picture. If both runs flipped every input together, the in-between stories — one signal high and the other low — never got a day in court.",
+    "Recall ISO 29119-4 §5.3.5 (BCC): every combination of the input conditions must be exercised, not only the two opposite corners the witness prefers to talk about.",
+    "Worked examples: \"What happens if... User is VIP but... Cart is SMALL\" or \"What happens if... User is NOT VIP but... Cart is LARGE\" — either names a mixed combination absent from their script."
   ],
   "seeded_faults": [],
   "misconceptions": [

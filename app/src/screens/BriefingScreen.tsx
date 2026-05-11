@@ -206,9 +206,20 @@ export default function BriefingScreen({ onNavigate, onBack }: Props) {
           }}>
             <div style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: TC.grey, marginBottom: 10 }}>THE DEFENDANT</div>
             <BugSprite size={90} type="mcdc" mood="nervous" />
-            <div style={{ fontFamily: HAND_FONT, fontSize: 16, color: TC.grey, marginTop: 8, fontStyle: 'italic', lineHeight: 1.5 }}>
-              "I... I'm sure my tests were enough..."
-            </div>
+            {caseFile?.defendant_subtitle && caseFile?.claim ? (
+              <>
+                <div style={{ fontFamily: PIXEL_FONT, fontSize: 10, color: TC.ink, marginTop: 8, lineHeight: 1.4 }}>
+                  {caseFile.defendant_subtitle}
+                </div>
+                <div style={{ fontFamily: HAND_FONT, fontSize: 16, color: TC.grey, marginTop: 8, fontStyle: 'italic', lineHeight: 1.5 }}>
+                  "{caseFile.claim}"
+                </div>
+              </>
+            ) : (
+              <div style={{ fontFamily: HAND_FONT, fontSize: 16, color: TC.grey, marginTop: 8, fontStyle: 'italic', lineHeight: 1.5 }}>
+                "I... I'm sure my tests were enough..."
+              </div>
+            )}
           </div>
 
           {/* Dialog */}

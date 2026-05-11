@@ -340,7 +340,9 @@ function FeedbackBanner({ feedback }: { feedback: { type: 'success' | 'error'; m
 // ── Dialogue Objection ────────────────────────────────────────────────────────
 export function DialogueObjectionPicker({ caseFile, feedback, onSubmit }: BaseProps) {
   const fragments = caseFile.fragments ?? [];
-  const requiredCount = caseFile.required_fragments?.length ?? 0;
+  const requiredCount =
+    (caseFile.dialogue_valid_sequences?.[0]?.length) ??
+    (caseFile.required_fragments?.length ?? 0);
   const [selected, setSelected] = useState<string[]>([]);
 
   const toggleFragment = (f: string) => {
@@ -502,7 +504,7 @@ export function BudgetStrategyPicker({ caseFile, feedback, onSubmit }: BaseProps
       </div>
       {feedback?.type === 'success' && (
         <div style={{ marginTop: 16, padding: 14, border: `2px dashed ${TC.magenta}`, background: `${TC.magenta}10`, fontFamily: HAND_FONT, fontSize: 16, color: TC.ink, lineHeight: 1.5 }}>
-          <strong>UNEXAMINED PATHS:</strong> Because of the budget constraint, {rows.length - expectedCount} combinations were left untested! A full BCC suite requires all {rows.length} combinations, which is exactly why the combinatorial explosion is a real problem.
+          <strong>UNEXAMINED PATHS:</strong> Your three subpoenas cover {expectedCount} of {rows.length} combinations under full BCC — the rest of the truth table stays dark. Proceed to trial: the debrief will spell out the coverage fraction and how your choices read as prosecution strategy.
         </div>
       )}
       <FeedbackBanner feedback={feedback} />

@@ -1,0 +1,68 @@
+{
+  "id": "coverage-mix-02",
+  "act": "COVERAGE_TRIAL",
+  "difficulty": 2,
+  "iso_clauses": ["§5.3.4", "§5.3.5"],
+  "technique": "MIXED",
+  "layer": 2,
+  "question_type": "dialogue_objection",
+  "scenario": {
+    "title": "The Insurance Rule Engine",
+    "narrative": "A premium auto-insurance algorithm approved a high-risk policy by mistake. The logic is simply: `is_vip AND has_good_record`. The QA team insists their tests were thorough enough.",
+    "code": "def approve_policy(is_vip, has_good_record):\n    if is_vip and has_good_record:\n        return \"APPROVED\"\n    return \"DENIED\"",
+    "conditions": [
+      { "id": "V", "label": "is_vip" },
+      { "id": "G", "label": "has_good_record" }
+    ],
+    "decision_expression": "V && G"
+  },
+  "test_set": [
+    { "id": "T1", "inputs": { "V": true, "G": true }, "outcome": true },
+    { "id": "T2", "inputs": { "V": false, "G": false }, "outcome": false }
+  ],
+  "defendant_subtitle": "Senior SDET",
+  "claim": "We achieved total coverage of the rules. We tested when VIP was True and False. We tested when Good Record was True and False. Every single condition was flipped! It's exhaustive.",
+  "charges": [
+    "The defense claims they've achieved 'total coverage' because every individual condition was observed as both True and False in their test set.",
+    "As Prosecutor, point out the critical flaw in their reasoning regarding combination coverage."
+  ],
+  "fragments": [
+    "You achieved Branch Condition coverage,",
+    "You achieved Branch Condition Combination coverage,",
+    "but you completely ignored the combinations.",
+    "but you completely ignored the independent pairs.",
+    "For example, what happens if",
+    "is_vip is True, but has_good_record is False?",
+    "is_vip is False, but has_good_record is True?",
+    "is_vip is False, and has_good_record is False?",
+    "That untested combination is where the bug hides."
+  ],
+  "dialogue_valid_sequences": [
+    [
+      "You achieved Branch Condition coverage,",
+      "but you completely ignored the combinations.",
+      "For example, what happens if",
+      "is_vip is True, but has_good_record is False?",
+      "That untested combination is where the bug hides."
+    ],
+    [
+      "You achieved Branch Condition coverage,",
+      "but you completely ignored the combinations.",
+      "For example, what happens if",
+      "is_vip is False, but has_good_record is True?",
+      "That untested combination is where the bug hides."
+    ]
+  ],
+  "dialogue_correct_explanations": [
+    "Exactly. Flipping each condition individually only satisfies Branch Condition (BC) coverage. To be truly exhaustive for 2 conditions, you need all 4 combinations (BCC). Missing the T-F and F-T combinations left a massive vulnerability.",
+    "Exactly. Flipping each condition individually only satisfies Branch Condition (BC) coverage. To be truly exhaustive for 2 conditions, you need all 4 combinations (BCC). Missing the T-F and F-T combinations left a massive vulnerability."
+  ],
+  "wrong_answer_explanation": "That objection doesn't dismantle their specific claim. They did test each condition as True and False. But what happens when the conditions interact in ways they didn't test?",
+  "hints": [
+    "They tested (True, True) and (False, False). This means VIP was seen as T and F, and Record was seen as T and F.",
+    "This satisfies Branch Condition coverage. But what combinations did they miss entirely?",
+    "Look for the missing combinations like (True, False) or (False, True)."
+  ],
+  "seeded_faults": [],
+  "misconceptions": []
+}

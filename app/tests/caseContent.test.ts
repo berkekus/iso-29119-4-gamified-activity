@@ -1,5 +1,6 @@
 import { describe, test, expect } from 'vitest'
 import { loadCase, type CaseFile } from '../src/engine/caseLoader'
+import { evaluateAnswer, budgetSelectionIncludesHighRisk } from '../src/stores/gameStore'
 
 // All 13 campaign cases under audit (matches CASE_ORDER)
 import stmtTutorial from '../src/content/cases/stmt-tutorial-01.json'
@@ -377,6 +378,9 @@ describe('technique correctness — recomputed from first principles', () => {
     // The decision is a 4-input AND, so exactly one row should evaluate TRUE.
     const trueRows = rows.filter((r) => r.outcome === true)
     expect(trueRows.length).toBe(1)
+    expect(cf.budget_debrief).toBeDefined()
+    expect(budgetSelectionIncludesHighRisk(cf, ['R1', 'R2', 'R3'])).toBe(true)
+    expect(budgetSelectionIncludesHighRisk(cf, ['R13', 'R14', 'R15'])).toBe(false)
   })
 
   test('bcc-vs-bc-01: required connection reconstructs the missing F-F combination', () => {
@@ -422,14 +426,23 @@ describe('technique correctness — recomputed from first principles', () => {
     }
   })
 
-  test('bcc-intro-01: dialogue fragments construct an objection naming the missing mixed combination', () => {
+  test('bcc-intro-01: both mixed dialogue sequences are accepted as correct', () => {
     const cf = loadCase(bccIntro)
-    const required = cf.required_fragments ?? []
-    expect(required.length).toBeGreaterThan(0)
-    const sentence = required.join(' ').toLowerCase()
-    // Should reference "NOT VIP" and "LARGE" (the missing F-T combination)
-    expect(sentence).toContain('not vip')
-    expect(sentence).toContain('large')
+    const seqs = cf.dialogue_valid_sequences ?? []
+    expect(seqs.length).toBe(2)
+    const exp = cf.dialogue_correct_explanations ?? []
+    expect(exp.length).toBe(2)
+    for (const seq of seqs) {
+      expect(
+        evaluateAnswer(cf, { kind: 'dialogue_objection', selectedFragments: seq }),
+      ).toBe(true)
+    }
+    const s0 = seqs[0].join(' ').toLowerCase()
+    const s1 = seqs[1].join(' ').toLowerCase()
+    expect(s0).toContain('vip')
+    expect(s0).toContain('small')
+    expect(s1).toContain('not vip')
+    expect(s1).toContain('large')
   })
 
   test('mcdc-tutorial-01: dialogue fragments name the both-flipped flaw', () => {

@@ -41,8 +41,18 @@
       "required_cases": [
         "mcdc-tutorial-01",
         "mcdc-trap-isolation-01",
-        "mcdc-vault-boss-01",
-        "mcdc-showdown-01"
+        "mcdc-vault-boss-01"
+      ]
+    },
+    {
+      "id": "ach-act-5",
+      "act": "ACT V",
+      "title": "Master of Coverage",
+      "description": "Completed all ACT V cases — The final Coverage Trial conquered.",
+      "required_cases": [
+        "coverage-mix-01",
+        "coverage-mix-02",
+        "coverage-mix-03"
       ]
     }
   ]

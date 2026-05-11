@@ -27,8 +27,9 @@ import bccExplosion01    from '../content/cases/bcc-explosion-01.json'
 import mcdcTutorial01      from '../content/cases/mcdc-tutorial-01.json'
 import mcdcTrapIsolation01 from '../content/cases/mcdc-trap-isolation-01.json'
 import mcdcVaultBoss01     from '../content/cases/mcdc-vault-boss-01.json'
-import mcdcShowdown01      from '../content/cases/mcdc-showdown-01.json'
-
+import coverageMix01         from '../content/cases/coverage-mix-01.json'
+import coverageMix02         from '../content/cases/coverage-mix-02.json'
+import coverageMix03         from '../content/cases/coverage-mix-03.json'
 const CASE_REGISTRY: Record<string, unknown> = {
   'stmt-tutorial-01':           stmtTutorial01,
   'stmt-hidden-branch-01':      stmtHiddenBranch01,
@@ -42,7 +43,9 @@ const CASE_REGISTRY: Record<string, unknown> = {
   'mcdc-tutorial-01':           mcdcTutorial01,
   'mcdc-trap-isolation-01':     mcdcTrapIsolation01,
   'mcdc-vault-boss-01':         mcdcVaultBoss01,
-  'mcdc-showdown-01':           mcdcShowdown01,
+  'coverage-mix-01':            coverageMix01,
+  'coverage-mix-02':            coverageMix02,
+  'coverage-mix-03':            coverageMix03,
 }
 
 // ── Screen type — all navigable screens ──────────────────────────────────────
@@ -105,6 +108,12 @@ interface GameState {
    *  by the case-completion side-effect. Read by DebriefScreen to show the
    *  one-line "🏆 Achievement unlocked" notice. Cleared on every load/reset. */
   newlyUnlockedAchievement: string | null
+  /** Set when a dialogue_objection answer passes; index into dialogue_valid_sequences / dialogue_correct_explanations. Cleared on load/reset. */
+  lastDialogueMatchIndex: number | null
+  /** After a passing budget_strategy submit: whether the pick included a high-risk row (obstacle+speed). Cleared on load/reset. */
+  lastBudgetStrategyIncludedHighRisk: boolean | null
+  /** Vault boss evaluation result. Cleared on load/reset. */
+  lastVaultEvaluation: { m_ok: boolean; k_ok: boolean; t_ok: boolean; all_ok: boolean } | null
 
   loadCase: (caseData: CaseFile) => void
   loadCaseById: (caseId: string) => void
@@ -147,6 +156,51 @@ export type AnswerPayload =
   | { kind: 'mcdc_pair_builder'; selectedRowIds: string[] }
 
 const PHASES: GamePhase[] = ['briefing', 'investigation', 'evidence', 'trial', 'debrief']
+
+/** Index of the first matching valid dialogue sequence, or null. */
+export function dialogueObjectionMatchIndex(caseData: CaseFile, selected: string[]): number | null {
+  const multi = caseData.dialogue_valid_sequences
+  if (multi && multi.length > 0) {
+    for (let i = 0; i < multi.length; i++) {
+      const seq = multi[i]
+      if (!seq) continue
+      if (seq.length === selected.length && seq.every((f, j) => f === selected[j])) return i
+    }
+    return null
+  }
+  const required = caseData.required_fragments ?? []
+  if (required.length !== selected.length) return null
+  if (!required.every((f, j) => f === selected[j])) return null
+  return 0
+}
+
+/** Success copy for a correct dialogue_objection submission (per-path when configured). */
+export function getDialogueObjectionSuccessExplanation(
+  caseData: CaseFile,
+  selectedFragments: string[],
+): string | null {
+  const idx = dialogueObjectionMatchIndex(caseData, selectedFragments)
+  if (idx === null) return null
+  const perPath = caseData.dialogue_correct_explanations?.[idx]
+  if (perPath) return perPath
+  return caseData.correct_answer_explanation ?? null
+}
+
+/**
+ * For brake / budget cases: true if any selected row has obstacle ahead AND speed > 50
+ * (internal condition keys `obstacle` and `spd50` on coverage_table rows).
+ */
+export function budgetSelectionIncludesHighRisk(caseData: CaseFile, selectedRowIds: string[]): boolean {
+  const rows = caseData.coverage_table ?? []
+  const byId = new Map(rows.map((r) => [r.id, r]))
+  for (const id of selectedRowIds) {
+    const row = byId.get(id)
+    if (!row) continue
+    const inp = row.inputs as Record<string, unknown>
+    if (inp.obstacle === true && inp.spd50 === true) return true
+  }
+  return false
+}
 
 // ── Answer evaluation — pure, exported for tests ────────────────────────────
 //
@@ -197,9 +251,7 @@ export function evaluateAnswer(caseData: CaseFile, payload: AnswerPayload): bool
       return true
     }
     case 'dialogue_objection': {
-      const required = caseData.required_fragments ?? [];
-      if (payload.selectedFragments.length !== required.length) return false;
-      return required.every((f, i) => f === payload.selectedFragments[i]);
+      return dialogueObjectionMatchIndex(caseData, payload.selectedFragments) !== null
     }
     case 'evidence_board': {
       const required = caseData.required_connection;
@@ -209,6 +261,10 @@ export function evaluateAnswer(caseData: CaseFile, payload: AnswerPayload): bool
       return (s1 === r1 && s2 === r2) || (s1 === r2 && s2 === r1);
     }
     case 'mcdc_pair_builder': {
+      if (caseData.id === 'mcdc-vault-boss-01') {
+        const result = computeVaultBossMcdc(caseData, payload.selectedRowIds)
+        return result.all_ok
+      }
       const rows = caseData.coverage_table ?? []
       const requiredRows = rows.filter((r) => r.required).map((r) => r.id)
       const selected = payload.selectedRowIds
@@ -226,6 +282,38 @@ const initialMcdc: McdcState = {
   verdictResult: null,
   faultResults: [],
   misconceptions: [],
+}
+
+export function computeVaultBossMcdc(caseData: CaseFile, selectedIds: string[]) {
+  const rows = caseData.coverage_table ?? []
+  const selectedRows = selectedIds.map((id) => rows.find((r) => r.id === id)).filter(Boolean) as any[]
+  
+  if (selectedRows.length !== 4) return { m_ok: false, k_ok: false, t_ok: false, all_ok: false }
+
+  const checkPair = (cond: 'M' | 'K' | 'T') => {
+    for (let i = 0; i < selectedRows.length; i++) {
+      for (let j = i + 1; j < selectedRows.length; j++) {
+        const r1 = selectedRows[i]
+        const r2 = selectedRows[j]
+        
+        if (r1.outcome !== r2.outcome) {
+          if (r1.inputs[cond] !== r2.inputs[cond]) {
+            const others = ['M', 'K', 'T'].filter((c) => c !== cond)
+            const sameOthers = others.every((c) => r1.inputs[c] === r2.inputs[c])
+            if (sameOthers) return true
+          }
+        }
+      }
+    }
+    return false
+  }
+
+  const m_ok = checkPair('M')
+  const k_ok = checkPair('K')
+  const t_ok = checkPair('T')
+  const all_ok = m_ok && k_ok && t_ok
+
+  return { m_ok, k_ok, t_ok, all_ok }
 }
 
 export const useGameStore = create<GameState>()(
@@ -258,6 +346,9 @@ export const useGameStore = create<GameState>()(
   collectedLawCards: [],
   unlockedAchievements: [],
   newlyUnlockedAchievement: null,
+  lastDialogueMatchIndex: null,
+  lastBudgetStrategyIncludedHighRisk: null,
+  lastVaultEvaluation: null,
 
   loadCase: (caseData) => {
     const truthTable = generateTruthTable(
@@ -271,6 +362,9 @@ export const useGameStore = create<GameState>()(
       submission: [],
       verdict: null,
       mcdc: initialMcdc,
+      lastDialogueMatchIndex: null,
+      lastBudgetStrategyIncludedHighRisk: null,
+      lastVaultEvaluation: null,
     })
   },
 
@@ -323,6 +417,9 @@ export const useGameStore = create<GameState>()(
       submission: [],
       verdict: null,
       mcdc: initialMcdc,
+      lastDialogueMatchIndex: null,
+      lastBudgetStrategyIncludedHighRisk: null,
+      lastVaultEvaluation: null,
     })
   },
 
@@ -372,6 +469,9 @@ export const useGameStore = create<GameState>()(
       mcdc: initialMcdc,
       truthTable: state.truthTable,
       caseFile: state.caseFile,
+      lastDialogueMatchIndex: null,
+      lastBudgetStrategyIncludedHighRisk: null,
+      lastVaultEvaluation: null,
     }))
   },
 
@@ -416,19 +516,63 @@ export const useGameStore = create<GameState>()(
     if (!caseFile) return false
 
     const correct = evaluateAnswer(caseFile, payload)
+    const dialogueIdx =
+      correct && payload.kind === 'dialogue_objection'
+        ? dialogueObjectionMatchIndex(caseFile, payload.selectedFragments)
+        : null
+    const lastBudgetHighRisk =
+      payload.kind === 'budget_strategy'
+        ? correct
+          ? budgetSelectionIncludesHighRisk(caseFile, payload.selectedRowIds)
+          : null
+        : null
+    const lastVaultEvaluation =
+      caseFile.id === 'mcdc-vault-boss-01' && payload.kind === 'mcdc_pair_builder'
+        ? computeVaultBossMcdc(caseFile, payload.selectedRowIds)
+        : null
+
+    let coveragePercent = correct ? 100 : 0
+    let misconceptions = (caseFile.misconceptions ?? []).map((m) => ({
+      id: m.id,
+      triggered: !correct,
+      explanation: m.explanation_md,
+    }))
+
+    if (lastVaultEvaluation && !lastVaultEvaluation.all_ok) {
+      const okCount = [lastVaultEvaluation.m_ok, lastVaultEvaluation.k_ok, lastVaultEvaluation.t_ok].filter(Boolean).length;
+      coveragePercent = Math.round((okCount / 3) * 100);
+      
+      misconceptions = []; // override default N+1 misconception with specifics
+      
+      if (okCount > 0) {
+        misconceptions.push({
+          id: "PARTIAL_MCDC",
+          triggered: true,
+          explanation: `You successfully proved independent effect for ${okCount} out of 3 conditions. However, the remaining conditions lack valid pairs. Remember: to prove independence for X, you must find two rows where ONLY X changes and the outcome flips.`,
+        });
+      } else {
+        misconceptions.push({
+          id: "NO_MCDC_ACHIEVED",
+          triggered: true,
+          explanation: `None of the selected rows form a valid independence pair. You either picked rows where the decision never flips, or where multiple inputs change simultaneously. Re-examine the truth table and find pairs that differ by EXACTLY one input.`,
+        });
+      }
+    }
+
     writeVerdict(
       {
         coverageAchieved: correct,
-        coveragePercent: correct ? 100 : 0,
+        coveragePercent: coveragePercent,
         conditionsCovered: [],
       },
       (caseFile.seeded_faults ?? []).map((f) => ({ id: f.id, detected: correct })),
-      (caseFile.misconceptions ?? []).map((m) => ({
-        id: m.id,
-        triggered: !correct,
-        explanation: m.explanation_md,
-      })),
+      misconceptions,
     )
+    set({
+      lastDialogueMatchIndex: dialogueIdx,
+      lastBudgetStrategyIncludedHighRisk: lastBudgetHighRisk,
+      lastVaultEvaluation: lastVaultEvaluation,
+    })
     return correct
   },
     }),
