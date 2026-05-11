@@ -11,7 +11,7 @@
   "estimated_time_sec": 150,
   "scenario": {
     "title": "Two-Factor Login",
-    "narrative": "A login function admits a user only when they are logged in AND have permission. Pick the test set that satisfies BOTH 100% Decision coverage (overall outcome flips T and F) AND 100% Branch Condition coverage (each individual condition observed T and F).",
+    "narrative": "A login function admits a user only when logged in AND has permission. Pick the test set that satisfies BOTH Decision and Branch Condition coverage.",
     "code": "def show_page(is_logged_in, has_permission):\n    if is_logged_in and has_permission:\n        return show()\n    return show_error()",
     "conditions": [
       { "id": "is_logged_in", "label": "user is logged in" },
@@ -22,9 +22,8 @@
   "claim": "Which candidate test set satisfies BOTH Decision coverage AND Branch Condition coverage for `is_logged_in AND has_permission`?",
   "test_set": [],
   "charges": [
-    "The defendant function show_page(is_logged_in, has_permission) admits a user only when both conditions are true and shows an error otherwise.",
-    "The prosecution alleges that several candidate test sets falsely claim Decision-and-Branch-Condition coverage while leaving one or both criteria unmet.",
-    "The court must identify which candidate set genuinely satisfies both Decision coverage and Branch Condition coverage for the predicate `is_logged_in && has_permission`."
+    "Admits a user only when both conditions are true, otherwise shows an error.",
+    "The prosecution alleges several candidate sets falsely claim full Decision and Branch Condition coverage."
   ],
   "options": [
     {
@@ -57,8 +56,12 @@
   "hints": [
     "Decision testing asks: did the if-statement produce both TRUE and FALSE outcomes overall? Branch Condition asks something stricter — each individual condition must also appear as both T and F.",
     "Look at is_logged_in and has_permission separately. Did each appear as both TRUE and FALSE across the tests? Are any of them stuck on a single value? And does the decision overall produce both T and F?",
-    "Set B uses three tests. (T,T) gives T outcome; (T,F) and (F,T) give F outcomes (Decision ✓); is_logged_in and has_permission each appear T and F (BC ✓)."
+    "Set B: (T,T)→show, (T,F)→error, (F,T)→error. Decision ✓ (both outcomes). BC ✓ (each condition seen T and F)."
   ],
+  "defendant": {
+    "name": "show_page(is_logged_in, has_permission)",
+    "quote": "I covered both outcomes... mostly."
+  },
   "seeded_faults": [
     {
       "id": "F1",

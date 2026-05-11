@@ -20,9 +20,9 @@
   },
   "claim": "Does the team's claim — 'T1 achieves 100% Statement coverage, therefore the function is fully tested' — hold up?",
   "charges": [
-    "The pricing function price(amount, is_premium) applies a discount only when is_premium is true and contains no else branch.",
-    "The defendant team submitted a single happy-path test (is_premium=True) and claims the function is fully tested.",
-    "The prosecution alleges the implicit FALSE edge of the if statement is never exercised, leaving non-premium pricing logic unverified."
+    "Applies a discount only when is_premium is true — no else branch.",
+    "One happy-path test (is_premium=True) was submitted; the team claims it is fully tested.",
+    "The prosecution alleges the implicit FALSE edge is never exercised."
   ],
   "test_set": [
     { "id": "T1", "inputs": { "amount": 100, "is_premium": true }, "outcome": 90 }
@@ -45,9 +45,13 @@
   "wrong_answer_explanation": "An if-without-else creates a hidden branch that Statement coverage cannot see — you also need a test where is_premium is FALSE.",
   "hints": [
     "The first half of the claim is true; the second half is the trap. Statement coverage IS 100%, but does that mean the function is fully tested?",
-    "Statement coverage only asks 'did each line execute?' — but what about the implicit FALSE branch of the if? Is there a test where is_premium=False?",
-    "Statement coverage IS 100% (every line executed via T1), but Branch coverage is 0% on the false edge. 'Fully tested' is a misconception. Verdict: claim INVALID."
+    "Statement asks 'did each line execute?' — but is there a test where is_premium=False?",
+    "Statement is 100% (T1 runs every line), but the false edge is never taken. 'Fully tested' is a misconception."
   ],
+  "defendant": {
+    "name": "price(amount, is_premium)",
+    "quote": "Every line ran. Isn't that enough?"
+  },
   "seeded_faults": [
     {
       "id": "F1",
