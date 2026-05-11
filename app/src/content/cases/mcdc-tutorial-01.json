@@ -2,50 +2,63 @@
   "id": "mcdc-tutorial-01",
   "act": "MCDC",
   "difficulty": 1,
-  "iso_clauses": ["§5.3.6", "§3.36"],
+  "iso_clauses": [
+    "§5.3.6"
+  ],
   "technique": "MCDC",
-  "layer": 4,
-  "question_type": "pair_selector",
-  "misconception_target": "MCDC-INDEP-AS-ISOLATION",
-  "concept_ref": "§3 row 5 — 'One test per condition is enough for MCDC'",
+  "layer": 5,
+  "question_type": "dialogue_objection",
+  "misconception_target": "MCDC-SINGLE-FLIP",
+  "concept_ref": "§2 Level 5a — 'Independent Effect via Single Flip'",
   "estimated_time_sec": 120,
+  "required_fragments": [
+    "In your two tests...",
+    "Both Badge AND Fingerprint changed",
+    "so we can't prove WHICH ONE opened the door!"
+  ],
+  "fragments": [
+    "In your two tests...",
+    "The fingerprint matched both times",
+    "Both Badge AND Fingerprint changed",
+    "Only the badge was tested",
+    "so we can't prove WHICH ONE opened the door!",
+    "so we achieved 100% decision coverage!"
+  ],
   "scenario": {
-    "title": "Simple Safety Gate",
-    "narrative": "A safety system activates when sensor sensorTriggered is triggered AND buttonPressed is pressed.",
-    "code": "if (sensorTriggered && buttonPressed) activate();",
+    "title": "The Single Flip",
+    "narrative": "A secure lab door failed and a spy walked inside. The decision is Has_Badge AND Fingerprint_Match. The defense submits two test logs — (Badge=T, Finger=T) and (Badge=F, Finger=F) — and claims the door was thoroughly tested. You must prove that no single condition was tested for INDEPENDENT effect: both inputs flipped at once, so neither one was isolated.",
+    "code": "if has_badge and fingerprint_match:\n    open_lab_door()",
     "conditions": [
-      { "id": "sensorTriggered", "label": "sensor has been triggered" },
-      { "id": "buttonPressed", "label": "button is pressed" }
+      {
+        "id": "has_badge",
+        "label": "Badge"
+      },
+      {
+        "id": "finger_match",
+        "label": "Fingerprint"
+      }
     ],
-    "decision_expression": "sensorTriggered && buttonPressed"
+    "decision_expression": "has_badge && finger_match"
   },
-  "claim": "This 3-test set satisfies MCDC for both conditions.",
+  "defendant_subtitle": "AI Test Lead",
+  "claim": "Test 1: Badge=True, Finger=True (Door Opened). Test 2: Badge=False, Finger=False (Door Closed). Our testing is flawless!",
   "charges": [
-    "The defendant function activates a safety system only when sensorTriggered AND buttonPressed are both true.",
-    "The defendant submits a 3-test suite — (T,T), (F,T), (T,F) — and claims MC/DC coverage for the predicate `sensorTriggered && buttonPressed`.",
-    "The court must determine whether each condition has a valid independence pair within the submitted suite."
+    "The defense used two tests where both conditions changed at the same time.",
+    "MC/DC requires showing that a single condition can flip the decision while all other conditions stay the same. "
   ],
-  "test_set": [
-    { "id": "T1", "inputs": { "sensorTriggered": true,  "buttonPressed": true  }, "outcome": true  },
-    { "id": "T2", "inputs": { "sensorTriggered": false, "buttonPressed": true  }, "outcome": false },
-    { "id": "T3", "inputs": { "sensorTriggered": true,  "buttonPressed": false }, "outcome": false }
-  ],
+  "test_set": [],
+  "correct_answer_explanation": "Objection sustained! By stringing \"In your two tests... Both Badge AND Fingerprint changed... so we can't prove WHICH ONE opened the door!\" you exposed the structural flaw: when two variables move together, you cannot attribute the outcome change to either of them. MC/DC requires an INDEPENDENCE PAIR — two tests that differ in exactly one condition while all others stay fixed, and where the decision flips. The defense never produced such a pair for either Badge or Fingerprint.",
+  "wrong_answer_explanation": "That objection misses the MC/DC rule. The defense reached both TRUE and FALSE outcomes — that satisfies Decision Coverage, not MC/DC. To break their proof, point out that they flipped TWO variables at once, so neither one has been isolated.",
   "hints": [
-    "An independence pair fixes every condition except one and the outcome must flip.",
-    "For sensorTriggered: which two tests differ ONLY in sensorTriggered and produce different outcomes? Same question for buttonPressed.",
-    "sensorTriggered's pair: T1 vs T2 (only sensorTriggered flips, outcome flips). buttonPressed's pair: T1 vs T3 (only buttonPressed flips, outcome flips). Three tests are enough here because T1 is shared."
+    "Look at the defense's two logs side by side. List which variables changed between Test 1 and Test 2 — was it just one, or both?",
+    "MC/DC requires an INDEPENDENCE PAIR for each condition: exactly ONE variable flips, every other variable is held constant, and the decision outcome flips. Did the defense produce such a pair for Badge? For Fingerprint?",
+    "Worked solution: Build \"In your two tests... Both Badge AND Fingerprint changed... so we can't prove WHICH ONE opened the door!\". This calls out that two simultaneous flips cannot isolate the independent effect of either condition."
   ],
-  "seeded_faults": [
-    {
-      "id": "F1",
-      "description": "buttonPressed check is bypassed when sensorTriggered is triggered",
-      "trigger": { "condition": "buttonPressed", "requiredDecisionFlip": true }
-    }
-  ],
+  "seeded_faults": [],
   "misconceptions": [
     {
-      "id": "MCDC-INDEP-AS-ISOLATION",
-      "explanation_md": "You tested each condition in isolation. MCDC requires *paired* test cases where one condition changes while all others remain fixed and the decision outcome flips."
+      "id": "MCDC-SINGLE-FLIP",
+      "explanation_md": "MC/DC's central rule is the **independence pair**: to prove that condition X independently affects the decision, you must hold every other condition constant and flip ONLY X, then observe the decision change. If two or more conditions move together between two tests, neither one has been isolated, so neither contributes to MC/DC — even if the outcome happens to change."
     }
   ]
 }

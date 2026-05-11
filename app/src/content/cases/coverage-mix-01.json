@@ -1,0 +1,54 @@
+{
+  "id": "coverage-mix-01",
+  "act": "COVERAGE_TRIAL",
+  "difficulty": 1,
+  "iso_clauses": ["§5.3.1", "§5.3.2"],
+  "technique": "MIXED",
+  "layer": 1,
+  "question_type": "dialogue_objection",
+  "scenario": {
+    "title": "The Logging Glitch",
+    "narrative": "A batch processing system suffered a silent failure in production. The defense team claims they wrote an exhaustive test suite that hit every single line of code, arguing the bug was unavoidable.",
+    "code": "def process_log(has_error):\n    print(\"Log batch received\")\n    if has_error:\n        print(\"Alert: error found in batch!\")\n    print(\"Batch processing complete\")",
+    "conditions": [
+      { "id": "E", "label": "has_error" }
+    ],
+    "decision_expression": "E"
+  },
+  "test_set": [
+    { "id": "T1", "inputs": { "E": true }, "outcome": true }
+  ],
+  "defendant_subtitle": "System QA Lead",
+  "claim": "We achieved 100% coverage! Every single line in that function was executed during our testing. You can't ask for more than 100%.",
+  "charges": [
+    "The defense insists their test suite is exhaustive because their tool reports 100% line execution.",
+    "As Prosecutor, analyze their claim. Have they truly satisfied the required coverage standard for a complete control-flow check?"
+  ],
+  "fragments": [
+    "Your claim is technically true,",
+    "Your claim is completely false,",
+    "but you only achieved Statement Coverage.",
+    "but you only achieved Decision Coverage.",
+    "You completely missed the hidden branch where the condition is false.",
+    "You completely missed the MC/DC independence pairs.",
+    "Therefore, the system wasn't fully tested."
+  ],
+  "dialogue_valid_sequences": [
+    [
+      "Your claim is technically true,",
+      "but you only achieved Statement Coverage.",
+      "You completely missed the hidden branch where the condition is false.",
+      "Therefore, the system wasn't fully tested."
+    ]
+  ],
+  "dialogue_correct_explanations": [
+    "Spot on. Hitting every line of code is only Statement Coverage. An IF without an ELSE has an implicit FALSE branch. Without testing that path, you don't have Branch Coverage, and bugs can easily hide there."
+  ],
+  "wrong_answer_explanation": "That objection doesn't hold up. Look closely at what they actually achieved. Did every line run? Yes. But did every possible branch in the control flow execute?",
+  "hints": [
+    "Hitting every line of code means 100% Statement Coverage. But does that guarantee all branches were taken?",
+    "An IF statement without an ELSE has a 'hidden' branch where the condition is false. Was that branch ever taken in their tests?"
+  ],
+  "seeded_faults": [],
+  "misconceptions": []
+}

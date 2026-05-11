@@ -44,6 +44,10 @@ const QuestionTypeEnum = z.enum([
   'pair_selector',
   'test_designer',
   'numeric_input',
+  'dialogue_objection',
+  'evidence_board',
+  'budget_strategy',
+  'mcdc_pair_builder',
 ])
 
 const TechniqueEnum = z.enum([
@@ -53,6 +57,7 @@ const TechniqueEnum = z.enum([
   'BC',
   'BCC',
   'MCDC',
+  'MIXED',
 ])
 
 /** Multi-choice option used by level_picker (and other discrete-choice) cases. */
@@ -80,11 +85,19 @@ const CoverageTableRowSchema = z.object({
   required: z.boolean(),
 })
 
+/** Optional structured debrief for budget_strategy cases (e.g. BCC explosion). */
+const BudgetDebriefSchema = z.object({
+  fraction_paragraph: z.string(),
+  when_high_risk_included: z.string(),
+  when_high_risk_missed: z.string(),
+  mc_dc_bridge: z.string(),
+})
+
 export const CaseFileSchema = z.object({
   id: z.string(),
   // 'act' is the campaign chapter; we keep legacy values + add hierarchy acts
-  act: z.enum(['MCDC', 'BCC', 'Combinatorial', 'DataFlow', 'STMT_BRANCH', 'DECISION_BC']),
-  difficulty: z.number().int().min(1).max(3),
+  act: z.enum(['MCDC', 'BCC', 'Combinatorial', 'DataFlow', 'STMT_BRANCH', 'DECISION_BC', 'COVERAGE_TRIAL']),
+  difficulty: z.number().int().min(1).max(5),
   iso_clauses: z.array(z.string()),
   scenario: z.object({
     title: z.string(),
@@ -98,11 +111,13 @@ export const CaseFileSchema = z.object({
 
   // ─── NEW (optional, single-player) ────────────────────────────────
   technique: TechniqueEnum.optional(),
-  layer: z.number().int().min(1).max(4).optional(),
+  layer: z.number().int().min(1).max(5).optional(),
   question_type: QuestionTypeEnum.optional(),
   misconception_target: z.string().optional(),
   test_set: z.array(TestSetRowSchema).optional(),
   claim: z.string().optional(),
+  /** When set, BriefingScreen shows this under THE DEFENDANT with `claim` as the spoken line (dialogue / witness cases). */
+  defendant_subtitle: z.string().optional(),
   /** 3-tier progressive hint chain: general → specific → worked solution. */
   hints: z.array(z.string()).optional(),
   /** Estimated time-to-solve in seconds (UX pacing). */
@@ -123,6 +138,18 @@ export const CaseFileSchema = z.object({
   wrong_answer_explanation: z.string().optional(),
   /** Short feedback shown when the player submits the correct answer. */
   correct_answer_explanation: z.string().optional(),
+  /** Dialogue fragments for dialogue_objection */
+  fragments: z.array(z.string()).optional(),
+  required_fragments: z.array(z.string()).optional(),
+  /** When set, any of these ordered sequences counts as a correct dialogue_objection answer (same length each). */
+  dialogue_valid_sequences: z.array(z.array(z.string())).optional(),
+  /** Parallel to dialogue_valid_sequences: per-sequence debrief / success text after a match. */
+  dialogue_correct_explanations: z.array(z.string()).optional(),
+  /** Clues for evidence_board */
+  evidence_board_clues: z.array(z.object({ id: z.string(), label: z.string() })).optional(),
+  required_connection: z.tuple([z.string(), z.string()]).optional(),
+  /** budget_strategy: multi-part debrief (coverage fraction + strategy branch + MC/DC bridge). */
+  budget_debrief: BudgetDebriefSchema.optional(),
   /** Per-case defendant identity shown in the BriefingScreen sidebar. */
   defendant: z.object({
     name: z.string(),

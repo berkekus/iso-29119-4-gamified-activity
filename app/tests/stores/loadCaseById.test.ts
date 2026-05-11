@@ -1,20 +1,8 @@
 import { describe, test, expect, beforeEach } from 'vitest'
 import { useGameStore } from '../../src/stores/gameStore'
+import { CASE_ORDER } from '../../src/content/caseOrder'
 
-const ALL_CASE_IDS = [
-  'stmt-tutorial-01',
-  'stmt-hidden-branch-01',
-  'branch-loop-trap-01',
-  'decision-and-trap-01',
-  'bc-or-three-cond-01',
-  'bc-negation-mask-01',
-  'bcc-three-and-01',
-  'bcc-cost-intuition-01',
-  'mcdc-tutorial-01',
-  'mcdc-altitude-disengage-01',
-  'mcdc-trap-isolation-01',
-  'mcdc-vault-boss-01',
-] as const
+const ALL_CASE_IDS = CASE_ORDER
 
 beforeEach(() => {
   useGameStore.getState().resetGame()

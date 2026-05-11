@@ -5,7 +5,7 @@ import ScoreChip from '../ui/ScoreChip'
 import CoverageMeter from '../ui/CoverageMeter'
 import { JudgeSprite } from '../ui/CharacterSprites'
 import { TRUTH_TABLE } from '../engine/coverage/mcdc'
-import { useGameStore } from '../stores/gameStore'
+import { useGameStore, getDialogueObjectionSuccessExplanation } from '../stores/gameStore'
 import type { AnswerPayload, Screen } from '../stores/gameStore'
 import { lawCardForCase } from '../content/lawCards'
 import {
@@ -13,6 +13,10 @@ import {
   CoverageTablePicker,
   TestDesignerPicker,
   NumericInputPicker,
+  DialogueObjectionPicker,
+  EvidenceBoardPicker,
+  BudgetStrategyPicker,
+  McdcPairBuilderPicker,
 } from './QuestionRenderer'
 
 const PHASE_STEPS = [
@@ -238,6 +242,33 @@ export default function InvestigationScreen({ onNavigate, onBack }: Props) {
                   onSubmit={handleAnswer}
                 />
               )}
+              {caseFile && questionType === 'dialogue_objection' && (
+                <DialogueObjectionPicker
+                  caseFile={caseFile}
+                  feedback={feedback}
+                  onSubmit={handleAnswer}
+                />
+              )}
+              {caseFile && questionType === 'evidence_board' && (
+                <EvidenceBoardPicker
+                  caseFile={caseFile}
+                  feedback={feedback}
+                  onSubmit={handleAnswer}
+                />
+              )}
+              {caseFile && questionType === 'budget_strategy' && (
+                <BudgetStrategyPicker
+                  caseFile={caseFile}
+                  feedback={feedback}
+                  onSubmit={handleAnswer}
+                />
+              )}
+              {caseFile && questionType === 'mcdc_pair_builder' && (
+                <McdcPairBuilderPicker
+                  caseFile={caseFile}
+                  feedback={feedback}
+                  onSubmit={handleAnswer}
+                />
               {readyToAdvance && feedback && (
                 <div style={{ marginTop: 16, display: 'flex', justifyContent: 'flex-end' }}>
                   <PixelButton
@@ -466,6 +497,9 @@ function pickOptionExplanation(
   if (payload.kind === 'binary_verdict' || payload.kind === 'level_picker') {
     const opt = (caseFile.options ?? []).find((o) => o.id === payload.optionId)
     return opt?.explanation ?? null
+  }
+  if (payload.kind === 'dialogue_objection' && isCorrect) {
+    return getDialogueObjectionSuccessExplanation(caseFile, payload.selectedFragments)
   }
   // For other types, prefer the case-level explanation.
   return isCorrect

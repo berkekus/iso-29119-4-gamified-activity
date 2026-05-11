@@ -28,8 +28,9 @@
       "title": "Combinatorial Insight",
       "description": "Completed all ACT III cases — BCC mastered.",
       "required_cases": [
-        "bcc-three-and-01",
-        "bcc-cost-intuition-01"
+        "bcc-intro-01",
+        "bcc-vs-bc-01",
+        "bcc-explosion-01"
       ]
     },
     {
@@ -39,9 +40,19 @@
       "description": "Completed all ACT IV cases — MC/DC and the Vault Boss conquered.",
       "required_cases": [
         "mcdc-tutorial-01",
-        "mcdc-altitude-disengage-01",
         "mcdc-trap-isolation-01",
         "mcdc-vault-boss-01"
+      ]
+    },
+    {
+      "id": "ach-act-5",
+      "act": "ACT V",
+      "title": "Master of Coverage",
+      "description": "Completed all ACT V cases — The final Coverage Trial conquered.",
+      "required_cases": [
+        "coverage-mix-01",
+        "coverage-mix-02",
+        "coverage-mix-03"
       ]
     }
   ]

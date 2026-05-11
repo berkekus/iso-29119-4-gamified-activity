@@ -78,8 +78,9 @@ const acts: ActEntry[] = [
     bugType: 'bcc',
     clauses: '§5.3.5',
     cases: [
-      { id: 'bcc-three-and-01',      name: 'Triple Lock',         difficulty: 1 },
-      { id: 'bcc-cost-intuition-01', name: 'The Cost Calculator', difficulty: 2 },
+      { id: 'bcc-intro-01',          name: 'E-Commerce Discount', difficulty: 1 },
+      { id: 'bcc-vs-bc-01',          name: 'Bank Loan Scandal',   difficulty: 2 },
+      { id: 'bcc-explosion-01',      name: 'Emergency Brake',     difficulty: 3 },
     ],
   },
   {
@@ -91,10 +92,23 @@ const acts: ActEntry[] = [
     bugType: 'mcdc',
     clauses: '§5.3.6',
     cases: [
-      { id: 'mcdc-tutorial-01',           name: 'Simple Safety Gate',     difficulty: 1 },
-      { id: 'mcdc-altitude-disengage-01', name: 'Altitude Hold Disengage', difficulty: 2 },
-      { id: 'mcdc-trap-isolation-01',     name: 'Emergency Override',     difficulty: 3 },
-      { id: 'mcdc-vault-boss-01',         name: 'Vault Authorization',    difficulty: 3, isBoss: true },
+      { id: 'mcdc-tutorial-01',           name: 'The Single Flip',        difficulty: 1 },
+      { id: 'mcdc-trap-isolation-01',     name: 'The Sabotaged Drone',    difficulty: 2 },
+      { id: 'mcdc-vault-boss-01',         name: 'The Casino Vault',       difficulty: 3 },
+    ],
+  },
+  {
+    id: 'coverage-trial',
+    name: 'ACT V',
+    title: 'Coverage Trial',
+    subtitle: 'Final Examination',
+    color: TC.magenta,
+    bugType: 'dataflow',
+    clauses: '§5.3.1 – §5.3.6',
+    cases: [
+      { id: 'coverage-mix-01', name: 'The Logging Glitch', difficulty: 1 },
+      { id: 'coverage-mix-02', name: 'Insurance Rule Engine', difficulty: 2 },
+      { id: 'coverage-mix-03', name: 'Life-Support Controller', difficulty: 3, isBoss: true },
     ],
   },
 ]

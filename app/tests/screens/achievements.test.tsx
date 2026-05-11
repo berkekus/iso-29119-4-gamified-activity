@@ -56,7 +56,7 @@ describe('AchievementsScreen', () => {
 
   test('shows partial progress count for in-progress acts', () => {
     useGameStore.setState({
-      completedCases: ['mcdc-tutorial-01', 'mcdc-altitude-disengage-01'],
+      completedCases: ['mcdc-tutorial-01', 'mcdc-trap-isolation-01'],
       unlockedAchievements: [],
     })
     act(() => {
