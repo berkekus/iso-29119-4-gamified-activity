@@ -150,6 +150,8 @@ export const CaseFileSchema = z.object({
   required_connection: z.tuple([z.string(), z.string()]).optional(),
   /** budget_strategy: multi-part debrief (coverage fraction + strategy branch + MC/DC bridge). */
   budget_debrief: BudgetDebriefSchema.optional(),
+  /** Optional subtitle for the defendant (used in some cases) */
+  defendant_subtitle: z.string().optional(),
   /** Per-case defendant identity shown in the BriefingScreen sidebar. */
   defendant: z.object({
     name: z.string(),

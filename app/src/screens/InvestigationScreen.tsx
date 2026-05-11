@@ -269,6 +269,7 @@ export default function InvestigationScreen({ onNavigate, onBack }: Props) {
                   feedback={feedback}
                   onSubmit={handleAnswer}
                 />
+              )}
               {readyToAdvance && feedback && (
                 <div style={{ marginTop: 16, display: 'flex', justifyContent: 'flex-end' }}>
                   <PixelButton
