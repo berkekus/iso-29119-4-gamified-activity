@@ -1,5 +1,6 @@
 import { TC, PIXEL_FONT, HAND_FONT, MONO_FONT } from '../ui/tokens'
 import { BugSprite } from '../ui/CharacterSprites'
+import DeskBackground from '../ui/DeskBackground'
 import type { Screen } from '../stores/gameStore'
 import { CASE_ORDER } from '../content/caseOrder'
 
@@ -212,17 +213,7 @@ export default function CampaignMapScreen({ onNavigate, onBack, completedCases, 
 
   return (
     <>
-    {/* Full-viewport background — fixed so it covers every resolution */}
-    <div style={{
-      position:           'fixed',
-      inset:              0,
-      backgroundImage:    'url("/assets/campaign_background.png")',
-      backgroundSize:     'cover',
-      backgroundPosition: 'center',
-      backgroundRepeat:   'no-repeat',
-      zIndex:             1,
-      pointerEvents:      'none',
-    }} />
+    <DeskBackground />
 
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', position: 'relative', zIndex: 2 }}>
 
@@ -366,7 +357,7 @@ export default function CampaignMapScreen({ onNavigate, onBack, completedCases, 
                           onClick={() => {
                             if (isLocked) return
                             onSelectCase?.(c.id)
-                            onNavigate('briefing')
+                            onNavigate('play')
                           }}
                           title={isLocked ? 'Complete the previous case to unlock' : c.name}
                           style={{

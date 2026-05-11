@@ -3,6 +3,7 @@ import { useGameStore } from './stores/gameStore'
 
 import MainMenuScreen      from './screens/MainMenuScreen'
 import CampaignMapScreen   from './screens/CampaignMapScreen'
+import CasePlayScreen      from './screens/CasePlayScreen'
 import BriefingScreen      from './screens/BriefingScreen'
 import InvestigationScreen from './screens/InvestigationScreen'
 import EvidenceScreen      from './screens/EvidenceScreen'
@@ -31,6 +32,8 @@ export default function App() {
         return <MainMenuScreen onNavigate={navigate} />
       case 'campaign':
         return <CampaignMapScreen {...props} completedCases={completedCases} onSelectCase={handleSelectCase} />
+      case 'play':
+        return <CasePlayScreen onNavigateOut={navigate} />
       case 'briefing':
         return <BriefingScreen {...props} />
       case 'investigation':
