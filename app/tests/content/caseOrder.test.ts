@@ -8,7 +8,7 @@ beforeEach(() => {
 })
 
 describe('CASE_ORDER', () => {
-  test('lists all 12 cases in canonical play order', () => {
+  test('lists all 13 cases in canonical play order', () => {
     expect(CASE_ORDER).toEqual([
       'stmt-tutorial-01',
       'stmt-hidden-branch-01',
@@ -16,12 +16,13 @@ describe('CASE_ORDER', () => {
       'decision-and-trap-01',
       'bc-or-three-cond-01',
       'bc-negation-mask-01',
-      'bcc-three-and-01',
-      'bcc-cost-intuition-01',
+      'bcc-intro-01',
+      'bcc-vs-bc-01',
+      'bcc-explosion-01',
       'mcdc-tutorial-01',
-      'mcdc-altitude-disengage-01',
       'mcdc-trap-isolation-01',
       'mcdc-vault-boss-01',
+      'mcdc-showdown-01',
     ])
   })
 })
@@ -32,7 +33,7 @@ describe('nextCaseId', () => {
   })
 
   test('returns null for the final boss (last case)', () => {
-    expect(nextCaseId('mcdc-vault-boss-01')).toBeNull()
+    expect(nextCaseId('mcdc-showdown-01')).toBeNull()
   })
 
   test('returns null for unknown ids', () => {

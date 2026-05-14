@@ -90,7 +90,10 @@ export default function BriefingScreen({ onNavigate, onBack }: Props) {
     <div style={{ minHeight: '100vh', position: 'relative', zIndex: 1, padding: 'clamp(16px, 3vw, 30px) clamp(16px, 4vw, 40px)' }}>
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
-        <PixelButton small variant="secondary" onClick={onBack}>← CAMPAIGN</PixelButton>
+        <div style={{ display: 'flex', gap: 6 }}>
+          <PixelButton small variant="secondary" onClick={onBack}>← CAMPAIGN</PixelButton>
+          <PixelButton small variant="secondary" onClick={() => onNavigate('menu')}>⌂ MENU</PixelButton>
+        </div>
         <div style={{ display: 'flex', gap: 8 }}>
           <span style={{ fontFamily: PIXEL_FONT, fontSize: 8, color: TC.magenta, padding: '4px 10px', border: `2px solid ${TC.magenta}` }}>{actLabel}</span>
           <span style={{ fontFamily: PIXEL_FONT, fontSize: 8, color: TC.grey, padding: '4px 10px', border: `2px solid ${TC.grid}` }}>PHASE 1: BRIEFING</span>
@@ -110,7 +113,7 @@ export default function BriefingScreen({ onNavigate, onBack }: Props) {
               border: `2px solid ${TC.magenta}`, padding: '4px 8px', transform: 'rotate(3deg)',
             }}>CLASSIFIED</div>
 
-            <div style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: TC.grey, marginBottom: 6 }}>{caseFileNum}</div>
+            <div style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: TC.ink, marginBottom: 6 }}>{caseFileNum}</div>
             <h2 style={{ fontFamily: PIXEL_FONT, fontSize: 18, color: TC.ink, margin: '0 0 18px 0', lineHeight: 1.4 }}>{caseData.title}</h2>
 
             <div style={{ fontFamily: HAND_FONT, fontSize: 18, color: TC.ink, lineHeight: 1.6, marginBottom: 20 }}>
@@ -204,11 +207,18 @@ export default function BriefingScreen({ onNavigate, onBack }: Props) {
             background: TC.cream, border: `3px solid ${TC.ink}`, boxShadow: `4px 4px 0 ${TC.ink}`,
             padding: 16, textAlign: 'center',
           }}>
-            <div style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: TC.grey, marginBottom: 10 }}>THE DEFENDANT</div>
-            <BugSprite size={90} type="mcdc" mood="nervous" />
-            <div style={{ fontFamily: HAND_FONT, fontSize: 16, color: TC.grey, marginTop: 8, fontStyle: 'italic', lineHeight: 1.5 }}>
-              "I... I'm sure my tests were enough..."
-            </div>
+            <div style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: TC.ink, marginBottom: 4 }}>THE DEFENDANT</div>
+            {(caseFile?.defendant?.name || caseFile?.defendant_subtitle) && (
+              <div style={{ fontFamily: MONO_FONT, fontSize: 11, color: TC.magenta, marginBottom: 10 }}>
+                {caseFile?.defendant?.name || caseFile?.defendant_subtitle}
+              </div>
+            )}
+            <BugSprite size={90} type={caseFile?.technique === 'BCC' ? 'bcc' : 'mcdc'} mood="nervous" />
+            {(caseFile?.defendant?.quote || caseFile?.claim) && (
+              <div style={{ fontFamily: HAND_FONT, fontSize: 16, color: TC.grey, marginTop: 8, fontStyle: 'italic', lineHeight: 1.5 }}>
+                "{caseFile?.defendant?.quote || caseFile?.claim}"
+              </div>
+            )}
           </div>
 
           {/* Dialog */}
@@ -216,27 +226,36 @@ export default function BriefingScreen({ onNavigate, onBack }: Props) {
             const currentDialog = dialogs[dialogIdx]
             if (!currentDialog) return null
             return (
-              <DialogBox
-                speaker={currentDialog.speaker}
-                text={currentDialog.text}
-                onTypingChange={setIsTyping}
-                portrait={
-                  dialogIdx === 0 || dialogIdx === 2
-                    ? <JudgeSprite size={60} isTalking={isTyping} />
-                    : <ProsecutorSprite size={60} isTalking={isTyping} />
-                }
-                onNext={() => {
-                  if (dialogIdx < dialogs.length - 1) setDialogIdx(dialogIdx + 1)
-                  else onNavigate('investigation')
-                }}
-                isLast={dialogIdx === dialogs.length - 1}
-              />
+              <>
+                <DialogBox
+                  speaker={currentDialog.speaker}
+                  text={currentDialog.text}
+                  onTypingChange={setIsTyping}
+                  portrait={
+                    dialogIdx === 0 || dialogIdx === 2
+                      ? <JudgeSprite size={60} isTalking={isTyping} />
+                      : <ProsecutorSprite size={60} isTalking={isTyping} />
+                  }
+                  onNext={() => {
+                    if (dialogIdx < dialogs.length - 1) setDialogIdx(dialogIdx + 1)
+                    else onNavigate('investigation')
+                  }}
+                  isLast={dialogIdx === dialogs.length - 1}
+                />
+                {dialogIdx < dialogs.length - 1 && (
+                  <div style={{ textAlign: 'right' }}>
+                    <PixelButton small variant="secondary" onClick={() => onNavigate('investigation')}>
+                      SKIP DIALOGS →
+                    </PixelButton>
+                  </div>
+                )}
+              </>
             )
           })()}
 
           {/* Time hint */}
           <div style={{ fontFamily: MONO_FONT, fontSize: 11, color: TC.grey, textAlign: 'center', padding: 8, letterSpacing: 0.5 }}>
-            EST. TIME: 8–12 MIN
+            EST. TIME: {caseFile?.estimated_time_sec ? `${Math.ceil(caseFile.estimated_time_sec / 60)} MIN` : '8–12 MIN'}
           </div>
         </div>
       </div>

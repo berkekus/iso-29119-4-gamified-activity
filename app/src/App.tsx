@@ -52,6 +52,14 @@ export default function App() {
         return <LawLibraryScreen onBack={goBack} />
       case 'achievements':
         return <AchievementsScreen onBack={goBack} />
+      case 'speed-trial-lobby':
+        return <SpeedTrialLobbyScreen onNavigate={navigate} onBack={goBack} />
+      case 'speed-trial-host':
+        return <SpeedTrialHostScreen onNavigate={navigate} onBack={goBack} />
+      case 'speed-trial-player':
+        return <SpeedTrialPlayerScreen onNavigate={navigate} onBack={goBack} />
+      case 'speed-trial-winner':
+        return <SpeedTrialWinnerScreen onNavigate={navigate} onBack={goBack} />
       default:
         return <MainMenuScreen onNavigate={navigate} />
     }

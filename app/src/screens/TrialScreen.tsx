@@ -31,18 +31,18 @@ export default function TrialScreen({ onNavigate, onBack }: Props) {
   const techniqueLabel =
     (caseFile?.technique && TECHNIQUE_LABEL[caseFile.technique]) ?? 'CASE'
   const [phase, setPhase] = useState<Phase>('presenting')
+  const [deliberatingCountdown, setDeliberatingCountdown] = useState(2)
   const seededFaultMap: Record<string, string> = {}
   if (caseFile) {
     for (const f of caseFile.seeded_faults) seededFaultMap[f.id] = f.description
   }
 
   useEffect(() => {
-    if (phase === 'presenting') {
-      const t = setTimeout(() => setPhase('deliberating'), 2500)
-      return () => clearTimeout(t)
-    }
     if (phase === 'deliberating') {
+      setDeliberatingCountdown(2)
+      const tick = setInterval(() => setDeliberatingCountdown(c => c - 1), 1000)
       const t = setTimeout(() => {
+        clearInterval(tick)
         if (caseFile?.question_type === 'pair_selector') {
           const result    = validateMcdcCoverage({ selectedRows: mcdc.selectedRows, independencePairs: mcdc.independencePairs })
           const faults    = simulateFaults({ selectedRows: mcdc.selectedRows, independencePairs: mcdc.independencePairs })
@@ -51,8 +51,9 @@ export default function TrialScreen({ onNavigate, onBack }: Props) {
         }
         setPhase('verdict')
       }, 2000)
-      return () => clearTimeout(t)
+      return () => { clearTimeout(t); clearInterval(tick) }
     }
+    return undefined
   }, [phase]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const { verdictResult, faultResults, misconceptions } = mcdc
@@ -64,10 +65,14 @@ export default function TrialScreen({ onNavigate, onBack }: Props) {
     <div style={{ minHeight: '100vh', position: 'relative', zIndex: 1, padding: 'clamp(16px, 3vw, 30px) clamp(16px, 4vw, 40px)' }}>
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
-        <PixelButton small variant="secondary" onClick={onBack}>← EVIDENCE</PixelButton>
+        <div style={{ display: 'flex', gap: 6 }}>
+          <PixelButton small variant="secondary" onClick={onBack}>← EVIDENCE</PixelButton>
+          <PixelButton small variant="secondary" onClick={() => onNavigate('campaign')}>CAMPAIGN</PixelButton>
+          <PixelButton small variant="secondary" onClick={() => onNavigate('menu')}>⌂ MENU</PixelButton>
+        </div>
         <div style={{ display: 'flex', gap: 8 }}>
           <span style={{ fontFamily: PIXEL_FONT, fontSize: 8, color: TC.magenta, padding: '4px 10px', border: `2px solid ${TC.magenta}` }}>{techniqueLabel}</span>
-          <span style={{ fontFamily: PIXEL_FONT, fontSize: 8, color: TC.magenta, padding: '4px 10px', border: `2px solid ${TC.magenta}`, background: `${TC.magenta}15` }}>PHASE 4: TRIAL</span>
+          <span style={{ fontFamily: PIXEL_FONT, fontSize: 8, color: TC.blue, padding: '4px 10px', border: `2px solid ${TC.blue}`, background: `${TC.blue}15` }}>PHASE 4: TRIAL</span>
         </div>
         {caseFile?.question_type === 'pair_selector' ? (
           <ScoreChip label="PAIRS" value={mcdc.independencePairs.length} color={TC.blue} />
@@ -75,6 +80,15 @@ export default function TrialScreen({ onNavigate, onBack }: Props) {
           <div style={{ width: 60 }} />
         )}
       </div>
+
+      {/* Submit evidence — user-triggered advance from presenting to deliberating (F11) */}
+      {phase === 'presenting' && (
+        <div style={{ textAlign: 'center', marginBottom: 20 }}>
+          <PixelButton variant="primary" onClick={() => setPhase('deliberating')}>
+            SUBMIT EVIDENCE →
+          </PixelButton>
+        </div>
+      )}
 
       {/* Courtroom scene */}
       <div style={{ textAlign: 'center', marginBottom: 30 }}>
@@ -85,19 +99,24 @@ export default function TrialScreen({ onNavigate, onBack }: Props) {
         </div>
       </div>
 
-      {/* Phase indicator */}
+      {/* Phase indicator — hide past steps once verdict is in */}
       <div style={{ display: 'flex', justifyContent: 'center', gap: 12, marginBottom: 24 }}>
-        {phaseLabels.map((p, i) => (
-          <div key={p} style={{
-            fontFamily: PIXEL_FONT, fontSize: 8, padding: '6px 14px',
-            background: phase === p ? TC.blue : 'transparent',
-            color: phase === p ? '#fff' : TC.grey,
-            border: `2px solid ${phase === p ? TC.blue : TC.grid}`,
-          }}>
-            {['PRESENTING', 'DELIBERATING', 'VERDICT'][i]}
-            {phase === p && p !== 'verdict' && <span style={{ animation: 'blink 0.5s steps(2) infinite' }}> ...</span>}
-          </div>
-        ))}
+        {phaseLabels.map((p, i) => {
+          if (phase === 'verdict' && p !== 'verdict') return null
+          return (
+            <div key={p} style={{
+              fontFamily: PIXEL_FONT, fontSize: 8, padding: '6px 14px',
+              background: phase === p ? TC.blue : 'transparent',
+              color: phase === p ? '#fff' : TC.grey,
+              border: `2px solid ${phase === p ? TC.blue : TC.grid}`,
+            }}>
+              {['PRESENTING', 'DELIBERATING', 'VERDICT'][i]}
+              {phase === 'deliberating' && p === 'deliberating' && (
+                <span style={{ color: TC.orange }}> {deliberatingCountdown}s</span>
+              )}
+            </div>
+          )
+        })}
       </div>
 
       {/* Verdict content */}
@@ -114,6 +133,11 @@ export default function TrialScreen({ onNavigate, onBack }: Props) {
             <div style={{ fontFamily: PIXEL_FONT, fontSize: 26, color: isGuilty ? TC.green : TC.magenta, lineHeight: 1.2 }}>
               {isGuilty ? 'GUILTY' : 'MISTRIAL'}
             </div>
+            {!isGuilty && (
+              <div style={{ fontFamily: MONO_FONT, fontSize: 10, color: TC.grey, marginTop: 4 }}>
+                (coverage gap — test suite insufficient)
+              </div>
+            )}
             <div style={{ fontFamily: HAND_FONT, fontSize: 18, color: TC.ink, marginTop: 12, lineHeight: 1.55 }}>
               {isGuilty
                 ? 'The defendant has been found guilty. All faults detected.'

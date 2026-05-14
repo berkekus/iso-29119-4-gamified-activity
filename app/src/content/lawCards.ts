@@ -33,12 +33,15 @@ export const CASE_TO_LAW: Record<string, string> = {
   'decision-and-trap-01':       'law-decision',
   'bc-or-three-cond-01':        'law-bc',
   'bc-negation-mask-01':        'law-bc',
-  'bcc-three-and-01':           'law-bcc',
-  'bcc-cost-intuition-01':      'law-bcc',
+  'bcc-intro-01':               'law-bcc',
+  'bcc-vs-bc-01':               'law-bcc',
+  'bcc-explosion-01':           'law-bcc',
   'mcdc-tutorial-01':           'law-mcdc',
-  'mcdc-altitude-disengage-01': 'law-mcdc',
   'mcdc-trap-isolation-01':     'law-mcdc',
   'mcdc-vault-boss-01':         'law-mcdc',
+  'coverage-mix-01':            'law-branch', // Just fallback mapping
+  'coverage-mix-02':            'law-bcc',
+  'coverage-mix-03':            'law-mcdc',
 }
 
 export function lawCardForCase(caseId: string | null | undefined): LawCard | null {

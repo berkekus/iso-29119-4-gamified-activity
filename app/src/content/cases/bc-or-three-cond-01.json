@@ -11,7 +11,7 @@
   "estimated_time_sec": 240,
   "scenario": {
     "title": "Triple Alarm — One Trigger Is Enough",
-    "narrative": "An alarm fires when ANY of three independent sensors trips. Toggle test rows ON to include them in your test suite. Branch Condition coverage requires that EACH of a, b, c is observed as TRUE in at least one selected test AND as FALSE in at least one selected test.",
+    "narrative": "An alarm fires when ANY of three sensors trips. Toggle test rows ON to build a suite that achieves Branch Condition coverage.",
     "code": "def alarm(a, b, c):\n    if a or b or c:\n        return execute()\n    return None",
     "conditions": [
       { "id": "a", "label": "sensor a" },
@@ -22,9 +22,8 @@
   },
   "claim": "Toggle the rows in your test suite so that Branch Condition coverage is achieved (each of a, b, c must be observed both T and F).",
   "charges": [
-    "The alarm function alarm(a, b, c) fires whenever any of three sensor inputs is true and otherwise returns None.",
-    "The defendant test suite must demonstrate Branch Condition coverage of the predicate `a or b or c`.",
-    "The prosecution alleges a candidate selection of test rows fails to observe each of a, b, c as both TRUE and FALSE."
+    "Fires on any of three independent sensor inputs.",
+    "The prosecution alleges the submitted selection fails to observe each of a, b, c as both TRUE and FALSE."
   ],
   "test_set": [
     { "id": "T1", "inputs": { "a": true,  "b": false, "c": false }, "outcome": true  },
@@ -51,8 +50,12 @@
   "hints": [
     "Branch Condition coverage requires that EACH condition (a, b, c) be observed as TRUE in at least one test AND as FALSE in at least one test.",
     "Tally each condition column by column. Which condition is missing a TRUE or FALSE if you drop a row?",
-    "Select T1, T2, T3, T4. T1: a=T, b=F, c=F. T2: a=F, b=T, c=F. T3: a=F, b=F, c=T. T4: a=F, b=F, c=F. Tally: a=T (T1) and F (others). b=T (T2) and F (others). c=T (T3) and F (others). All three observed T and F. ✓"
+    "T1–T3 each flip one sensor TRUE; T4 takes all FALSE. Every condition seen T and F. ✓"
   ],
+  "defendant": {
+    "name": "alarm(a, b, c)",
+    "quote": "Each sensor fired at least once. What more do you want?"
+  },
   "seeded_faults": [
     {
       "id": "F1",

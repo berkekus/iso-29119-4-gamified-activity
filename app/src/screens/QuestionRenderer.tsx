@@ -336,3 +336,249 @@ function FeedbackBanner({ feedback }: { feedback: { type: 'success' | 'error'; m
     </div>
   )
 }
+
+// ── Dialogue Objection ────────────────────────────────────────────────────────
+export function DialogueObjectionPicker({ caseFile, feedback, onSubmit }: BaseProps) {
+  const fragments = caseFile.fragments ?? [];
+  const requiredCount =
+    (caseFile.dialogue_valid_sequences?.[0]?.length) ??
+    (caseFile.required_fragments?.length ?? 0);
+  const [selected, setSelected] = useState<string[]>([]);
+
+  const toggleFragment = (f: string) => {
+    if (selected.includes(f)) {
+      setSelected(selected.filter(x => x !== f));
+    } else if (selected.length < requiredCount) {
+      setSelected([...selected, f]);
+    }
+  };
+
+  const submit = () => onSubmit({ kind: 'dialogue_objection', selectedFragments: selected });
+
+  return (
+    <div style={{ marginTop: 16 }}>
+      <div style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: TC.grey, marginBottom: 10 }}>
+        CROSS-EXAMINATION — Construct your objection
+      </div>
+      <div style={{ background: TC.cream, border: `3px solid ${TC.ink}`, padding: 16, marginBottom: 16, minHeight: 60, display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+        <span style={{ fontFamily: PIXEL_FONT, fontSize: 12, color: TC.magenta, alignSelf: 'center' }}>[OBJECTION!]</span>
+        {selected.map((f, i) => (
+          <button key={i} onClick={() => toggleFragment(f)} style={{ padding: '6px 10px', background: `${TC.magenta}15`, border: `2px solid ${TC.magenta}`, cursor: 'pointer', fontFamily: HAND_FONT, fontSize: 16 }}>
+            {f}
+          </button>
+        ))}
+      </div>
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 16 }}>
+        {fragments.map(f => {
+          if (selected.includes(f)) return null;
+          return (
+            <button key={f} onClick={() => toggleFragment(f)} style={{ padding: '6px 10px', background: 'white', border: `2px solid ${TC.ink}`, cursor: 'pointer', fontFamily: HAND_FONT, fontSize: 16 }}>
+              {f}
+            </button>
+          )
+        })}
+      </div>
+      <div style={{ textAlign: 'center' }}>
+        <PixelButton variant="primary" onClick={submit} disabled={selected.length !== requiredCount}>PRESENT OBJECTION</PixelButton>
+      </div>
+      <FeedbackBanner feedback={feedback} />
+    </div>
+  )
+}
+
+// ── Evidence Board ───────────────────────────────────────────────────────────
+export function EvidenceBoardPicker({ caseFile, feedback, onSubmit }: BaseProps) {
+  const clues = caseFile.evidence_board_clues ?? [];
+  const [selected, setSelected] = useState<string[]>([]);
+
+  const toggle = (id: string) => {
+    if (selected.includes(id)) setSelected(selected.filter(x => x !== id));
+    else if (selected.length < 2) setSelected([...selected, id]);
+  };
+
+  const submit = () => onSubmit({ kind: 'evidence_board', connectedEvidence: [selected[0], selected[1]] });
+
+  return (
+    <div style={{ marginTop: 16 }}>
+      <div style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: TC.grey, marginBottom: 10 }}>
+        EVIDENCE BOARD — Connect 2 clues to reveal the blind spot
+      </div>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
+        {clues.map(c => {
+          const sel = selected.includes(c.id);
+          return (
+            <button key={c.id} onClick={() => toggle(c.id)} style={{
+              background: sel ? `${TC.orange}15` : '#fff',
+              border: `3px solid ${sel ? TC.orange : TC.ink}`,
+              boxShadow: `3px 3px 0 ${TC.ink}`,
+              padding: 16, cursor: 'pointer', textAlign: 'left',
+              fontFamily: HAND_FONT, fontSize: 16, color: TC.ink,
+              position: 'relative'
+            }}>
+              {c.label}
+              {sel && <div style={{ position: 'absolute', top: -5, right: -5, width: 14, height: 14, background: TC.orange, borderRadius: '50%' }} />}
+            </button>
+          )
+        })}
+      </div>
+      <div style={{ textAlign: 'center' }}>
+        <PixelButton variant="primary" onClick={submit} disabled={selected.length !== 2}>CONNECT CLUES</PixelButton>
+      </div>
+      <FeedbackBanner feedback={feedback} />
+    </div>
+  )
+}
+
+// ── Budget Strategy ──────────────────────────────────────────────────────────
+export function BudgetStrategyPicker({ caseFile, feedback, onSubmit }: BaseProps) {
+  const rows = caseFile.coverage_table ?? []
+  const condIds = caseFile.scenario.conditions.map((c) => c.id)
+  const expectedCount = caseFile.required_pick_count ?? 0
+  const [selected, setSelected] = useState<Record<string, boolean>>({})
+
+  const toggle = (id: string) => setSelected((s) => ({ ...s, [id]: !s[id] }))
+  const selectedIds = rows.filter((r) => selected[r.id]).map((r) => r.id)
+  const atLimit = selectedIds.length === expectedCount
+
+  const submit = () => onSubmit({ kind: 'budget_strategy', selectedRowIds: selectedIds });
+
+  return (
+    <div style={{ marginTop: 16 }}>
+      <div style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: TC.orange, marginBottom: 10 }}>
+        SUBPOENA BUDGET — You can only afford {expectedCount} logs. Choose wisely!
+      </div>
+      <div style={{ background: TC.cream, border: `3px solid ${TC.ink}`, boxShadow: `4px 4px 0 ${TC.ink}`, overflow: 'hidden' }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr style={{ background: `${TC.blue}15` }}>
+              <th style={tableHeadStyle}>ID</th>
+              {condIds.map((id) => (
+                <th key={id} style={{ ...tableHeadStyle, color: TC.blue }}>{id}</th>
+              ))}
+              <th style={{ ...tableHeadStyle, color: TC.orange }}>SUBPOENA</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((row) => {
+              const marked = !!selected[row.id]
+              return (
+                <tr
+                  key={row.id}
+                  onClick={() => toggle(row.id)}
+                  style={{
+                    borderBottom: `1px solid ${TC.grid}`,
+                    background: marked ? `${TC.orange}15` : 'transparent',
+                    cursor: 'pointer',
+                  }}
+                >
+                  <td style={tableCellStyle}>{row.id}</td>
+                  {condIds.map((id) => (
+                    <td key={id} style={{ ...tableCellStyle, color: row.inputs[id] ? TC.green : TC.magenta, fontWeight: 700 }}>
+                      {row.inputs[id] ? 'T' : 'F'}
+                    </td>
+                  ))}
+                  <td style={tableCellStyle}>
+                    <div style={{
+                      width: 20, height: 20, border: `2px solid ${TC.ink}`,
+                      background: marked ? TC.orange : 'transparent',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      margin: '0 auto', color: '#fff',
+                      fontFamily: PIXEL_FONT, fontSize: 10,
+                    }}>
+                      {marked ? '★' : ''}
+                    </div>
+                  </td>
+                </tr>
+              )
+            })}
+          </tbody>
+        </table>
+      </div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 16 }}>
+        <div style={{ fontFamily: MONO_FONT, fontSize: 11, color: TC.grey }}>
+          Budget Used: <strong style={{ color: atLimit ? TC.green : TC.orange }}>{selectedIds.length}</strong> / {expectedCount}
+        </div>
+        <PixelButton variant="primary" onClick={submit} disabled={!atLimit}>
+          SUBMIT SUBPOENAS
+        </PixelButton>
+      </div>
+      {feedback?.type === 'success' && (
+        <div style={{ marginTop: 16, padding: 14, border: `2px dashed ${TC.magenta}`, background: `${TC.magenta}10`, fontFamily: HAND_FONT, fontSize: 16, color: TC.ink, lineHeight: 1.5 }}>
+          <strong>UNEXAMINED PATHS:</strong> Your three subpoenas cover {expectedCount} of {rows.length} combinations under full BCC — the rest of the truth table stays dark. Proceed to trial: the debrief will spell out the coverage fraction and how your choices read as prosecution strategy.
+        </div>
+      )}
+      <FeedbackBanner feedback={feedback} />
+    </div>
+  )
+}
+
+// ── MCDC Pair Builder ────────────────────────────────────────────────────────
+export function McdcPairBuilderPicker({ caseFile, feedback, onSubmit }: BaseProps) {
+  const rows = caseFile.coverage_table ?? []
+  const condIds = caseFile.scenario.conditions.map((c) => c.id)
+  const expectedCount = caseFile.required_pick_count ?? 0
+  const [selected, setSelected] = useState<Record<string, boolean>>({})
+
+  const toggle = (id: string) => setSelected((s) => ({ ...s, [id]: !s[id] }))
+  const selectedIds = rows.filter((r) => selected[r.id]).map((r) => r.id)
+  const atLimit = selectedIds.length === expectedCount
+  const overLimit = selectedIds.length > expectedCount
+
+  const submit = () => onSubmit({ kind: 'mcdc_pair_builder', selectedRowIds: selectedIds });
+
+  return (
+    <div style={{ marginTop: 16 }}>
+      <div style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: TC.blue, marginBottom: 10 }}>
+        MC/DC PAIR BUILDER — Connect the logs to form valid pairs (Max {expectedCount} logs)
+      </div>
+      
+      {/* Evidence Logs Display */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: 10, marginBottom: 16 }}>
+        {rows.map((row) => {
+          const marked = !!selected[row.id]
+          return (
+            <button
+              key={row.id}
+              onClick={() => toggle(row.id)}
+              style={{
+                background: marked ? `${TC.blue}15` : TC.cream,
+                border: `3px solid ${marked ? TC.blue : TC.ink}`,
+                boxShadow: `3px 3px 0 ${marked ? TC.blue : TC.ink}`,
+                padding: 10, cursor: 'pointer', textAlign: 'center',
+                fontFamily: MONO_FONT, fontSize: 12, color: TC.ink,
+              }}
+            >
+              <div style={{ fontFamily: PIXEL_FONT, fontSize: 14, color: marked ? TC.blue : TC.ink, marginBottom: 8 }}>
+                {row.id}
+              </div>
+              {condIds.map(id => (
+                <div key={id} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 2 }}>
+                  <span>{id}:</span>
+                  <strong style={{ color: row.inputs[id] ? TC.green : TC.magenta }}>{row.inputs[id] ? 'T' : 'F'}</strong>
+                </div>
+              ))}
+              <div style={{ borderTop: `1px solid ${TC.grid}`, marginTop: 4, paddingTop: 4, display: 'flex', justifyContent: 'space-between' }}>
+                <span>OUT:</span>
+                <strong style={{ color: row.outcome ? TC.green : TC.magenta }}>{row.outcome ? 'T' : 'F'}</strong>
+              </div>
+            </button>
+          )
+        })}
+      </div>
+
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 16 }}>
+        <div style={{ fontFamily: MONO_FONT, fontSize: 11, color: overLimit ? TC.magenta : TC.grey }}>
+          Logs Selected: <strong style={{ color: atLimit ? TC.green : overLimit ? TC.magenta : TC.blue }}>
+            {selectedIds.length}
+          </strong> / {expectedCount}
+          {overLimit && ' (Too many!)'}
+        </div>
+        <PixelButton variant="primary" onClick={submit} disabled={!atLimit}>
+          CERTIFY MC/DC SUITE
+        </PixelButton>
+      </div>
+
+      <FeedbackBanner feedback={feedback} />
+    </div>
+  )
+}
