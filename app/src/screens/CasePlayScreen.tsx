@@ -49,15 +49,17 @@ function phaseAtLeast(current: GamePhase, target: GamePhase): boolean {
 // ── Sticky header ─────────────────────────────────────────────────────────────
 
 function StickyHeader({
-  phase, caseTitle, actLabel, onBack,
+  phase, caseTitle, actLabel, onBack, isPairSelector
 }: {
   phase: GamePhase
   caseTitle: string
   actLabel: string
   onBack: () => void
+  isPairSelector: boolean
 }) {
   const currentColor = PHASE_COLORS[phase]
-  const phaseIdx = PHASES.indexOf(phase)
+  const dynamicPhases = isPairSelector ? PHASES : PHASES.filter(p => p !== 'evidence')
+  const phaseIdx = dynamicPhases.indexOf(phase)
 
   return (
     <div style={{
@@ -85,7 +87,7 @@ function StickyHeader({
 
       {/* Phase stepper */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 4, flex: 1, justifyContent: 'center', flexWrap: 'wrap' }}>
-        {PHASES.map((p, i) => (
+        {dynamicPhases.map((p, i) => (
           <div key={p} style={{ display: 'flex', alignItems: 'center' }}>
             {i > 0 && (
               <div style={{ width: 14, height: 2, background: i <= phaseIdx ? TC.ink : TC.grid, marginRight: 4 }} />
@@ -198,7 +200,8 @@ export default function CasePlayScreen({ onNavigateOut }: Props) {
         phase={phase}
         caseTitle={caseTitle}
         actLabel={actLabel}
-        onBack={goBack}
+        onBack={() => onNavigateOut('campaign')}
+        isPairSelector={isPairSelector}
       />
 
       <div style={{ padding: '0 clamp(16px,4vw,40px) 60px' }}>
@@ -240,7 +243,7 @@ export default function CasePlayScreen({ onNavigateOut }: Props) {
         {/* § 4 TRIAL */}
         {phaseAtLeast(phase, 'trial') && (
           <div ref={trialRef}>
-            <SectionDivider phaseLabel="TRIAL" phaseNumber={4} color={PHASE_COLORS.trial} />
+            <SectionDivider phaseLabel="TRIAL" phaseNumber={isPairSelector ? 4 : 3} color={PHASE_COLORS.trial} />
             <TrialSection
               isActive={phase === 'trial'}
               isCompleted={phaseAtLeast(phase, 'debrief')}
@@ -252,7 +255,7 @@ export default function CasePlayScreen({ onNavigateOut }: Props) {
         {/* § 5 DEBRIEF */}
         {phaseAtLeast(phase, 'debrief') && (
           <div ref={debriefRef}>
-            <SectionDivider phaseLabel="DEBRIEF" phaseNumber={5} color={PHASE_COLORS.debrief} />
+            <SectionDivider phaseLabel="DEBRIEF" phaseNumber={isPairSelector ? 5 : 4} color={PHASE_COLORS.debrief} />
             <DebriefSection
               isActive={phase === 'debrief'}
               isCompleted={false}

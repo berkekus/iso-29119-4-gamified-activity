@@ -53,7 +53,7 @@
     "T1–T3 each flip one sensor TRUE; T4 takes all FALSE. Every condition seen T and F. ✓"
   ],
   "defendant": {
-    "name": "alarm(a, b, c)",
+    "name": "Alarm Systems Engineer",
     "quote": "Each sensor fired at least once. What more do you want?"
   },
   "seeded_faults": [

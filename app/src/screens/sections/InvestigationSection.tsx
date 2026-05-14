@@ -12,6 +12,10 @@ import {
   CoverageTablePicker,
   TestDesignerPicker,
   NumericInputPicker,
+  DialogueObjectionPicker,
+  EvidenceBoardPicker,
+  BudgetStrategyPicker,
+  McdcPairBuilderPicker,
 } from '../QuestionRenderer'
 import type { SectionProps } from './types'
 
@@ -52,6 +56,7 @@ export default function InvestigationSection({ isCompleted, onAdvance }: Section
   const { mcdc, toggleRow, caseFile, submitAnswer } = useGameStore()
   const [validated, setValidated] = useState(false)
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; msg: string } | null>(null)
+  const [hintLevel, setHintLevel] = useState(0)
   const decisionExpr = caseFile?.scenario.decision_expression || 'A && (B || C)'
 
   const techniqueLabel =
@@ -74,14 +79,12 @@ export default function InvestigationSection({ isCompleted, onAdvance }: Section
         caseFile.correct_answer_explanation ??
         'Correct. The claim has been certified.'
       setFeedback({ type: 'success', msg })
-      setTimeout(() => onAdvance(), 900)
     } else {
       const msg =
         pickOptionExplanation(caseFile, payload, false) ??
         caseFile.wrong_answer_explanation ??
         'Not quite. The court will now convene.'
       setFeedback({ type: 'error', msg })
-      setTimeout(() => onAdvance(), 1500)
     }
   }
 
@@ -186,6 +189,29 @@ export default function InvestigationSection({ isCompleted, onAdvance }: Section
               {caseFile && questionType === 'numeric_input' && (
                 <NumericInputPicker caseFile={caseFile} feedback={feedback} onSubmit={handleAnswer} />
               )}
+              {caseFile && questionType === 'dialogue_objection' && (
+                <DialogueObjectionPicker caseFile={caseFile} feedback={feedback} onSubmit={handleAnswer} />
+              )}
+              {caseFile && questionType === 'evidence_board' && (
+                <EvidenceBoardPicker caseFile={caseFile} feedback={feedback} onSubmit={handleAnswer} />
+              )}
+              {caseFile && questionType === 'budget_strategy' && (
+                <BudgetStrategyPicker caseFile={caseFile} feedback={feedback} onSubmit={handleAnswer} />
+              )}
+              {caseFile && questionType === 'mcdc_pair_builder' && (
+                <McdcPairBuilderPicker caseFile={caseFile} feedback={feedback} onSubmit={handleAnswer} />
+              )}
+              
+              {feedback && !isCompleted && (
+                <div style={{ marginTop: 16, display: 'flex', justifyContent: 'flex-end' }}>
+                  <PixelButton
+                    variant={feedback.type === 'success' ? 'primary' : 'danger'}
+                    onClick={onAdvance}
+                  >
+                    PROCEED TO TRIAL →
+                  </PixelButton>
+                </div>
+              )}
             </div>
           </div>
 
@@ -199,9 +225,21 @@ export default function InvestigationSection({ isCompleted, onAdvance }: Section
 
             {(caseFile?.hints?.length ?? 0) > 0 && (
               <div style={{ padding: 14, border: `2px solid ${TC.grid}`, background: TC.cream }}>
-                <div style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: TC.blue, marginBottom: 8 }}>HINT</div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                  <div style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: TC.blue }}>
+                    HINT {hintLevel + 1}/{caseFile?.hints?.length}
+                  </div>
+                  {hintLevel < (caseFile?.hints?.length ?? 1) - 1 && (
+                    <button
+                      onClick={() => setHintLevel((h) => h + 1)}
+                      style={{ fontFamily: PIXEL_FONT, fontSize: 8, color: TC.orange, background: 'none', border: `1px solid ${TC.orange}`, padding: '3px 8px', cursor: 'pointer' }}
+                    >
+                      NEXT →
+                    </button>
+                  )}
+                </div>
                 <div style={{ fontFamily: MONO_FONT, fontSize: 12, color: TC.ink, lineHeight: 1.6 }}>
-                  {caseFile?.hints?.[0]}
+                  {caseFile?.hints?.[hintLevel]}
                 </div>
               </div>
             )}

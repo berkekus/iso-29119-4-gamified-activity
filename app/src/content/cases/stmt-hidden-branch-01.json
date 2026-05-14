@@ -49,7 +49,7 @@
     "Statement is 100% (T1 runs every line), but the false edge is never taken. 'Fully tested' is a misconception."
   ],
   "defendant": {
-    "name": "price(amount, is_premium)",
+    "name": "Pricing Engine Developer",
     "quote": "Every line ran. Isn't that enough?"
   },
   "seeded_faults": [
