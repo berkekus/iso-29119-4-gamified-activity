@@ -107,12 +107,11 @@ function StickyHeader({
         ))}
       </div>
 
-      {/* Case title (truncated) */}
+      {/* Case title */}
       <span style={{
         fontFamily: PIXEL_FONT, fontSize: 8,
         color: TC.ink,
-        maxWidth: 200,
-        overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+        whiteSpace: 'nowrap',
       }}>
         {caseTitle}
       </span>

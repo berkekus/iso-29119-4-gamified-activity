@@ -8,6 +8,9 @@ import { validateMcdcCoverage } from '../../engine/coverage/mcdc'
 import { simulateFaults } from '../../engine/faults/simulator'
 import { detectMisconceptions } from '../../engine/misconceptions/detector'
 import { useGameStore } from '../../stores/gameStore'
+import type { Screen } from '../../stores/gameStore'
+import { CASE_ORDER, nextCaseId } from '../../content/caseOrder'
+import { achievementById } from '../../content/achievements'
 import type { SectionProps } from './types'
 
 type TrialPhase = 'presenting' | 'deliberating' | 'verdict'
@@ -17,15 +20,42 @@ const TECHNIQUE_LABEL: Record<string, string> = {
   BC: 'BC', BCC: 'BCC', MCDC: 'MC/DC',
 }
 
-export default function TrialSection({ isCompleted, onAdvance }: SectionProps) {
-  const { mcdc, setVerdict, caseFile } = useGameStore()
-  const techniqueLabel =
-    (caseFile?.technique && TECHNIQUE_LABEL[caseFile.technique]) ?? 'CASE'
+const TECHNIQUE_TEXTBOOK: Record<string, string> = {
+  STATEMENT:
+    'Statement coverage requires every executable line of code to run at least once across the test set. It is the weakest structural criterion: 100% statement coverage does NOT mean every branch or condition has been exercised.',
+  BRANCH:
+    'Branch coverage requires every edge of the control-flow graph to be taken at least once — including the implicit FALSE edge of an if without an else. Reaching every line is not enough; every decision outcome must occur.',
+  DECISION:
+    'Decision coverage requires every decision in the program to take both TRUE and FALSE outcomes. Stronger than branch coverage when there are short-circuit operators, because each whole decision (not each branch) must flip.',
+  BC:
+    'Branch Condition coverage requires each individual condition inside a compound decision to be observed as both TRUE and FALSE across the test set. It detects single-condition oversights but not interactions between conditions.',
+  BCC:
+    'Branch Condition Combination coverage requires every combination of TRUE/FALSE across all N conditions of a decision — i.e. all 2^N rows of the truth table. It is exhaustive but its cost grows exponentially with the number of conditions.',
+  MCDC:
+    "MC/DC requires that for each condition in a decision, there exist test cases that show the condition independently affects the decision's outcome. \"Independently\" means exactly one condition changes between two test cases while all others remain fixed, and the decision outcome changes.",
+}
+
+interface TrialSectionProps extends SectionProps {
+  onNavigateOut: (screen: Screen) => void
+}
+
+export default function TrialSection({ isCompleted, onNavigateOut }: TrialSectionProps) {
+  const {
+    mcdc, setVerdict, caseFile, completedCases,
+    loadCaseById, markCaseCompleted, resetMcdc,
+    newlyUnlockedAchievement, clearNewlyUnlockedAchievement,
+    lastDialogueMatchIndex,
+    lastBudgetStrategyIncludedHighRisk,
+    lastVaultEvaluation,
+  } = useGameStore()
+
   const [trialPhase, setTrialPhase] = useState<TrialPhase>('presenting')
 
   const seededFaultMap: Record<string, string> = {}
+  const misconceptionMap: Record<string, string> = {}
   if (caseFile) {
     for (const f of caseFile.seeded_faults) seededFaultMap[f.id] = f.description
+    for (const m of caseFile.misconceptions) misconceptionMap[m.id] = m.explanation_md
   }
 
   useEffect(() => {
@@ -44,7 +74,78 @@ export default function TrialSection({ isCompleted, onAdvance }: SectionProps) {
   }, [trialPhase]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const { verdictResult, faultResults, misconceptions } = mcdc
-  const isGuilty = verdictResult?.coverageAchieved && faultResults.every(f => f.detected)
+  const isGuilty = Boolean(verdictResult?.coverageAchieved && faultResults.every(f => f.detected))
+
+  // Side effect: mark case complete on the first GUILTY verdict
+  useEffect(() => {
+    if (isGuilty && caseFile?.id) markCaseCompleted(caseFile.id)
+  }, [isGuilty, caseFile?.id, markCaseCompleted])
+
+  const techniqueLabel =
+    (caseFile?.technique && TECHNIQUE_LABEL[caseFile.technique]) ?? 'CASE'
+
+  const newAchievement = newlyUnlockedAchievement
+    ? achievementById(newlyUnlockedAchievement)
+    : null
+
+  // Per-path dialogue debrief — set on a passing dialogue_objection answer
+  const dialogueDebrief =
+    isGuilty &&
+    caseFile &&
+    lastDialogueMatchIndex !== null &&
+    caseFile.dialogue_correct_explanations &&
+    lastDialogueMatchIndex < caseFile.dialogue_correct_explanations.length
+      ? caseFile.dialogue_correct_explanations[lastDialogueMatchIndex]
+      : null
+
+  const budgetDebriefBlock = caseFile?.budget_debrief
+  const budgetDebrief =
+    isGuilty &&
+    budgetDebriefBlock &&
+    lastBudgetStrategyIncludedHighRisk !== null
+      ? `${budgetDebriefBlock.fraction_paragraph}\n\n${
+          lastBudgetStrategyIncludedHighRisk
+            ? budgetDebriefBlock.when_high_risk_included
+            : budgetDebriefBlock.when_high_risk_missed
+        }\n\n${budgetDebriefBlock.mc_dc_bridge}`
+      : null
+
+  const vaultPartialOk =
+    lastVaultEvaluation
+      ? (lastVaultEvaluation.m_ok || lastVaultEvaluation.k_ok || lastVaultEvaluation.t_ok)
+      : false
+  const vaultBorderColor = lastVaultEvaluation
+    ? lastVaultEvaluation.all_ok ? TC.green : vaultPartialOk ? TC.orange : TC.magenta
+    : TC.grid
+
+  const triggeredMisconceptions = misconceptions.filter(m => m.triggered)
+  const totalCompleted = completedCases.filter((id) =>
+    (CASE_ORDER as readonly string[]).includes(id),
+  ).length
+
+  const nextId = nextCaseId(caseFile?.id)
+  const isLastCase = caseFile?.id === CASE_ORDER[CASE_ORDER.length - 1]
+  const canAdvance = isGuilty
+
+  const handleRetry = () => {
+    clearNewlyUnlockedAchievement()
+    resetMcdc()
+    // phase resets to 'briefing' via resetMcdc — CasePlayScreen scrolls to top
+  }
+
+  const handleNext = () => {
+    if (!canAdvance) return
+    clearNewlyUnlockedAchievement()
+    if (nextId) {
+      try {
+        loadCaseById(nextId)
+      } catch (err) {
+        console.error('[TrialSection] Failed to load next case', nextId, err)
+      }
+    } else {
+      onNavigateOut('campaign')
+    }
+  }
 
   const phaseLabels: TrialPhase[] = ['presenting', 'deliberating', 'verdict']
 
@@ -73,7 +174,7 @@ export default function TrialSection({ isCompleted, onAdvance }: SectionProps) {
         </div>
       </div>
 
-      {/* Phase indicator */}
+      {/* Phase indicator (pair_selector only) */}
       {caseFile?.question_type === 'pair_selector' && (
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24, maxWidth: 600, margin: '0 auto 24px' }}>
           <ScoreChip label="PAIRS" value={mcdc.independencePairs.length} color={TC.blue} />
@@ -136,76 +237,178 @@ export default function TrialSection({ isCompleted, onAdvance }: SectionProps) {
               )}
             </div>
 
-            <div style={{ flex: 1, background: TC.cream, border: `3px solid ${TC.ink}`, boxShadow: `4px 4px 0 ${TC.ink}`, padding: 16 }}>
-              <div style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: TC.magenta, marginBottom: 12 }}>FAULTS DETECTED</div>
-              {faultResults.length > 0 ? (
-                faultResults.map(f => (
-                  <div key={f.id} style={{
+            {(faultResults.length > 0 || !isGuilty) && (
+              <div style={{ flex: 1, background: TC.cream, border: `3px solid ${TC.ink}`, boxShadow: `4px 4px 0 ${TC.ink}`, padding: 16 }}>
+                <div style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: TC.magenta, marginBottom: 12 }}>FAULTS DETECTED</div>
+                {faultResults.length > 0 ? (
+                  faultResults.map(f => (
+                    <div key={f.id} style={{
+                      display: 'flex', alignItems: 'center', gap: 8,
+                      padding: '8px 10px',
+                      background: f.detected ? `${TC.green}10` : `${TC.magenta}10`,
+                      border: `1px solid ${f.detected ? TC.green : TC.magenta}`,
+                    }}>
+                      <BugSprite size={30} type="mcdc" mood={f.detected ? 'caught' : 'nervous'} />
+                      <div>
+                        <div style={{ fontFamily: PIXEL_FONT, fontSize: 8, color: f.detected ? TC.green : TC.magenta }}>
+                          {f.id}: {f.detected ? 'CAUGHT' : 'ESCAPED'}
+                        </div>
+                        <div style={{ fontFamily: MONO_FONT, fontSize: 11, color: TC.grey, marginTop: 3, lineHeight: 1.5 }}>
+                          {seededFaultMap[f.id] ?? 'Seeded fault — see case file.'}
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div style={{
                     display: 'flex', alignItems: 'center', gap: 8,
                     padding: '8px 10px',
-                    background: f.detected ? `${TC.green}10` : `${TC.magenta}10`,
-                    border: `1px solid ${f.detected ? TC.green : TC.magenta}`,
+                    background: `${TC.magenta}10`,
+                    border: `1px solid ${TC.magenta}`,
                   }}>
-                    <BugSprite size={30} type="mcdc" mood={f.detected ? 'caught' : 'nervous'} />
+                    <BugSprite size={30} type="mcdc" mood="escaped" />
                     <div>
-                      <div style={{ fontFamily: PIXEL_FONT, fontSize: 8, color: f.detected ? TC.green : TC.magenta }}>
-                        {f.id}: {f.detected ? 'CAUGHT' : 'ESCAPED'}
+                      <div style={{ fontFamily: PIXEL_FONT, fontSize: 8, color: TC.magenta }}>
+                        INCORRECT VERDICT
                       </div>
                       <div style={{ fontFamily: MONO_FONT, fontSize: 11, color: TC.grey, marginTop: 3, lineHeight: 1.5 }}>
-                        {seededFaultMap[f.id] ?? 'Seeded fault — see case file.'}
+                        {caseFile?.wrong_answer_explanation ??
+                          'Your answer did not satisfy the required coverage criterion. Re-examine the claim and the test set.'}
                       </div>
                     </div>
                   </div>
-                ))
-              ) : isGuilty ? (
-                <div style={{
-                  display: 'flex', alignItems: 'center', gap: 8,
-                  padding: '8px 10px',
-                  background: `${TC.green}10`,
-                  border: `1px solid ${TC.green}`,
-                }}>
-                  <BugSprite size={30} type="mcdc" mood="caught" />
-                  <div>
-                    <div style={{ fontFamily: PIXEL_FONT, fontSize: 8, color: TC.green }}>
-                      VERDICT CONSISTENT
-                    </div>
-                    <div style={{ fontFamily: MONO_FONT, fontSize: 11, color: TC.grey, marginTop: 3, lineHeight: 1.5 }}>
-                      {caseFile?.correct_answer_explanation ?? 'Your answer satisfies the required coverage criterion.'}
-                    </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* VERDICT CONSISTENT — separate full-width panel for GUILTY + no seeded faults */}
+          {isGuilty && faultResults.length === 0 && (
+            <div style={{
+              background: TC.cream, border: `3px solid ${TC.ink}`, boxShadow: `4px 4px 0 ${TC.ink}`,
+              padding: 16, marginBottom: 20,
+            }}>
+              <div style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: TC.green, marginBottom: 12 }}>VERDICT BASIS</div>
+              <div style={{
+                display: 'flex', alignItems: 'center', gap: 10,
+                padding: '8px 10px',
+                background: `${TC.green}10`,
+                border: `1px solid ${TC.green}`,
+              }}>
+                <BugSprite size={30} type="mcdc" mood="caught" />
+                <div>
+                  <div style={{ fontFamily: PIXEL_FONT, fontSize: 8, color: TC.green }}>
+                    VERDICT CONSISTENT
+                  </div>
+                  <div style={{ fontFamily: MONO_FONT, fontSize: 11, color: TC.grey, marginTop: 3, lineHeight: 1.5 }}>
+                    {caseFile?.correct_answer_explanation ?? 'Your answer satisfies the required coverage criterion.'}
                   </div>
                 </div>
-              ) : (
-                <div style={{
-                  display: 'flex', alignItems: 'center', gap: 8,
-                  padding: '8px 10px',
-                  background: `${TC.magenta}10`,
-                  border: `1px solid ${TC.magenta}`,
-                }}>
-                  <BugSprite size={30} type="mcdc" mood="escaped" />
-                  <div>
-                    <div style={{ fontFamily: PIXEL_FONT, fontSize: 8, color: TC.magenta }}>
-                      INCORRECT VERDICT
-                    </div>
-                    <div style={{ fontFamily: MONO_FONT, fontSize: 11, color: TC.grey, marginTop: 3, lineHeight: 1.5 }}>
-                      {caseFile?.wrong_answer_explanation ??
-                        'Your answer did not satisfy the required coverage criterion. Re-examine the claim and the test set.'}
-                    </div>
-                  </div>
-                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Achievement unlock */}
+          {newAchievement && (
+            <div style={{
+              fontFamily: PIXEL_FONT, fontSize: 9, color: TC.green,
+              border: `2px solid ${TC.green}`, background: `${TC.green}10`,
+              padding: '10px 14px', marginBottom: 20,
+            }}>
+              🏆 ACHIEVEMENT UNLOCKED — {newAchievement.title.toUpperCase()}
+            </div>
+          )}
+
+          {/* Dialogue debrief */}
+          {dialogueDebrief && (
+            <div style={{
+              background: `${TC.green}08`,
+              border: `2px solid ${TC.green}`,
+              padding: 16,
+              marginBottom: 20,
+            }}>
+              <div style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: TC.green, marginBottom: 10 }}>
+                OBJECTION SUSTAINED — CASE RECAP
+              </div>
+              <div style={{ fontFamily: HAND_FONT, fontSize: 18, color: TC.ink, lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>
+                {dialogueDebrief}
+              </div>
+            </div>
+          )}
+
+          {/* Budget debrief */}
+          {budgetDebrief && (
+            <div style={{
+              background: `${TC.orange}08`,
+              border: `2px solid ${TC.orange}`,
+              padding: 16,
+              marginBottom: 20,
+            }}>
+              <div style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: TC.orange, marginBottom: 10 }}>
+                SUBPOENA STRATEGY — COVERAGE DEBRIEF
+              </div>
+              <div style={{ fontFamily: HAND_FONT, fontSize: 18, color: TC.ink, lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>
+                {budgetDebrief}
+              </div>
+            </div>
+          )}
+
+          {/* Vault evaluation */}
+          {lastVaultEvaluation && (
+            <div style={{
+              background: `${vaultBorderColor}08`,
+              border: `2px solid ${vaultBorderColor}`,
+              padding: 16,
+              marginBottom: 20,
+            }}>
+              <div style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: vaultBorderColor, marginBottom: 10 }}>
+                INDEPENDENT EFFECT ANALYSIS
+              </div>
+              <div style={{ fontFamily: HAND_FONT, fontSize: 18, color: TC.ink, lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>
+                {lastVaultEvaluation.all_ok
+                  ? 'You selected 4 rows that form valid independence pairs for M, K, and T.\n\nThis shows how a carefully interlocked N+1 suite can achieve MC/DC with fewer tests than full 2^N BCC. One test can participate in multiple independence pairs.'
+                  : vaultPartialOk
+                    ? `Your 4 tests demonstrated independence for some inputs, but not all three.\n\nPassed: ${(['M','K','T'] as const).filter(c => lastVaultEvaluation[`${c.toLowerCase()}_ok` as 'm_ok' | 'k_ok' | 't_ok']).join(', ')}.\nFailed: ${(['M','K','T'] as const).filter(c => !lastVaultEvaluation[`${c.toLowerCase()}_ok` as 'm_ok' | 'k_ok' | 't_ok']).join(', ')}.\n\nLook for a row pair where ONLY the missing condition flips and the decision flips — that is what proves independent effect.`
+                    : 'With your chosen 4 tests, none of the three inputs was shown to independently affect the decision.\n\nThis is the "single flip" trap from the earlier tutorial: you changed too much at once, or picked rows where the decision never flipped. Find pairs where exactly one input changes and the outcome flips.'}
+              </div>
+            </div>
+          )}
+
+          {/* Textbook */}
+          <div style={{ background: `${TC.blue}08`, border: `2px solid ${TC.blue}`, padding: 16, marginBottom: 20 }}>
+            <div style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: TC.blue, marginBottom: 10 }}>WHAT THE TEXTBOOK SAYS</div>
+            <div style={{ fontFamily: HAND_FONT, fontSize: 18, color: TC.ink, lineHeight: 1.6 }}>
+              {(caseFile?.technique && TECHNIQUE_TEXTBOOK[caseFile.technique]) ??
+                'Apply the coverage technique required for this act and confirm the claim against the standard of proof.'}
+            </div>
+          </div>
+
+          {/* ISO Reference */}
+          <div style={{ background: `${TC.orange}08`, border: `2px solid ${TC.orange}`, padding: 16, marginBottom: 20 }}>
+            <div style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: TC.orange, marginBottom: 10 }}>ISO/IEC/IEEE 29119-4 REFERENCE</div>
+            <div style={{ fontFamily: MONO_FONT, fontSize: 13, color: TC.ink, lineHeight: 1.6 }}>
+              {(caseFile?.iso_clauses ?? []).map((cl) => (
+                <div key={cl}><strong>{cl}</strong></div>
+              ))}
+              {(caseFile?.iso_clauses?.length ?? 0) === 0 && (
+                <div><strong>§5.3</strong> Test design techniques</div>
               )}
             </div>
           </div>
 
           {/* Misconception probe */}
-          {!isGuilty && misconceptions.some(m => m.triggered) && (
+          {triggeredMisconceptions.length > 0 && (
             <div style={{
-              background: `${TC.magenta}10`, border: `3px solid ${TC.magenta}`,
-              boxShadow: `4px 4px 0 ${TC.ink}`, padding: 16, marginBottom: 20,
+              background: `${TC.magenta}08`, border: `2px solid ${TC.magenta}`,
+              padding: 16, marginBottom: 20,
             }}>
               <div style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: TC.magenta, marginBottom: 10 }}>MISCONCEPTION DETECTED</div>
-              {misconceptions.filter(m => m.triggered).map(m => (
-                <div key={m.id} style={{ fontFamily: HAND_FONT, fontSize: 18, color: TC.ink, lineHeight: 1.55, marginBottom: 8 }}>
-                  {m.explanation}
+              {triggeredMisconceptions.map(m => (
+                <div key={m.id} style={{ marginBottom: 8 }}>
+                  <div style={{ fontFamily: PIXEL_FONT, fontSize: 8, color: TC.ink, marginBottom: 6 }}>{m.id}</div>
+                  <div style={{ fontFamily: HAND_FONT, fontSize: 18, color: TC.ink, lineHeight: 1.55 }}>
+                    {misconceptionMap[m.id] ?? m.explanation ?? 'A reasoning trap was triggered — re-read the hint chain in the case file.'}
+                  </div>
                 </div>
               ))}
               <div style={{ fontFamily: MONO_FONT, fontSize: 12, color: TC.grey, marginTop: 10 }}>
@@ -214,11 +417,34 @@ export default function TrialSection({ isCompleted, onAdvance }: SectionProps) {
             </div>
           )}
 
+          {/* Campaign progress */}
+          <div style={{ padding: 14, border: `2px solid ${TC.grid}`, background: TC.cream, marginBottom: 20 }}>
+            <div style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: TC.grey, marginBottom: 10, textAlign: 'center' }}>CAMPAIGN PROGRESS</div>
+            <div style={{ display: 'flex', justifyContent: 'center' }}>
+              <CoverageMeter value={totalCompleted} max={CASE_ORDER.length} label="TOTAL CASES" color={TC.blue} width={260} />
+            </div>
+          </div>
+
+          {/* Action buttons */}
           {!isCompleted && (
-            <div style={{ textAlign: 'center', marginBottom: 20 }}>
-              <PixelButton variant="primary" onClick={onAdvance}>READ DEBRIEF →</PixelButton>
+            <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap', marginBottom: 20 }}>
+              <PixelButton variant="danger" onClick={handleRetry}>RETRY CASE</PixelButton>
+              <PixelButton variant="secondary" onClick={() => onNavigateOut('law-library')}>OPEN ANNEX C</PixelButton>
+              <PixelButton variant="primary" onClick={handleNext} disabled={!canAdvance}>
+                {isLastCase ? 'CAMPAIGN MAP →' : 'NEXT CASE →'}
+              </PixelButton>
             </div>
           )}
+          {!canAdvance && !isCompleted && (
+            <div style={{ fontFamily: PIXEL_FONT, fontSize: 7, color: TC.grey, textAlign: 'center', marginBottom: 20 }}>
+              Retry this case to unlock the next one
+            </div>
+          )}
+
+          {/* Technique label */}
+          <div style={{ fontFamily: PIXEL_FONT, fontSize: 8, color: TC.grey, textAlign: 'center', marginBottom: 20 }}>
+            {techniqueLabel}
+          </div>
 
           <div style={{ display: 'flex', justifyContent: 'center', marginTop: 20, paddingBottom: 20, animation: 'fadeIn 1s ease-in' }}>
             <BugSprite
