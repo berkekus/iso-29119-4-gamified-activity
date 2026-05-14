@@ -157,9 +157,40 @@ export default function TrialSection({ isCompleted, onAdvance }: SectionProps) {
                     </div>
                   </div>
                 ))
+              ) : isGuilty ? (
+                <div style={{
+                  display: 'flex', alignItems: 'center', gap: 8,
+                  padding: '8px 10px',
+                  background: `${TC.green}10`,
+                  border: `1px solid ${TC.green}`,
+                }}>
+                  <BugSprite size={30} type="mcdc" mood="caught" />
+                  <div>
+                    <div style={{ fontFamily: PIXEL_FONT, fontSize: 8, color: TC.green }}>
+                      VERDICT CONSISTENT
+                    </div>
+                    <div style={{ fontFamily: MONO_FONT, fontSize: 11, color: TC.grey, marginTop: 3, lineHeight: 1.5 }}>
+                      {caseFile?.correct_answer_explanation ?? 'Your answer satisfies the required coverage criterion.'}
+                    </div>
+                  </div>
+                </div>
               ) : (
-                <div style={{ fontFamily: MONO_FONT, fontSize: 12, color: TC.grey }}>
-                  {isGuilty ? 'No faults escaped.' : 'No fault detection data on record.'}
+                <div style={{
+                  display: 'flex', alignItems: 'center', gap: 8,
+                  padding: '8px 10px',
+                  background: `${TC.magenta}10`,
+                  border: `1px solid ${TC.magenta}`,
+                }}>
+                  <BugSprite size={30} type="mcdc" mood="escaped" />
+                  <div>
+                    <div style={{ fontFamily: PIXEL_FONT, fontSize: 8, color: TC.magenta }}>
+                      INCORRECT VERDICT
+                    </div>
+                    <div style={{ fontFamily: MONO_FONT, fontSize: 11, color: TC.grey, marginTop: 3, lineHeight: 1.5 }}>
+                      {caseFile?.wrong_answer_explanation ??
+                        'Your answer did not satisfy the required coverage criterion. Re-examine the claim and the test set.'}
+                    </div>
+                  </div>
                 </div>
               )}
             </div>
