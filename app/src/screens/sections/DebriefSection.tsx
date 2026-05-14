@@ -37,15 +37,16 @@ export default function DebriefSection({ onNavigateOut }: DebriefSectionProps) {
   const {
     mcdc, caseFile, completedCases, loadCaseById, markCaseCompleted, resetMcdc,
     newlyUnlockedAchievement, clearNewlyUnlockedAchievement,
+    lastDialogueMatchIndex,
+    lastBudgetStrategyIncludedHighRisk,
+    lastVaultEvaluation,
   } = useGameStore()
   const newAchievement = newlyUnlockedAchievement
     ? achievementById(newlyUnlockedAchievement)
     : null
   const verdictResult = mcdc.verdictResult
   const faultResults = mcdc.faultResults ?? []
-  const triggeredMisconceptions =
-    (useGameStore.getState() as { triggeredMisconceptions?: unknown[] }).triggeredMisconceptions ??
-    []
+  const triggeredMisconceptions = mcdc.misconceptions.filter((m) => m.triggered)
   const seededFaultMap: Record<string, string> = {}
   const misconceptionMap: Record<string, string> = {}
   if (caseFile) {
@@ -57,6 +58,35 @@ export default function DebriefSection({ onNavigateOut }: DebriefSectionProps) {
     verdictResult?.coverageAchieved && faultResults.every((f) => f.detected),
   )
   const coverageVal = verdictResult?.coveragePercent ?? 0
+
+  const dialogueDebrief =
+    isGuilty &&
+    caseFile &&
+    lastDialogueMatchIndex !== null &&
+    caseFile.dialogue_correct_explanations &&
+    lastDialogueMatchIndex < caseFile.dialogue_correct_explanations.length
+      ? caseFile.dialogue_correct_explanations[lastDialogueMatchIndex]
+      : null
+
+  const budgetDebriefBlock = caseFile?.budget_debrief
+  const budgetDebrief =
+    isGuilty &&
+    budgetDebriefBlock &&
+    lastBudgetStrategyIncludedHighRisk !== null
+      ? `${budgetDebriefBlock.fraction_paragraph}\n\n${
+          lastBudgetStrategyIncludedHighRisk
+            ? budgetDebriefBlock.when_high_risk_included
+            : budgetDebriefBlock.when_high_risk_missed
+        }\n\n${budgetDebriefBlock.mc_dc_bridge}`
+      : null
+
+  const vaultPartialOk =
+    lastVaultEvaluation
+      ? (lastVaultEvaluation.m_ok || lastVaultEvaluation.k_ok || lastVaultEvaluation.t_ok)
+      : false
+  const vaultBorderColor = lastVaultEvaluation
+    ? lastVaultEvaluation.all_ok ? TC.green : vaultPartialOk ? TC.orange : TC.magenta
+    : TC.grid
 
   useEffect(() => {
     if (isGuilty && caseFile?.id) markCaseCompleted(caseFile.id)
@@ -133,6 +163,58 @@ export default function DebriefSection({ onNavigateOut }: DebriefSectionProps) {
                 padding: '8px 12px', marginBottom: 16,
               }}>
                 🏆 ACHIEVEMENT UNLOCKED — {newAchievement.title.toUpperCase()}
+              </div>
+            )}
+
+            {dialogueDebrief && (
+              <div style={{
+                background: `${TC.green}08`,
+                border: `2px solid ${TC.green}`,
+                padding: 16,
+                marginBottom: 16,
+              }}>
+                <div style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: TC.green, marginBottom: 10 }}>
+                  OBJECTION SUSTAINED — CASE RECAP
+                </div>
+                <div style={{ fontFamily: HAND_FONT, fontSize: 18, color: TC.ink, lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>
+                  {dialogueDebrief}
+                </div>
+              </div>
+            )}
+
+            {budgetDebrief && (
+              <div style={{
+                background: `${TC.orange}08`,
+                border: `2px solid ${TC.orange}`,
+                padding: 16,
+                marginBottom: 16,
+              }}>
+                <div style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: TC.orange, marginBottom: 10 }}>
+                  SUBPOENA STRATEGY — COVERAGE DEBRIEF
+                </div>
+                <div style={{ fontFamily: HAND_FONT, fontSize: 18, color: TC.ink, lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>
+                  {budgetDebrief}
+                </div>
+              </div>
+            )}
+
+            {lastVaultEvaluation && (
+              <div style={{
+                background: `${vaultBorderColor}08`,
+                border: `2px solid ${vaultBorderColor}`,
+                padding: 16,
+                marginBottom: 16,
+              }}>
+                <div style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: vaultBorderColor, marginBottom: 10 }}>
+                  INDEPENDENT EFFECT ANALYSIS
+                </div>
+                <div style={{ fontFamily: HAND_FONT, fontSize: 18, color: TC.ink, lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>
+                  {lastVaultEvaluation.all_ok
+                    ? 'You selected 4 rows that form valid independence pairs for M, K, and T.\n\nThis shows how a carefully interlocked N+1 suite can achieve MC/DC with fewer tests than full 2^N BCC. One test can participate in multiple independence pairs.'
+                    : vaultPartialOk
+                      ? `Your 4 tests demonstrated independence for some inputs, but not all three.\n\nPassed: ${(['M','K','T'] as const).filter(c => lastVaultEvaluation[`${c.toLowerCase()}_ok` as 'm_ok' | 'k_ok' | 't_ok']).join(', ')}.\nFailed: ${(['M','K','T'] as const).filter(c => !lastVaultEvaluation[`${c.toLowerCase()}_ok` as 'm_ok' | 'k_ok' | 't_ok']).join(', ')}.\n\nLook for a row pair where ONLY the missing condition flips and the decision flips — that is what proves independent effect.`
+                      : 'With your chosen 4 tests, none of the three inputs was shown to independently affect the decision.\n\nThis is the "single flip" trap from the earlier tutorial: you changed too much at once, or picked rows where the decision never flipped. Find pairs where exactly one input changes and the outcome flips.'}
+                </div>
               </div>
             )}
 

@@ -29,10 +29,6 @@ export default function TrialSection({ isCompleted, onAdvance }: SectionProps) {
   }
 
   useEffect(() => {
-    if (trialPhase === 'presenting') {
-      const t = setTimeout(() => setTrialPhase('deliberating'), 2500)
-      return () => clearTimeout(t)
-    }
     if (trialPhase === 'deliberating') {
       const t = setTimeout(() => {
         if (caseFile?.question_type === 'pair_selector') {
@@ -42,7 +38,7 @@ export default function TrialSection({ isCompleted, onAdvance }: SectionProps) {
           setVerdict(result, faults, miscList)
         }
         setTrialPhase('verdict')
-      }, 2000)
+      }, 1500)
       return () => clearTimeout(t)
     }
   }, [trialPhase]) // eslint-disable-line react-hooks/exhaustive-deps
@@ -202,10 +198,21 @@ export default function TrialSection({ isCompleted, onAdvance }: SectionProps) {
         </div>
       )}
 
-      {trialPhase !== 'verdict' && (
+      {trialPhase === 'presenting' && !isCompleted && (
+        <div style={{ textAlign: 'center', padding: '24px 0' }}>
+          <PixelButton variant="primary" onClick={() => setTrialPhase('deliberating')}>
+            SUBMIT EVIDENCE →
+          </PixelButton>
+          <div style={{ fontFamily: PIXEL_FONT, fontSize: 8, color: TC.grey, marginTop: 12 }}>
+            The court is ready to hear your case.
+          </div>
+        </div>
+      )}
+
+      {trialPhase === 'deliberating' && (
         <div style={{ textAlign: 'center', padding: '40px 0' }}>
           <div style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: TC.grey }}>
-            {trialPhase === 'presenting' ? 'PRESENTING EVIDENCE...' : 'COURT IS DELIBERATING...'}
+            COURT IS DELIBERATING...
           </div>
         </div>
       )}
