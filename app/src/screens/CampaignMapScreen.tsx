@@ -80,10 +80,9 @@ const acts: ActEntry[] = [
     bugType: 'mcdc',
     clauses: '§5.3.6',
     cases: [
-      { id: 'mcdc-tutorial-01',           name: 'Simple Safety Gate',      difficulty: 1 },
-      { id: 'mcdc-altitude-disengage-01', name: 'Altitude Hold Disengage', difficulty: 2 },
-      { id: 'mcdc-trap-isolation-01',     name: 'Emergency Override',      difficulty: 3 },
-      { id: 'mcdc-vault-boss-01',         name: 'Vault Authorization',     difficulty: 3, isBoss: true },
+      { id: 'mcdc-tutorial-01',       name: 'The Single Flip',     difficulty: 1 },
+      { id: 'mcdc-trap-isolation-01', name: 'The Sabotaged Drone', difficulty: 2 },
+      { id: 'mcdc-vault-boss-01',     name: 'The Casino Vault',    difficulty: 3, isBoss: true },
     ],
   },
   {
