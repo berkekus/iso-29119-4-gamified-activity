@@ -263,66 +263,46 @@ export default function MainMenuScreen({ onNavigate }: Props) {
 
       {/* ── Character row ─────────────────────────────────────── */}
       <div style={{
-        display:        'flex',
-        gap:            'clamp(16px, 4vw, 52px)',
-        marginBottom:   'clamp(18px, 2.5vw, 30px)',
-        alignItems:     'flex-end',
-        justifyContent: 'center',
-        flexWrap:       'wrap',
+        position:     'relative',
+        marginBottom: 'clamp(18px, 2.5vw, 30px)',
+        width:        'min(620px, 94vw)',
+        alignSelf:    'center',
       }}>
-        {([
-          { src: '/assets/new_judge.png',      label: 'JUDGE',            size: 255 },
-          { src: '/assets/new_prosecutor.png', label: 'PROSECUTOR',       size: 205, isPlayer: true },
-          { src: '/assets/new_defense.png',    label: 'DEFENSE ATTORNEY', size: 180 },
-          { src: '/assets/bug-defendant.png',  label: 'DEFENDANT',        size: 180 },
-        ] as { src: string; label: string; size: number; isPlayer?: boolean }[]).map(({ src, label, size, isPlayer }) => (
-          <div key={label} style={{
-            display:       'flex',
-            flexDirection: 'column',
-            alignItems:    'center',
-            gap:           10,
-            position:      'relative',
-            paddingTop:    28,
-          }}>
-            {isPlayer && (
-              <div style={{
-                position:      'absolute',
-                top:           0,
-                fontFamily:    PIXEL_FONT,
-                fontSize:      7,
-                color:         '#fff',
-                background:    '#2C6FBB',
-                padding:       '3px 10px',
-                letterSpacing: 1,
-              }}>▶ YOU</div>
-            )}
-            <img
-              src={src}
-              alt={label}
-              style={{
-                width:          size,
-                height:         size,
-                objectFit:      'contain',
-                imageRendering: 'pixelated',
-                filter:         isPlayer
-                  ? 'drop-shadow(0 0 10px rgba(44,111,187,0.55))'
-                  : undefined,
-              }}
-            />
-            <div style={{
-              fontFamily:    PIXEL_FONT,
-              fontSize:      8,
-              color:         isPlayer ? '#fff' : '#111111',
-              border:        `2px solid ${isPlayer ? '#2C6FBB' : '#111111'}`,
-              background:    isPlayer ? '#2C6FBB' : '#f7f1df',
-              padding:       '5px 12px',
-              letterSpacing: 1,
-              whiteSpace:    'nowrap',
-            }}>
-              {label}
-            </div>
-          </div>
-        ))}
+        {/* Red glow centred on prosecutor (~50% horizontal) */}
+        <div style={{
+          position:      'absolute',
+          inset:         0,
+          background:    'radial-gradient(ellipse 26% 75% at 50% 52%, rgba(204,34,34,0.22) 0%, transparent 100%)',
+          pointerEvents: 'none',
+          zIndex:        1,
+        }} />
+
+        {/* ▶ YOU badge above prosecutor */}
+        <div style={{
+          position:      'absolute',
+          top:           6,
+          left:          '50%',
+          transform:     'translateX(-50%)',
+          fontFamily:    PIXEL_FONT,
+          fontSize:      7,
+          color:         '#fff',
+          background:    '#CC2222',
+          padding:       '3px 10px',
+          letterSpacing: 1,
+          zIndex:        2,
+          whiteSpace:    'nowrap',
+        }}>▶ YOU</div>
+
+        <img
+          src="/assets/main_page_figures.png"
+          alt="Court characters"
+          style={{
+            width:          '100%',
+            height:         'auto',
+            imageRendering: 'pixelated',
+            display:        'block',
+          }}
+        />
       </div>
 
       {/* ── 2×2 Menu grid ─────────────────────────────────────── */}
