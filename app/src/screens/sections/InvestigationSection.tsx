@@ -56,6 +56,7 @@ export default function InvestigationSection({ isCompleted, onAdvance }: Section
   const { mcdc, toggleRow, caseFile, submitAnswer } = useGameStore()
   const [validated, setValidated] = useState(false)
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; msg: string } | null>(null)
+  const [hintLevel, setHintLevel] = useState(0)
   const decisionExpr = caseFile?.scenario.decision_expression || 'A && (B || C)'
 
   const techniqueLabel =
@@ -224,9 +225,21 @@ export default function InvestigationSection({ isCompleted, onAdvance }: Section
 
             {(caseFile?.hints?.length ?? 0) > 0 && (
               <div style={{ padding: 14, border: `2px solid ${TC.grid}`, background: TC.cream }}>
-                <div style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: TC.blue, marginBottom: 8 }}>HINT</div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                  <div style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: TC.blue }}>
+                    HINT {hintLevel + 1}/{caseFile?.hints?.length}
+                  </div>
+                  {hintLevel < (caseFile?.hints?.length ?? 1) - 1 && (
+                    <button
+                      onClick={() => setHintLevel((h) => h + 1)}
+                      style={{ fontFamily: PIXEL_FONT, fontSize: 8, color: TC.orange, background: 'none', border: `1px solid ${TC.orange}`, padding: '3px 8px', cursor: 'pointer' }}
+                    >
+                      NEXT →
+                    </button>
+                  )}
+                </div>
                 <div style={{ fontFamily: MONO_FONT, fontSize: 12, color: TC.ink, lineHeight: 1.6 }}>
-                  {caseFile?.hints?.[0]}
+                  {caseFile?.hints?.[hintLevel]}
                 </div>
               </div>
             )}
