@@ -48,15 +48,11 @@ function broadcastPlayerList(room: ReturnType<typeof RM.getRoomForSocket>): void
   io.to(room.code).emit('player_list', { players: RM.getPlayerList(room) })
 }
 
-function endRound(roomCode: string): void {
-  const room = RM['getRoomForSocket'] // room reference via code
-  // We access rooms via re-exported helper — look it up directly via socket map workaround
-  // Instead we use the room we already have a reference to via the closure parameter
-  _endRound(roomCode)
-}
-
-// Actual end-round logic keyed by room code
+// Active rooms keyed by room code — used by timer callbacks that run after socket events
 const activeRoomMap = new Map<string, ReturnType<typeof RM.getRoomForSocket>>()
+
+// Scores captured at the start of each question round, used to compute per-round deltas
+const prevRoundScores = new Map<string, Map<string, number>>()
 
 function _endRound(roomCode: string): void {
   const room = activeRoomMap.get(roomCode)
@@ -67,12 +63,9 @@ function _endRound(roomCode: string): void {
   const currentQ = room.questions[room.currentRound - 1]
   if (!currentQ) return
 
-  // Build leaderboard with delta
-  const prevScores = new Map(Array.from(room.players.values()).map((p) => [p.id, p.score]))
-  // Subtract round points to get pre-round scores for delta calc
-  // (score was already mutated by recordAnswer — delta computed in buildLeaderboard)
-  room.leaderboard = buildLeaderboard(room.players, prevScores)
-
+  // Use scores captured at the start of this round for accurate per-round deltas
+  const captured = prevRoundScores.get(roomCode) ?? new Map<string, number>()
+  room.leaderboard = buildLeaderboard(room.players, captured)
   room.status = 'leaderboard'
 
   io.to(roomCode).emit('round_ended', {
@@ -171,6 +164,13 @@ io.on('connection', (socket) => {
     room.currentRound++
 
     const qualifiedPlayers = RM.topNPlayers(room, GRAND_JURY_TOP_N).map((e) => e.playerId)
+
+    // Snapshot scores for grand jury delta
+    prevRoundScores.set(
+      room.code,
+      new Map(Array.from(room.players.values()).map((p) => [p.id, p.score])),
+    )
+
     const startedAt = Date.now()
     room.currentQuestionStartedAt = startedAt
 
@@ -257,6 +257,12 @@ function _broadcastQuestion(room: NonNullable<ReturnType<typeof RM.getRoomForSoc
   const q = room.questions[room.currentRound - 1]
   if (!q) return
 
+  // Snapshot scores before the round — used for per-round delta in leaderboard
+  prevRoundScores.set(
+    room.code,
+    new Map(Array.from(room.players.values()).map((p) => [p.id, p.score])),
+  )
+
   const startedAt = Date.now()
   room.currentQuestionStartedAt = startedAt
 
@@ -280,8 +286,8 @@ function _endGrandJury(roomCode: string): void {
 
   if (room.roundTimer) { clearTimeout(room.roundTimer); room.roundTimer = null }
 
-  const prevScores = new Map(Array.from(room.players.values()).map((p) => [p.id, p.score]))
-  room.leaderboard = buildLeaderboard(room.players, prevScores)
+  const captured = prevRoundScores.get(roomCode) ?? new Map<string, number>()
+  room.leaderboard = buildLeaderboard(room.players, captured)
 
   io.to(roomCode).emit('round_ended', {
     correctOptionId: room.grandJuryQuestion.correctOptionId,
@@ -299,8 +305,8 @@ function _finishTournament(roomCode: string): void {
 
   if (room.roundTimer) { clearTimeout(room.roundTimer); room.roundTimer = null }
 
-  const prevScores = new Map(Array.from(room.players.values()).map((p) => [p.id, p.score]))
-  room.leaderboard = buildLeaderboard(room.players, prevScores)
+  const captured = prevRoundScores.get(roomCode) ?? new Map<string, number>()
+  room.leaderboard = buildLeaderboard(room.players, captured)
   room.status = 'finished'
 
   io.to(roomCode).emit('tournament_finished', { leaderboard: room.leaderboard })
@@ -309,6 +315,7 @@ function _finishTournament(roomCode: string): void {
   setTimeout(() => {
     RM.deleteRoom(roomCode)
     activeRoomMap.delete(roomCode)
+    prevRoundScores.delete(roomCode)
   }, 5 * 60 * 1000)
 }
 
