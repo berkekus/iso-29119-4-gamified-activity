@@ -4,6 +4,8 @@ import PixelButton from '../ui/PixelButton'
 import { useSpeedTrialStore } from '../stores/speedTrialStore'
 import type { Screen } from '../stores/gameStore'
 
+const SOCKET_URL = (import.meta.env.VITE_SOCKET_URL as string | undefined) ?? 'http://localhost:3001'
+
 interface Props {
   onNavigate: (screen: Screen) => void
   onBack: () => void
@@ -151,14 +153,28 @@ export default function SpeedTrialLobbyScreen({ onNavigate, onBack }: Props) {
 
         {error && (
           <div style={{
-            fontFamily: HAND_FONT,
-            fontSize: 15,
-            color: TC.magenta,
             border: `2px solid ${TC.magenta}`,
-            padding: '8px 12px',
+            padding: '12px 14px',
             background: `${TC.magenta}11`,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 8,
           }}>
-            {error}
+            <div style={{ fontFamily: HAND_FONT, fontSize: 15, color: TC.magenta }}>
+              {error.includes('xhr poll') || error.includes('Connection failed')
+                ? 'Cannot reach the Speed Trial server.'
+                : error}
+            </div>
+            {(error.includes('xhr poll') || error.includes('Connection failed')) && (
+              <div style={{ fontFamily: MONO_FONT, fontSize: 10, color: TC.grey }}>
+                Start the server first:
+                <br />  cd app/server &amp;&amp; npm run dev
+                <br />Expected at: {SOCKET_URL}
+              </div>
+            )}
+            <PixelButton small variant="secondary" onClick={() => { clearError(); connect() }}>
+              RETRY CONNECTION
+            </PixelButton>
           </div>
         )}
       </div>
