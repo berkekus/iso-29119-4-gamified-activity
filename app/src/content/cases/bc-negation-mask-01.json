@@ -21,9 +21,9 @@
   },
   "claim": "Which is the STRONGEST coverage level the test set below actually satisfies?",
   "charges": [
-    "The defendant function show_panel(is_admin, has_override) shows a panel when the user is NOT an admin OR has an explicit override.",
-    "The QA team submits a 3-test suite — (admin=F, override=F), (admin=F, override=T), (admin=T, override=F) — and claims the suite satisfies MC/DC.",
-    "The prosecution alleges that under short-circuit evaluation of `(!is_admin) || has_override`, the override condition is masked when is_admin is FALSE, breaking the MC/DC independence requirement for has_override."
+    "Shows a panel when NOT admin OR has an override.",
+    "A 3-test suite is submitted claiming MC/DC coverage.",
+    "The prosecution alleges has_override is masked by short-circuit evaluation when is_admin=FALSE, breaking MC/DC independence."
   ],
   "test_set": [
     { "id": "T1", "inputs": { "is_admin": false, "has_override": false }, "outcome": true  },
@@ -61,8 +61,12 @@
   "hints": [
     "Read each condition at the SOURCE level: is_admin is the literal variable, not `not is_admin`. Branch Condition coverage requires is_admin and has_override each to be observed as T and F.",
     "Tally for is_admin and has_override independently. is_admin: F in T1/T2, T in T3 ✓. has_override: F in T1/T3, T in T2 ✓. Both conditions observed T and F — BC is satisfied. Now ask: is MCDC also satisfied?",
-    "Decision: T1/T2 give true, T3 gives false → ✓. BC: each of is_admin and has_override observed T and F → ✓. MCDC for is_admin: T1↔T3 flips only is_admin and outcome flips → ✓. MCDC for has_override: T1↔T2 flips only has_override but outcome stays T (!is_admin=T saturates the OR). No valid override-pair exists. Strongest satisfied = BRANCH CONDITION."
+    "Decision ✓, BC ✓. MCDC for is_admin: T1↔T3 flips it and outcome flips ✓. MCDC for has_override: T1↔T2 flips it but outcome stays T — masked. Strongest = Branch Condition."
   ],
+  "defendant": {
+    "name": "show_panel(is_admin, has_override)",
+    "quote": "Branch Condition is met. MCDC is just paranoia."
+  },
   "seeded_faults": [
     {
       "id": "F1",

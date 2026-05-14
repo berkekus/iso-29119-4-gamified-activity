@@ -1,0 +1,64 @@
+{
+  "id": "mcdc-showdown-01",
+  "act": "MCDC",
+  "difficulty": 4,
+  "iso_clauses": ["§5.3.6"],
+  "technique": "MCDC",
+  "layer": 5,
+  "question_type": "mcdc_pair_builder",
+  "required_pick_count": 5,
+  "misconception_target": "MCDC-VS-BCC",
+  "concept_ref": "§2 Level 5d — 'MC/DC vs BCC'",
+  "estimated_time_sec": 240,
+  "scenario": {
+    "title": "BCC vs MC/DC Showdown",
+    "narrative": "We return to the Autonomous Brake trial — the same 4-condition decision that needed 16 BCC tests but blew the court's 3-log budget. Armed with MC/DC, you can win the case with just N+1 = 5 tests. Build a minimum suite that proves independent effect for all four conditions.",
+    "code": "if obstacle and spd50 and dry and no_brk:\n    trigger_brake()",
+    "conditions": [
+      { "id": "obstacle", "label": "Object detected ahead" },
+      { "id": "spd50", "label": "Vehicle moving faster than 50" },
+      { "id": "dry", "label": "Road surface is dry" },
+      { "id": "no_brk", "label": "Driver did not press the manual brake" }
+    ],
+    "decision_expression": "obstacle && spd50 && dry && no_brk"
+  },
+  "claim": "For a pure 4-input AND like this one, an MC/DC suite can be built with exactly N+1 = 5 tests. Pick the all-TRUE 'base' case plus 4 single-flip variants — each one falsifying exactly one condition — to prove independent effect for every variable.",
+  "charges": [
+    "Select EXACTLY 5 rows from the 16-row truth table that form valid independence pairs for ALL four conditions.",
+    "Strategy hint: an AND chain has a unique TRUE row (everything TRUE). Pair it with four single-flip neighbours — each of which sets exactly one variable to FALSE — to isolate each condition.",
+    "Each chosen row must be reusable: the all-TRUE row will partner FOUR different pairs."
+  ],
+  "test_set": [],
+  "coverage_table": [
+    { "id": "R1", "inputs": { "obstacle": true, "spd50": true, "dry": true, "no_brk": true }, "outcome": true, "required": true },
+    { "id": "R2", "inputs": { "obstacle": true, "spd50": true, "dry": true, "no_brk": false }, "outcome": false, "required": true },
+    { "id": "R3", "inputs": { "obstacle": true, "spd50": true, "dry": false, "no_brk": true }, "outcome": false, "required": true },
+    { "id": "R4", "inputs": { "obstacle": true, "spd50": true, "dry": false, "no_brk": false }, "outcome": false, "required": false },
+    { "id": "R5", "inputs": { "obstacle": true, "spd50": false, "dry": true, "no_brk": true }, "outcome": false, "required": true },
+    { "id": "R6", "inputs": { "obstacle": true, "spd50": false, "dry": true, "no_brk": false }, "outcome": false, "required": false },
+    { "id": "R7", "inputs": { "obstacle": true, "spd50": false, "dry": false, "no_brk": true }, "outcome": false, "required": false },
+    { "id": "R8", "inputs": { "obstacle": true, "spd50": false, "dry": false, "no_brk": false }, "outcome": false, "required": false },
+    { "id": "R9", "inputs": { "obstacle": false, "spd50": true, "dry": true, "no_brk": true }, "outcome": false, "required": true },
+    { "id": "R10", "inputs": { "obstacle": false, "spd50": true, "dry": true, "no_brk": false }, "outcome": false, "required": false },
+    { "id": "R11", "inputs": { "obstacle": false, "spd50": true, "dry": false, "no_brk": true }, "outcome": false, "required": false },
+    { "id": "R12", "inputs": { "obstacle": false, "spd50": true, "dry": false, "no_brk": false }, "outcome": false, "required": false },
+    { "id": "R13", "inputs": { "obstacle": false, "spd50": false, "dry": true, "no_brk": true }, "outcome": false, "required": false },
+    { "id": "R14", "inputs": { "obstacle": false, "spd50": false, "dry": true, "no_brk": false }, "outcome": false, "required": false },
+    { "id": "R15", "inputs": { "obstacle": false, "spd50": false, "dry": false, "no_brk": true }, "outcome": false, "required": false },
+    { "id": "R16", "inputs": { "obstacle": false, "spd50": false, "dry": false, "no_brk": false }, "outcome": false, "required": false }
+  ],
+  "correct_answer_explanation": "Verdict: brakes proven faulty with 5 logs out of 16. Here is how the suite interlocks around the all-TRUE row R1:\n\n• **Obstacle independence: R1 ↔ R9** — only obstacle flips (T→F); spd50, dry, no_brk all stay TRUE; outcome flips T→F.\n• **Speed independence: R1 ↔ R5** — only spd50 flips (T→F); the others stay TRUE; outcome flips T→F.\n• **Dry independence: R1 ↔ R3** — only dry flips (T→F); the others stay TRUE; outcome flips T→F.\n• **No-Override independence: R1 ↔ R2** — only no_brk flips (T→F); the others stay TRUE; outcome flips T→F.\n\nR1 partners all four pairs — that single reuse is what brings the count from 2^4 = 16 BCC tests down to N+1 = 5 MC/DC tests, a 69% reduction with the same fault-detection guarantees. This is why DO-178C aviation software and ISO 26262 automotive safety mandate MC/DC.",
+  "wrong_answer_explanation": "Those 5 rows don't form valid MC/DC pairs for all four variables. Strategy: start from R1 (everything TRUE → outcome TRUE). Then pick the four rows that flip EXACTLY ONE variable to FALSE (R2, R3, R5, R9). Each pairs with R1 to prove that variable's independent effect.",
+  "hints": [
+    "Strategy: this is a pure AND chain, so the only TRUE outcome is the all-TRUE row. That row (R1) becomes the shared partner for every condition's independence pair.",
+    "From R1, find the FOUR rows that flip exactly one variable to FALSE: R9 flips only obstacle, R5 flips only spd50, R3 flips only dry, R2 flips only no_brk. Each pair with R1 isolates one variable.",
+    "Worked solution: pick R1, R2, R3, R5, R9. Pairs: obstacle via R1↔R9, speed via R1↔R5, dry via R1↔R3, no_brk via R1↔R2. R1 is reused four times — N+1 in action."
+  ],
+  "seeded_faults": [],
+  "misconceptions": [
+    {
+      "id": "MCDC-VS-BCC",
+      "explanation_md": "**MC/DC vs BCC** — both are strong combination-coverage criteria, but they scale very differently. BCC requires every cell of the 2^N truth table (16 tests for N=4, 1,024 for N=10). MC/DC requires only N+1 to 2N tests (5 for N=4, 11–20 for N=10) while still guaranteeing that every condition is shown to independently affect the decision. That is why MC/DC is the **gold standard** for safety-critical software in DO-178C (avionics) and ISO 26262 (automotive)."
+    }
+  ]
+}

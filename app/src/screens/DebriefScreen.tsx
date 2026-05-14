@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { TC, PIXEL_FONT, HAND_FONT, MONO_FONT } from '../ui/tokens'
 import PixelButton from '../ui/PixelButton'
 import CoverageMeter from '../ui/CoverageMeter'
@@ -46,15 +46,16 @@ export default function DebriefScreen({ onNavigate, onBack }: Props) {
   const {
     mcdc, caseFile, completedCases, loadCaseById, markCaseCompleted, resetMcdc,
     newlyUnlockedAchievement, clearNewlyUnlockedAchievement,
+    lastDialogueMatchIndex,
+    lastBudgetStrategyIncludedHighRisk,
+    lastVaultEvaluation,
   } = useGameStore()
   const newAchievement = newlyUnlockedAchievement
     ? achievementById(newlyUnlockedAchievement)
     : null
   const verdictResult = mcdc.verdictResult
   const faultResults = mcdc.faultResults ?? []
-  const triggeredMisconceptions =
-    (useGameStore.getState() as { triggeredMisconceptions?: unknown[] }).triggeredMisconceptions ??
-    []
+  const triggeredMisconceptions = mcdc.misconceptions.filter(m => m.triggered)
   const seededFaultMap: Record<string, string> = {}
   const misconceptionMap: Record<string, string> = {}
   if (caseFile) {
@@ -73,12 +74,42 @@ export default function DebriefScreen({ onNavigate, onBack }: Props) {
     if (isGuilty && caseFile?.id) markCaseCompleted(caseFile.id)
   }, [isGuilty, caseFile?.id, markCaseCompleted])
 
+  const [savedFlash, setSavedFlash] = useState(false)
+  useEffect(() => {
+    if (!isGuilty) return
+    setSavedFlash(true)
+    const t = setTimeout(() => setSavedFlash(false), 3000)
+    return () => clearTimeout(t)
+  }, [isGuilty])
+
   const techniqueLabel =
     (caseFile?.technique && TECHNIQUE_LABEL[caseFile.technique]) ??
     (caseFile?.act ? caseFile.act.replace(/_/g, ' ') : 'CASE')
 
   const nextId = nextCaseId(caseFile?.id)
   const isLastCase = caseFile?.id === CASE_ORDER[CASE_ORDER.length - 1]
+
+  const dialogueDebrief =
+    isGuilty &&
+    caseFile &&
+    lastDialogueMatchIndex !== null &&
+    caseFile.dialogue_correct_explanations &&
+    lastDialogueMatchIndex < caseFile.dialogue_correct_explanations.length
+      ? caseFile.dialogue_correct_explanations[lastDialogueMatchIndex]
+      : null
+
+  const budgetDebriefBlock = caseFile?.budget_debrief
+  const budgetDebrief =
+    isGuilty &&
+    budgetDebriefBlock &&
+    lastBudgetStrategyIncludedHighRisk !== null
+      ? `${budgetDebriefBlock.fraction_paragraph}\n\n${
+          lastBudgetStrategyIncludedHighRisk
+            ? budgetDebriefBlock.when_high_risk_included
+            : budgetDebriefBlock.when_high_risk_missed
+        }\n\n${budgetDebriefBlock.mc_dc_bridge}`
+      : null
+
   // NEXT CASE only advances on a passing verdict; otherwise it is disabled.
   const canAdvance = isGuilty
 
@@ -112,10 +143,23 @@ export default function DebriefScreen({ onNavigate, onBack }: Props) {
     <div style={{ minHeight: '100vh', position: 'relative', zIndex: 1, padding: 'clamp(16px, 3vw, 30px) clamp(16px, 4vw, 40px)' }}>
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
-        <PixelButton small variant="secondary" onClick={onBack}>← TRIAL</PixelButton>
-        <div style={{ display: 'flex', gap: 8 }}>
+        <div style={{ display: 'flex', gap: 6 }}>
+          <PixelButton small variant="secondary" onClick={onBack}>← TRIAL</PixelButton>
+          <PixelButton small variant="secondary" onClick={() => onNavigate('campaign')}>CAMPAIGN</PixelButton>
+          <PixelButton small variant="secondary" onClick={() => onNavigate('menu')}>⌂ MENU</PixelButton>
+        </div>
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
           <span style={{ fontFamily: PIXEL_FONT, fontSize: 8, color: TC.magenta, padding: '4px 10px', border: `2px solid ${TC.magenta}` }}>{techniqueLabel}</span>
           <span style={{ fontFamily: PIXEL_FONT, fontSize: 8, color: TC.grey, padding: '4px 10px', border: `2px solid ${TC.grid}` }}>PHASE 5: DEBRIEF</span>
+          {savedFlash && (
+            <span style={{
+              fontFamily: PIXEL_FONT, fontSize: 8, color: TC.green,
+              border: `1px solid ${TC.green}`, padding: '4px 8px',
+              animation: 'fadeIn 0.2s steps(2)',
+            }}>
+              PROGRESS SAVED ✓
+            </span>
+          )}
         </div>
       </div>
 
@@ -159,6 +203,58 @@ export default function DebriefScreen({ onNavigate, onBack }: Props) {
                 padding: '8px 12px', marginBottom: 16,
               }}>
                 🏆 ACHIEVEMENT UNLOCKED — {newAchievement.title.toUpperCase()}
+              </div>
+            )}
+
+            {dialogueDebrief && (
+              <div style={{
+                background: `${TC.green}08`,
+                border: `2px solid ${TC.green}`,
+                padding: 16,
+                marginBottom: 16,
+              }}>
+                <div style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: TC.green, marginBottom: 10 }}>
+                  OBJECTION SUSTAINED — CASE RECAP
+                </div>
+                <div style={{ fontFamily: HAND_FONT, fontSize: 18, color: TC.ink, lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>
+                  {dialogueDebrief}
+                </div>
+              </div>
+            )}
+
+            {budgetDebrief && (
+              <div style={{
+                background: `${TC.orange}08`,
+                border: `2px solid ${TC.orange}`,
+                padding: 16,
+                marginBottom: 16,
+              }}>
+                <div style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: TC.orange, marginBottom: 10 }}>
+                  SUBPOENA STRATEGY — COVERAGE DEBRIEF
+                </div>
+                <div style={{ fontFamily: HAND_FONT, fontSize: 18, color: TC.ink, lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>
+                  {budgetDebrief}
+                </div>
+              </div>
+            )}
+
+            {lastVaultEvaluation && (
+              <div style={{
+                background: lastVaultEvaluation.all_ok ? `${TC.green}08` : (lastVaultEvaluation.m_ok || lastVaultEvaluation.k_ok || lastVaultEvaluation.t_ok) ? `${TC.orange}08` : `${TC.magenta}08`,
+                border: `2px solid ${lastVaultEvaluation.all_ok ? TC.green : (lastVaultEvaluation.m_ok || lastVaultEvaluation.k_ok || lastVaultEvaluation.t_ok) ? TC.orange : TC.magenta}`,
+                padding: 16,
+                marginBottom: 16,
+              }}>
+                <div style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: lastVaultEvaluation.all_ok ? TC.green : (lastVaultEvaluation.m_ok || lastVaultEvaluation.k_ok || lastVaultEvaluation.t_ok) ? TC.orange : TC.magenta, marginBottom: 10 }}>
+                  INDEPENDENT EFFECT ANALYSIS
+                </div>
+                <div style={{ fontFamily: HAND_FONT, fontSize: 18, color: TC.ink, lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>
+                  {lastVaultEvaluation.all_ok 
+                    ? "You selected 4 rows that form valid independence pairs for M, K, and T.\n\nThis shows how a carefully interlocked N+1 suite can achieve MC/DC with fewer tests than full 2^N BCC. One test can participate in multiple independence pairs."
+                    : (lastVaultEvaluation.m_ok || lastVaultEvaluation.k_ok || lastVaultEvaluation.t_ok)
+                    ? `Your 4 tests demonstrated independence for some inputs, but not all three.\n\nPassed: ${['M', 'K', 'T'].filter(c => lastVaultEvaluation?.[`${c.toLowerCase()}_ok` as keyof typeof lastVaultEvaluation]).join(', ')}.\nFailed: ${['M', 'K', 'T'].filter(c => !lastVaultEvaluation?.[`${c.toLowerCase()}_ok` as keyof typeof lastVaultEvaluation]).join(', ')}.\n\nEncourage the player to think about where they always changed more than one input at once, or where OUT did not change. Try to find a row pair where only that missing condition flips.`
+                    : "With your chosen 4 tests, none of the three inputs was shown to independently affect the decision.\n\nThis is equivalent to the “single flip” trap from the earlier tutorial: you changed too much at once or picked rows where the decision never flipped. You should look for pairs where only one input changes and the outcome flips."}
+                </div>
               </div>
             )}
 
@@ -215,9 +311,16 @@ export default function DebriefScreen({ onNavigate, onBack }: Props) {
           <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
             <PixelButton variant="danger" onClick={handleRetry}>RETRY CASE</PixelButton>
             <PixelButton variant="secondary" onClick={() => onNavigate('law-library')}>OPEN ANNEX C</PixelButton>
-            <PixelButton variant="primary" onClick={handleNext} disabled={!canAdvance}>
-              {isLastCase ? 'CAMPAIGN MAP →' : 'NEXT CASE →'}
-            </PixelButton>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
+              <PixelButton variant="primary" onClick={handleNext} disabled={!canAdvance}>
+                {isLastCase ? 'CAMPAIGN MAP →' : 'NEXT CASE →'}
+              </PixelButton>
+              {!canAdvance && (
+                <div style={{ fontFamily: PIXEL_FONT, fontSize: 7, color: TC.grey }}>
+                  Retry this case to unlock the next one
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
@@ -236,7 +339,7 @@ export default function DebriefScreen({ onNavigate, onBack }: Props) {
           {triggeredMisconceptions.length > 0 && (
             <div style={{ padding: 14, border: `3px solid ${TC.magenta}`, background: `${TC.magenta}08`, boxShadow: `4px 4px 0 ${TC.ink}` }}>
               <div style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: TC.magenta, marginBottom: 10 }}>MISCONCEPTION LOG</div>
-              {mcdc.misconceptions.filter(m => m.triggered).map(m => (
+              {triggeredMisconceptions.map(m => (
                 <div key={m.id}>
                   <div style={{ fontFamily: PIXEL_FONT, fontSize: 8, color: TC.ink, marginBottom: 6 }}>{m.id}</div>
                   <div style={{ fontFamily: HAND_FONT, fontSize: 16, color: TC.ink, lineHeight: 1.55 }}>

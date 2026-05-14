@@ -107,6 +107,7 @@ const steps: Step[] = [
 export default function HowToPlayScreen({ onBack }: Props) {
   const [current, setCurrent] = useState(0)
   const step = steps[current]
+  if (!step) return null
   const isFirst = current === 0
   const isLast = current === steps.length - 1
 
@@ -122,6 +123,7 @@ export default function HowToPlayScreen({ onBack }: Props) {
             <button
               key={i}
               onClick={() => setCurrent(i)}
+              aria-label={`Phase ${i + 1}: ${s.title}`}
               style={{
                 width: i === current ? 28 : 12,
                 height: 12,

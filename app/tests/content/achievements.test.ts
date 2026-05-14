@@ -25,14 +25,15 @@ describe('Achievements content', () => {
       'bc-negation-mask-01',
     ])
     expect(byId['ach-act-3']?.required_cases).toEqual([
-      'bcc-three-and-01',
-      'bcc-cost-intuition-01',
+      'bcc-intro-01',
+      'bcc-vs-bc-01',
+      'bcc-explosion-01',
     ])
     expect(byId['ach-act-4']?.required_cases).toEqual([
       'mcdc-tutorial-01',
-      'mcdc-altitude-disengage-01',
       'mcdc-trap-isolation-01',
       'mcdc-vault-boss-01',
+      'mcdc-showdown-01',
     ])
   })
 
@@ -53,7 +54,7 @@ describe('Achievements content', () => {
     expect(r).toEqual(['ach-act-1'])
   })
 
-  test('unlockedAchievementIds: completing all 12 cases unlocks all 4 achievements', () => {
+  test('unlockedAchievementIds: completing all 13 cases unlocks all 4 achievements', () => {
     const allCases = ACHIEVEMENTS.flatMap((a) => a.required_cases)
     const r = unlockedAchievementIds(allCases)
     expect(r.sort()).toEqual(['ach-act-1', 'ach-act-2', 'ach-act-3', 'ach-act-4'])

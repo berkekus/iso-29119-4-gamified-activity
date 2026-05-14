@@ -2,7 +2,7 @@ import { describe, test, expect, beforeEach } from 'vitest'
 import { useGameStore } from '../../src/stores/gameStore'
 
 const ACT1 = ['stmt-tutorial-01', 'stmt-hidden-branch-01', 'branch-loop-trap-01']
-const ACT3 = ['bcc-three-and-01', 'bcc-cost-intuition-01']
+const ACT3 = ['bcc-intro-01', 'bcc-vs-bc-01', 'bcc-explosion-01']
 
 beforeEach(() => {
   localStorage.clear()
@@ -37,13 +37,13 @@ describe('Law Cards: collection on case win', () => {
     expect(useGameStore.getState().collectedLawCards).toEqual(['law-statement'])
   })
 
-  test('completing all 12 cases collects all 6 law cards', () => {
+  test('completing all 13 cases collects all 6 law cards', () => {
     const allCases = [
       'stmt-tutorial-01', 'stmt-hidden-branch-01', 'branch-loop-trap-01',
       'decision-and-trap-01', 'bc-or-three-cond-01', 'bc-negation-mask-01',
-      'bcc-three-and-01', 'bcc-cost-intuition-01',
-      'mcdc-tutorial-01', 'mcdc-altitude-disengage-01',
-      'mcdc-trap-isolation-01', 'mcdc-vault-boss-01',
+      'bcc-intro-01', 'bcc-vs-bc-01', 'bcc-explosion-01',
+      'mcdc-tutorial-01', 'mcdc-trap-isolation-01',
+      'mcdc-vault-boss-01', 'mcdc-showdown-01',
     ]
     for (const id of allCases) useGameStore.getState().markCaseCompleted(id)
     expect(useGameStore.getState().collectedLawCards.sort()).toEqual([
@@ -75,10 +75,12 @@ describe('Achievements: unlock on full ACT completion', () => {
     useGameStore.getState().clearNewlyUnlockedAchievement()
     expect(useGameStore.getState().newlyUnlockedAchievement).toBeNull()
 
-    // Now finish ACT III in two markCaseCompleted calls — last one fires.
+    // Now finish ACT III in three markCaseCompleted calls — last one fires.
     useGameStore.getState().markCaseCompleted(ACT3[0]!)
     expect(useGameStore.getState().newlyUnlockedAchievement).toBeNull()
     useGameStore.getState().markCaseCompleted(ACT3[1]!)
+    expect(useGameStore.getState().newlyUnlockedAchievement).toBeNull()
+    useGameStore.getState().markCaseCompleted(ACT3[2]!)
     expect(useGameStore.getState().newlyUnlockedAchievement).toBe('ach-act-3')
   })
 

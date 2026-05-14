@@ -1,0 +1,62 @@
+{
+  "id": "coverage-mix-03",
+  "act": "COVERAGE_TRIAL",
+  "difficulty": 3,
+  "iso_clauses": ["§5.3.6"],
+  "technique": "MIXED",
+  "layer": 3,
+  "question_type": "dialogue_objection",
+  "scenario": {
+    "title": "The Life-Support Controller",
+    "narrative": "A spacecraft life-support module failed when the backup tank was engaged. The logic is: `(Primary_Oxygen OR Backup_Tank) AND Circulation_Fan`. The defense claims their compact 4-test suite is a mathematically perfect N+1 MC/DC suite.",
+    "code": "def life_support(primary, backup, fan):\n    if (primary or backup) and fan:\n        return \"ONLINE\"\n    return \"SHUTDOWN\"",
+    "conditions": [
+      { "id": "P", "label": "Primary_Oxygen" },
+      { "id": "B", "label": "Backup_Tank" },
+      { "id": "F", "label": "Circulation_Fan" }
+    ],
+    "decision_expression": "(P || B) && F"
+  },
+  "test_set": [
+    { "id": "T1", "inputs": { "P": true, "B": false, "F": true }, "outcome": true },
+    { "id": "T2", "inputs": { "P": false, "B": true, "F": false }, "outcome": false },
+    { "id": "T3", "inputs": { "P": false, "B": false, "F": true }, "outcome": false },
+    { "id": "T4", "inputs": { "P": false, "B": false, "F": false }, "outcome": false }
+  ],
+  "defendant_subtitle": "Chief Reliability Engineer",
+  "claim": "We have 3 conditions and we executed exactly 4 tests. That's the textbook N+1 minimum suite for MC/DC! Our coverage is mathematically guaranteed.",
+  "charges": [
+    "The defense insists their suite is an N+1 MC/DC suite simply because it has 4 tests.",
+    "As Prosecutor, analyze their suite. Did they actually isolate all three conditions?"
+  ],
+  "fragments": [
+    "You achieved full MC/DC coverage,",
+    "You achieved MC/DC for Primary_Oxygen,",
+    "but you failed to isolate the other conditions.",
+    "but you failed to achieve Branch Condition coverage.",
+    "For instance, Backup_Tank's effect is masked because",
+    "Primary_Oxygen was ON in those tests.",
+    "Circulation_Fan was OFF in those tests.",
+    "Therefore, your suite is dangerously incomplete."
+  ],
+  "dialogue_valid_sequences": [
+    [
+      "You achieved MC/DC for Primary_Oxygen,",
+      "but you failed to isolate the other conditions.",
+      "For instance, Backup_Tank's effect is masked because",
+      "Circulation_Fan was OFF in those tests.",
+      "Therefore, your suite is dangerously incomplete."
+    ]
+  ],
+  "dialogue_correct_explanations": [
+    "Exactly. Just having N+1 tests doesn't magically guarantee MC/DC. They proved Primary_Oxygen works (T1 vs T3). But they tested Backup_Tank while the Fan was OFF (T2) — which forces a SHUTDOWN anyway, completely masking whether the Backup Tank actually works."
+  ],
+  "wrong_answer_explanation": "That objection doesn't identify the specific flaw. Look closely at how they tested the Backup Tank (T2). What other condition was also changed or turned off that ruined the independence?",
+  "hints": [
+    "Check the tests. T1 vs T3 proves Primary_Oxygen independently affects the outcome.",
+    "Look at T2, where Backup_Tank is True. Why doesn't it pair with T3? Because Circulation_Fan is False in T2, masking the effect.",
+    "A 4-test suite is only MC/DC if the rows form interlocking pairs. Here, the pairs are broken."
+  ],
+  "seeded_faults": [],
+  "misconceptions": []
+}

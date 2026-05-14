@@ -2,85 +2,136 @@
   "id": "mcdc-vault-boss-01",
   "act": "MCDC",
   "difficulty": 3,
-  "iso_clauses": ["§5.3.6", "§5.3.6.2", "Annex C.2.3.6", "§3.36"],
-  "technique": "MCDC",
-  "layer": 4,
-  "question_type": "test_designer",
-  "misconception_target": "MCDC-INDEP-AS-ISOLATION",
-  "concept_ref": "§4 Level 4 — 'Four-conditional vault alarm. BCC requires 16 tests; MCDC requires 5.'",
-  "estimated_time_sec": 360,
-  "scenario": {
-    "title": "FINAL BOSS — Vault Authorization",
-    "narrative": "Access to a high-security vault requires a valid badge AND a non-expired PIN AND the request to fall within the time window AND a positive biometric scan. BCC would need 2^4 = 16 tests; certify the vault with the MCDC minimum of 5. Pick exactly 5 rows from the 16-row truth table that satisfy MCDC for ALL FOUR conditions.",
-    "code": "if (badge_valid and not pin_expired and time_window_ok and biometric_ok):\n    grant_access()",
-    "conditions": [
-      { "id": "badge_valid", "label": "badge is valid" },
-      { "id": "pin_expired", "label": "PIN has expired" },
-      { "id": "time_window_ok", "label": "request is within the allowed time window" },
-      { "id": "biometric_ok", "label": "biometric scan succeeded" }
-    ],
-    "decision_expression": "badge_valid && !pin_expired && time_window_ok && biometric_ok"
-  },
-  "claim": "Choose exactly 5 of the 16 truth-table rows so that each of badge_valid, pin_expired, time_window_ok, biometric_ok has a valid MCDC independence pair.",
-  "charges": [
-    "Vault access is granted only when the badge is valid AND the PIN is not expired AND the request falls within the time window AND the biometric scan is positive.",
-    "The court certifies the vault under MC/DC coverage of the four-condition predicate `badge_valid && !pin_expired && time_window_ok && biometric_ok`.",
-    "The prosecution alleges that any test selection other than the canonical 5-row N+1 pattern (one all-true baseline plus one row per condition flipped to false) leaves at least one condition without a valid independence pair."
+  "iso_clauses": [
+    "§5.3.6"
   ],
-  "test_set": [
-    { "id": "R1",  "inputs": { "badge_valid": true,  "pin_expired": false, "time_window_ok": true,  "biometric_ok": true  }, "outcome": true  },
-    { "id": "R2",  "inputs": { "badge_valid": false, "pin_expired": false, "time_window_ok": true,  "biometric_ok": true  }, "outcome": false },
-    { "id": "R3",  "inputs": { "badge_valid": true,  "pin_expired": true,  "time_window_ok": true,  "biometric_ok": true  }, "outcome": false },
-    { "id": "R4",  "inputs": { "badge_valid": true,  "pin_expired": false, "time_window_ok": false, "biometric_ok": true  }, "outcome": false },
-    { "id": "R5",  "inputs": { "badge_valid": true,  "pin_expired": false, "time_window_ok": true,  "biometric_ok": false }, "outcome": false }
+  "technique": "MCDC",
+  "layer": 5,
+  "question_type": "mcdc_pair_builder",
+  "required_pick_count": 4,
+  "misconception_target": "MCDC-N-PLUS-ONE",
+  "concept_ref": "§2 Level 5c — 'N+1 Minimum Suite'",
+  "estimated_time_sec": 180,
+  "scenario": {
+    "title": "The Casino Vault",
+    "narrative": "A casino vault was robbed. The vault decision is (Manager_Card OR Master_Key) AND Time_Safe. With 3 conditions, full BCC would demand 8 tests — but a well-chosen MC/DC suite needs only N+1 = 4. Build the minimum interlocked suite that proves independence for all three conditions.",
+    "code": "if (Manager_Card or Master_Key) and Time_Safe:\n    open_vault()",
+    "conditions": [
+      {
+        "id": "M",
+        "label": "Manager_Card"
+      },
+      {
+        "id": "K",
+        "label": "Master_Key"
+      },
+      {
+        "id": "T",
+        "label": "Time_Safe"
+      }
+    ],
+    "decision_expression": "(M || K) && T"
+  },
+  "defendant_subtitle": "Vault Test Lead",
+  "claim": "We’re not amateurs, Prosecutor. We didn’t brute-force all eight scenarios we carefully chose four tests that hit every important combination of card access and timing. That’s more than enough to prove the vault logic is solid.",
+  "charges": [
+    "The defense claims four tests are enough to prove the vault logic was thoroughly checked.",
+    "As Prosecutor, you must decide whether each of the three inputs can really be shown to change the open/closed decision on its own."
   ],
   "coverage_table": [
-    { "id": "R1",  "inputs": { "badge_valid": true,  "pin_expired": false, "time_window_ok": true,  "biometric_ok": true  }, "outcome": true,  "required": true  },
-    { "id": "R2",  "inputs": { "badge_valid": false, "pin_expired": false, "time_window_ok": true,  "biometric_ok": true  }, "outcome": false, "required": true  },
-    { "id": "R3",  "inputs": { "badge_valid": true,  "pin_expired": true,  "time_window_ok": true,  "biometric_ok": true  }, "outcome": false, "required": true  },
-    { "id": "R4",  "inputs": { "badge_valid": true,  "pin_expired": false, "time_window_ok": false, "biometric_ok": true  }, "outcome": false, "required": true  },
-    { "id": "R5",  "inputs": { "badge_valid": true,  "pin_expired": false, "time_window_ok": true,  "biometric_ok": false }, "outcome": false, "required": true  },
-    { "id": "R6",  "inputs": { "badge_valid": false, "pin_expired": true,  "time_window_ok": true,  "biometric_ok": true  }, "outcome": false, "required": false },
-    { "id": "R7",  "inputs": { "badge_valid": false, "pin_expired": false, "time_window_ok": false, "biometric_ok": true  }, "outcome": false, "required": false },
-    { "id": "R8",  "inputs": { "badge_valid": false, "pin_expired": false, "time_window_ok": true,  "biometric_ok": false }, "outcome": false, "required": false },
-    { "id": "R9",  "inputs": { "badge_valid": true,  "pin_expired": true,  "time_window_ok": false, "biometric_ok": true  }, "outcome": false, "required": false },
-    { "id": "R10", "inputs": { "badge_valid": true,  "pin_expired": true,  "time_window_ok": true,  "biometric_ok": false }, "outcome": false, "required": false },
-    { "id": "R11", "inputs": { "badge_valid": true,  "pin_expired": false, "time_window_ok": false, "biometric_ok": false }, "outcome": false, "required": false },
-    { "id": "R12", "inputs": { "badge_valid": false, "pin_expired": true,  "time_window_ok": false, "biometric_ok": true  }, "outcome": false, "required": false },
-    { "id": "R13", "inputs": { "badge_valid": false, "pin_expired": true,  "time_window_ok": true,  "biometric_ok": false }, "outcome": false, "required": false },
-    { "id": "R14", "inputs": { "badge_valid": false, "pin_expired": false, "time_window_ok": false, "biometric_ok": false }, "outcome": false, "required": false },
-    { "id": "R15", "inputs": { "badge_valid": true,  "pin_expired": true,  "time_window_ok": false, "biometric_ok": false }, "outcome": false, "required": false },
-    { "id": "R16", "inputs": { "badge_valid": false, "pin_expired": true,  "time_window_ok": false, "biometric_ok": false }, "outcome": false, "required": false }
-  ],
-  "required_pick_count": 5,
-  "options": [
-    { "id": "opt-r1",  "label": "R1  (badge=T, pin_expired=F, window=T, bio=T → grant)", "is_correct": true,  "explanation": "Baseline. The shared 'all-true-effective' row that pairs with each of R2-R5 to form an independence pair." },
-    { "id": "opt-r2",  "label": "R2  (badge=F, pin_expired=F, window=T, bio=T → deny)",  "is_correct": true,  "explanation": "Pairs with R1: only badge_valid flips, outcome flips. Independence pair for badge_valid." },
-    { "id": "opt-r3",  "label": "R3  (badge=T, pin_expired=T, window=T, bio=T → deny)",  "is_correct": true,  "explanation": "Pairs with R1: only pin_expired flips, outcome flips. Independence pair for pin_expired." },
-    { "id": "opt-r4",  "label": "R4  (badge=T, pin_expired=F, window=F, bio=T → deny)",  "is_correct": true,  "explanation": "Pairs with R1: only time_window_ok flips, outcome flips. Independence pair for time_window_ok." },
-    { "id": "opt-r5",  "label": "R5  (badge=T, pin_expired=F, window=T, bio=F → deny)",  "is_correct": true,  "explanation": "Pairs with R1: only biometric_ok flips, outcome flips. Independence pair for biometric_ok." },
-    { "id": "opt-r6",  "label": "R6  (badge=F, pin_expired=T, window=T, bio=T → deny)",  "is_correct": false, "explanation": "Trap. R6 differs from R1 in TWO conditions (badge_valid and pin_expired), so it cannot be an independence pair for either alone." },
-    { "id": "opt-r12", "label": "R12 (badge=F, pin_expired=T, window=F, bio=T → deny)",  "is_correct": false, "explanation": "Trap. Three conditions differ from R1 — not a valid pair for any single condition." },
-    { "id": "opt-r16", "label": "R16 (badge=F, pin_expired=T, window=F, bio=F → deny)",  "is_correct": false, "explanation": "Trap. All four conditions differ from R1. Useful for BCC, useless for MCDC." }
-  ],
-  "correct_answer_explanation": "Pick {R1, R2, R3, R4, R5}. Each of R2-R5 differs from R1 in exactly one condition AND the outcome flips — that's the canonical N+1 = 5 MCDC pattern.",
-  "wrong_answer_explanation": "MCDC needs, for each condition, a pair of tests where ONLY that condition flips and the outcome flips. With AND-chains, the outcome only flips between the all-effective-true baseline and a one-condition-flipped row. Anchor on R1 and add R2..R5.",
-  "hints": [
-    "MCDC needs, for each of badge_valid, pin_expired, time_window_ok, biometric_ok, two tests where ONLY that condition flips and the overall outcome flips. With AND-chains, the outcome flips only between the all-effective-true baseline and one-condition-flipped.",
-    "Anchor on R1=(badge=T, pin_expired=F, window=T, bio=T) — the only TRUE outcome. The independence partner for each condition is the row where that single condition is flipped: R2 for badge_valid, R3 for pin_expired, R4 for time_window_ok, R5 for biometric_ok.",
-    "Pick {R1, R2, R3, R4, R5}. Each pair shares R1 as the baseline, flips exactly one condition, and flips the outcome from grant → deny. That's MCDC in 5 tests instead of BCC's 16. This is the canonical N+1 pattern and the cost-saving that DO-178C exploits."
-  ],
-  "seeded_faults": [
     {
-      "id": "F1",
-      "description": "biometric_ok check is silently bypassed when the badge is valid — the bug is invisible without an MCDC pair on biometric_ok.",
-      "trigger": { "condition": "biometric_ok", "requiredDecisionFlip": true }
+      "id": "R1",
+      "inputs": {
+        "M": true,
+        "K": true,
+        "T": true
+      },
+      "outcome": true,
+      "required": false
+    },
+    {
+      "id": "R2",
+      "inputs": {
+        "M": true,
+        "K": true,
+        "T": false
+      },
+      "outcome": false,
+      "required": false
+    },
+    {
+      "id": "R3",
+      "inputs": {
+        "M": true,
+        "K": false,
+        "T": true
+      },
+      "outcome": true,
+      "required": false
+    },
+    {
+      "id": "R4",
+      "inputs": {
+        "M": true,
+        "K": false,
+        "T": false
+      },
+      "outcome": false,
+      "required": false
+    },
+    {
+      "id": "R5",
+      "inputs": {
+        "M": false,
+        "K": true,
+        "T": true
+      },
+      "outcome": true,
+      "required": false
+    },
+    {
+      "id": "R6",
+      "inputs": {
+        "M": false,
+        "K": true,
+        "T": false
+      },
+      "outcome": false,
+      "required": false
+    },
+    {
+      "id": "R7",
+      "inputs": {
+        "M": false,
+        "K": false,
+        "T": true
+      },
+      "outcome": false,
+      "required": false
+    },
+    {
+      "id": "R8",
+      "inputs": {
+        "M": false,
+        "K": false,
+        "T": false
+      },
+      "outcome": false,
+      "required": false
     }
   ],
+  "correct_answer_explanation": "Masterful — 4 tests, full MC/DC. You selected 4 rows that form valid independence pairs for M, K, and T. This shows how a carefully interlocked N+1 suite can achieve MC/DC with fewer tests than full 2^N BCC. One test can participate in multiple independence pairs.",
+  "wrong_answer_explanation": "With your chosen 4 tests, you did not achieve true MC/DC. You may have shown independence for some inputs, but not all three. Encourage the player to think about where they always changed more than one input at once, or where OUT did not change. Try to find a row pair where only the missing condition flips.",
+  "hints": [
+    "Strategy: pick a 'shared baseline' row that can partner two different independence pairs. R7 (M=F, K=F, T=T → outcome F) is a good base — it can pair with anything that flips just M, just K, or eventually T.",
+    "From R7, flip only M to land on R3 (T,F,T → T) — that proves M's independent effect. Flip only K from R7 to land on R5 (F,T,T → T) — that proves K's independent effect. You now need ONE more pair to cover T.",
+    "Worked solution: pick R3, R4, R5, R7. The pairs are: M via R3↔R7, K via R5↔R7, T via R3↔R4. R3 and R7 are each reused in two pairs — that is the N+1 trick."
+  ],
+  "seeded_faults": [],
   "misconceptions": [
     {
-      "id": "MCDC-INDEP-AS-ISOLATION",
-      "explanation_md": "The 5-test MCDC solution is the canonical N+1 pattern: one shared baseline plus one row per condition where that condition alone flips. The temptation is to add 'isolation' rows like R6 — but these flip TWO conditions, which is not a valid independence pair for either. MCDC's power is precisely this discipline: each pair must change exactly one condition while the others stay fixed."
+      "id": "MCDC-N-PLUS-ONE",
+      "explanation_md": "MC/DC does NOT require two unique tests per condition. A well-designed suite REUSES tests across multiple independence pairs, which is why a decision with N conditions can usually be covered with **N+1 tests** (and at most 2N). For 3 conditions, 4 tests can suffice; for 4 conditions, 5 tests; and so on. This linear scaling is what makes MC/DC the practical sweet spot between weak Decision Coverage and infeasible BCC."
     }
   ]
 }

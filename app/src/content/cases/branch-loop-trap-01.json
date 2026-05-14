@@ -11,7 +11,7 @@
   "estimated_time_sec": 150,
   "scenario": {
     "title": "The Empty Loop",
-    "narrative": "A batch processor walks through a list of items. A `for` loop has a TRUE edge (items present, body runs) and a FALSE edge (empty list, body skipped). Pick the candidate test set that achieves 100% BRANCH coverage of the loop guard.",
+    "narrative": "A batch processor walks through a list of items. Pick the test set that achieves 100% Branch coverage of the loop guard.",
     "code": "def process_all(items):\n    count = 0\n    for item in items:\n        handle(item)\n        count += 1\n    return count",
     "conditions": [
       { "id": "items", "label": "input list is non-empty (loop body executes at least once)" }
@@ -20,9 +20,8 @@
   },
   "claim": "Which candidate test set achieves 100% BRANCH coverage of the loop guard in process_all()?",
   "charges": [
-    "The batch processor process_all(items) iterates over a list and counts handled items inside the loop body.",
-    "The defendant test suite exercises only the case where items is non-empty, so the loop body always runs.",
-    "The prosecution alleges the FALSE edge of the for-loop guard (empty list, body skipped) is never taken, leaving an empty-input fault undetectable."
+    "Iterates a list and counts handled items in the loop body.",
+    "The prosecution alleges the FALSE edge of the loop guard (empty list) is never taken."
   ],
   "test_set": [
     { "id": "T1", "inputs": { "items": [1, 2, 3] }, "outcome": 3 }
@@ -58,8 +57,12 @@
   "hints": [
     "A `for` (or `while`) loop has a TRUE edge (enter the body) and a FALSE edge (skip the body / exit immediately). Branch coverage demands tests for both edges.",
     "T1=[1,2,3] enters the loop body — so the TRUE edge is covered. Which test set ALSO covers the FALSE edge?",
-    "Set C is the only candidate that includes both items=[non-empty] (TRUE edge) AND items=[] (FALSE edge). That's 100% Branch coverage."
+    "Set C has items=[non-empty] (TRUE edge) AND items=[] (FALSE edge) — both edges covered."
   ],
+  "defendant": {
+    "name": "process_all(items)",
+    "quote": "The list was never empty in production. Trust me."
+  },
   "seeded_faults": [
     {
       "id": "F1",
