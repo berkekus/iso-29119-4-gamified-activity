@@ -10,7 +10,7 @@ export default function GraphPaperBg() {
           <path d="M 24 0 L 0 0 0 24" fill="none" stroke={TC.grid} strokeWidth="0.8" />
         </pattern>
       </defs>
-      <rect width="100%" height="100%" fill="#ffffff" />
+      <rect width="100%" height="100%" fill="#f7f1df" />
       <rect width="100%" height="100%" fill="url(#grid)" />
     </svg>
   )

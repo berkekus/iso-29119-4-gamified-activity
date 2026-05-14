@@ -54,6 +54,7 @@ export type Screen =
   | 'menu'
   | 'how-to-play'
   | 'campaign'
+  | 'play'
   | 'briefing'
   | 'investigation'
   | 'evidence'

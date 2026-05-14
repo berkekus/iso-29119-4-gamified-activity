@@ -1,21 +1,18 @@
 import GraphPaperBg from './ui/GraphPaperBg'
 import { useGameStore } from './stores/gameStore'
 
-import MainMenuScreen        from './screens/MainMenuScreen'
-import CampaignMapScreen     from './screens/CampaignMapScreen'
-import BriefingScreen        from './screens/BriefingScreen'
-import InvestigationScreen   from './screens/InvestigationScreen'
-import EvidenceScreen        from './screens/EvidenceScreen'
-import TrialScreen           from './screens/TrialScreen'
-import DebriefScreen         from './screens/DebriefScreen'
-import DesignSystemScreen    from './screens/DesignSystemScreen'
-import HowToPlayScreen       from './screens/HowToPlayScreen'
-import LawLibraryScreen      from './screens/LawLibraryScreen'
-import AchievementsScreen    from './screens/AchievementsScreen'
-import SpeedTrialLobbyScreen from './screens/SpeedTrialLobbyScreen'
-import SpeedTrialHostScreen  from './screens/SpeedTrialHostScreen'
-import SpeedTrialPlayerScreen from './screens/SpeedTrialPlayerScreen'
-import SpeedTrialWinnerScreen from './screens/SpeedTrialWinnerScreen'
+import MainMenuScreen      from './screens/MainMenuScreen'
+import CampaignMapScreen   from './screens/CampaignMapScreen'
+import CasePlayScreen      from './screens/CasePlayScreen'
+import BriefingScreen      from './screens/BriefingScreen'
+import InvestigationScreen from './screens/InvestigationScreen'
+import EvidenceScreen      from './screens/EvidenceScreen'
+import TrialScreen         from './screens/TrialScreen'
+import DebriefScreen       from './screens/DebriefScreen'
+import DesignSystemScreen  from './screens/DesignSystemScreen'
+import HowToPlayScreen     from './screens/HowToPlayScreen'
+import LawLibraryScreen    from './screens/LawLibraryScreen'
+import AchievementsScreen  from './screens/AchievementsScreen'
 
 export default function App() {
   const { screen, navigate, goBack, completedCases, loadCaseById } = useGameStore()
@@ -35,6 +32,8 @@ export default function App() {
         return <MainMenuScreen onNavigate={navigate} />
       case 'campaign':
         return <CampaignMapScreen {...props} completedCases={completedCases} onSelectCase={handleSelectCase} />
+      case 'play':
+        return <CasePlayScreen onNavigateOut={navigate} />
       case 'briefing':
         return <BriefingScreen {...props} />
       case 'investigation':
