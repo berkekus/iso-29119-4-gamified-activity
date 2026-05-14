@@ -12,6 +12,10 @@ import {
   CoverageTablePicker,
   TestDesignerPicker,
   NumericInputPicker,
+  DialogueObjectionPicker,
+  EvidenceBoardPicker,
+  BudgetStrategyPicker,
+  McdcPairBuilderPicker,
 } from '../QuestionRenderer'
 import type { SectionProps } from './types'
 
@@ -74,14 +78,12 @@ export default function InvestigationSection({ isCompleted, onAdvance }: Section
         caseFile.correct_answer_explanation ??
         'Correct. The claim has been certified.'
       setFeedback({ type: 'success', msg })
-      setTimeout(() => onAdvance(), 900)
     } else {
       const msg =
         pickOptionExplanation(caseFile, payload, false) ??
         caseFile.wrong_answer_explanation ??
         'Not quite. The court will now convene.'
       setFeedback({ type: 'error', msg })
-      setTimeout(() => onAdvance(), 1500)
     }
   }
 
@@ -185,6 +187,29 @@ export default function InvestigationSection({ isCompleted, onAdvance }: Section
               )}
               {caseFile && questionType === 'numeric_input' && (
                 <NumericInputPicker caseFile={caseFile} feedback={feedback} onSubmit={handleAnswer} />
+              )}
+              {caseFile && questionType === 'dialogue_objection' && (
+                <DialogueObjectionPicker caseFile={caseFile} feedback={feedback} onSubmit={handleAnswer} />
+              )}
+              {caseFile && questionType === 'evidence_board' && (
+                <EvidenceBoardPicker caseFile={caseFile} feedback={feedback} onSubmit={handleAnswer} />
+              )}
+              {caseFile && questionType === 'budget_strategy' && (
+                <BudgetStrategyPicker caseFile={caseFile} feedback={feedback} onSubmit={handleAnswer} />
+              )}
+              {caseFile && questionType === 'mcdc_pair_builder' && (
+                <McdcPairBuilderPicker caseFile={caseFile} feedback={feedback} onSubmit={handleAnswer} />
+              )}
+              
+              {feedback && !isCompleted && (
+                <div style={{ marginTop: 16, display: 'flex', justifyContent: 'flex-end' }}>
+                  <PixelButton
+                    variant={feedback.type === 'success' ? 'primary' : 'danger'}
+                    onClick={onAdvance}
+                  >
+                    PROCEED TO TRIAL →
+                  </PixelButton>
+                </div>
               )}
             </div>
           </div>

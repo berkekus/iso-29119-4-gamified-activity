@@ -86,6 +86,20 @@ const acts: ActEntry[] = [
       { id: 'mcdc-vault-boss-01',         name: 'Vault Authorization',     difficulty: 3, isBoss: true },
     ],
   },
+  {
+    id: 'coverage-mix',
+    name: 'ACT V',
+    title: 'Coverage Trial',
+    subtitle: 'The Final Exam',
+    color: TC.grey,
+    bugType: 'dataflow',
+    clauses: '§5.3.1 – §5.3.6',
+    cases: [
+      { id: 'coverage-mix-01', name: 'The Logging Glitch',        difficulty: 1 },
+      { id: 'coverage-mix-02', name: 'The Insurance Rule Engine', difficulty: 2 },
+      { id: 'coverage-mix-03', name: 'The Life-Support Controller', difficulty: 3, isBoss: true },
+    ],
+  },
 ]
 
 const TOTAL_CASES = acts.reduce((n, a) => n + a.cases.length, 0)
