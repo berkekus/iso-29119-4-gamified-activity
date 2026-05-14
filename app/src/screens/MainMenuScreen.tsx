@@ -159,12 +159,12 @@ const menuItems = [
     disabled: false,
   },
   {
-    id:       'multiplayer'  as Screen,
-    label:    'MULTIPLAYER',
-    desc:     'MOCK TRIALS. JURY. HOT SEAT.',
+    id:       'speed-trial-lobby' as Screen,
+    label:    'SPEED TRIAL',
+    desc:     'MULTIPLAYER COURTROOM. 5 ROUNDS. 70 PLAYERS.',
     color:    '#c23b83',
     icon:     (c: string) => <PeopleIcon color={c} />,
-    disabled: true,
+    disabled: false,
   },
   {
     id:       'achievements' as Screen,
