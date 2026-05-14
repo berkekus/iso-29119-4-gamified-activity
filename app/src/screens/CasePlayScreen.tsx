@@ -157,7 +157,7 @@ function SectionDivider({ phaseLabel, phaseNumber, color }: { phaseLabel: string
 // ── Main component ────────────────────────────────────────────────────────────
 
 export default function CasePlayScreen({ onNavigateOut }: Props) {
-  const { phase, advancePhase, caseFile } = useGameStore()
+  const { phase, advancePhase, caseFile, goBack } = useGameStore()
 
   const briefingRef      = useRef<HTMLDivElement>(null)
   const investigationRef = useRef<HTMLDivElement>(null)
@@ -198,7 +198,7 @@ export default function CasePlayScreen({ onNavigateOut }: Props) {
         phase={phase}
         caseTitle={caseTitle}
         actLabel={actLabel}
-        onBack={() => onNavigateOut('campaign')}
+        onBack={goBack}
       />
 
       <div style={{ padding: '0 clamp(16px,4vw,40px) 60px' }}>
