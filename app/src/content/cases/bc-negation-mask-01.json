@@ -64,7 +64,7 @@
     "Decision ✓, BC ✓. MCDC for is_admin: T1↔T3 flips it and outcome flips ✓. MCDC for has_override: T1↔T2 flips it but outcome stays T — masked. Strongest = Branch Condition."
   ],
   "defendant": {
-    "name": "show_panel(is_admin, has_override)",
+    "name": "Launch Controller",
     "quote": "Branch Condition is met. MCDC is just paranoia."
   },
   "seeded_faults": [

@@ -60,7 +60,7 @@
     "Set C has items=[non-empty] (TRUE edge) AND items=[] (FALSE edge) — both edges covered."
   ],
   "defendant": {
-    "name": "process_all(items)",
+    "name": "Batch Processing Lead",
     "quote": "The list was never empty in production. Trust me."
   },
   "seeded_faults": [

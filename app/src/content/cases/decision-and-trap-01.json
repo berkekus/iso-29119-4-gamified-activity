@@ -59,7 +59,7 @@
     "Set B: (T,T)→show, (T,F)→error, (F,T)→error. Decision ✓ (both outcomes). BC ✓ (each condition seen T and F)."
   ],
   "defendant": {
-    "name": "show_page(is_logged_in, has_permission)",
+    "name": "Authentication Developer",
     "quote": "I covered both outcomes... mostly."
   },
   "seeded_faults": [
