@@ -1,6 +1,5 @@
 import { TC, PIXEL_FONT, HAND_FONT, MONO_FONT } from '../ui/tokens'
 import { BugSprite } from '../ui/CharacterSprites'
-import DeskBackground from '../ui/DeskBackground'
 import type { Screen } from '../stores/gameStore'
 import { CASE_ORDER } from '../content/caseOrder'
 
@@ -212,10 +211,7 @@ export default function CampaignMapScreen({ onNavigate, onBack, completedCases, 
   const currentCaseDisplay = (currentCaseId ?? '').toUpperCase()
 
   return (
-    <>
-    <DeskBackground />
-
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', position: 'relative', zIndex: 2 }}>
+    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', position: 'relative', zIndex: 1 }}>
 
       {/* ── Header bar ──────────────────────────────────────────────────────── */}
       <div style={{
@@ -500,6 +496,5 @@ export default function CampaignMapScreen({ onNavigate, onBack, completedCases, 
         />
       </div>
     </div>
-    </>
   )
 }
