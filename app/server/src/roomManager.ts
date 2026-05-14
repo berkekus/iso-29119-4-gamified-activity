@@ -33,18 +33,11 @@ export function createRoom(
   const code = uniqueCode()
   const playerId = hostSocketId
 
-  const host: Player = {
-    id: playerId,
-    nickname: hostNickname,
-    score: 0,
-    answers: {},
-    connected: true,
-  }
-
+  // Host is NOT added to room.players — they manage the game but don't score.
   const room: Room = {
     code,
     hostId: playerId,
-    players: new Map([[playerId, host]]),
+    players: new Map(),   // starts empty; only joining players are scored
     status: 'lobby',
     currentRound: 0,
     totalRounds: questions.length,

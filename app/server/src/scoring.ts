@@ -1,7 +1,11 @@
-// Server-side scoring — uses server timestamps, never trusts client clock.
+// Server-side scoring — Kahoot-style, uses server timestamps, never trusts client clock.
+//
+// Correct answer:  500 (base) + up to 500 (speed bonus) = 500–1000 pts
+// Wrong / no answer: 0 pts
+// Answered instantly → 1000 pts  |  answered at last second → ~500 pts
 
-const BASE_POINTS = 1000
-const SPEED_BONUS_MAX = 500
+const MIN_CORRECT_POINTS = 500   // guaranteed for any correct answer
+const SPEED_BONUS_MAX    = 500   // extra for answering fast
 
 export interface ScoreResult {
   isCorrect: boolean
@@ -32,7 +36,7 @@ export function computeScore(
   const ratio = remaining / timeLimitMs
   const speedBonus = Math.round(ratio * SPEED_BONUS_MAX)
 
-  return { isCorrect: true, pointsEarned: BASE_POINTS + speedBonus }
+  return { isCorrect: true, pointsEarned: MIN_CORRECT_POINTS + speedBonus }
 }
 
 /** Build a sorted leaderboard from the player map. */
