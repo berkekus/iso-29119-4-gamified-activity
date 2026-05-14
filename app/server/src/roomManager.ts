@@ -26,7 +26,6 @@ function uniqueCode(): string {
 
 export function createRoom(
   hostSocketId: string,
-  hostNickname: string,
   questions: SpeedTrialQuestion[],
   grandJuryQuestion: SpeedTrialQuestion,
 ): { room: Room; playerId: string } {

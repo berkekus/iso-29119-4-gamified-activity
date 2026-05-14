@@ -88,7 +88,7 @@ io.on('connection', (socket) => {
     }
 
     const questions = [...ROUND_QUESTIONS]
-    const { room, playerId } = RM.createRoom(socket.id, nickname.trim(), questions, GRAND_JURY_QUESTION)
+    const { room, playerId } = RM.createRoom(socket.id, questions, GRAND_JURY_QUESTION)
 
     activeRoomMap.set(room.code, room)
     socket.join(room.code)

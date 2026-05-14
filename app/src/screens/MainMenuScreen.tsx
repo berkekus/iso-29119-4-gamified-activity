@@ -10,7 +10,7 @@ interface Props {
 
 const menuItems = [
   { id: 'campaign' as Screen,           label: 'SOLO CAMPAIGN',  icon: '⚖',  desc: 'Four acts. Twelve cases. One standard.',          color: TC.blue },
-  { id: 'speed-trial-lobby' as Screen,  label: 'SPEED TRIAL',    icon: '🔥',  desc: 'Hızlı Mahkeme — up to 70 players, 5 rounds.',    color: TC.orange },
+  { id: 'speed-trial-lobby' as Screen,  label: 'SPEED TRIAL',    icon: '🔥',  desc: 'Multiplayer courtroom — 5 rounds, up to 70 players.',    color: TC.orange },
   { id: 'achievements' as Screen,       label: 'ACHIEVEMENTS',   icon: '🏆',  desc: 'Badges, transcripts, mastery.',                   color: TC.green },
   { id: 'how-to-play' as Screen,        label: 'HOW TO PLAY',    icon: '📖',  desc: 'Learn the 5 phases step by step.',                color: TC.magenta },
 ]
