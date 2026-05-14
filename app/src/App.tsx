@@ -12,7 +12,11 @@ import DebriefScreen       from './screens/DebriefScreen'
 import DesignSystemScreen  from './screens/DesignSystemScreen'
 import HowToPlayScreen     from './screens/HowToPlayScreen'
 import LawLibraryScreen    from './screens/LawLibraryScreen'
-import AchievementsScreen  from './screens/AchievementsScreen'
+import AchievementsScreen     from './screens/AchievementsScreen'
+import SpeedTrialLobbyScreen  from './screens/SpeedTrialLobbyScreen'
+import SpeedTrialHostScreen   from './screens/SpeedTrialHostScreen'
+import SpeedTrialPlayerScreen from './screens/SpeedTrialPlayerScreen'
+import SpeedTrialWinnerScreen from './screens/SpeedTrialWinnerScreen'
 
 export default function App() {
   const { screen, navigate, goBack, completedCases, loadCaseById } = useGameStore()
