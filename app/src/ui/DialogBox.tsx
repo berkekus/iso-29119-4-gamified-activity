@@ -1,4 +1,4 @@
-import { useState, useEffect, type ReactNode } from 'react'
+import { useState, useEffect, useRef, type ReactNode } from 'react'
 import { TC, PIXEL_FONT, HAND_FONT } from './tokens'
 import PixelButton from './PixelButton'
 
@@ -14,26 +14,38 @@ interface Props {
 export default function DialogBox({ speaker, text, portrait, onNext, isLast, onTypingChange }: Props) {
   const [displayed, setDisplayed] = useState('')
   const [done, setDone] = useState(false)
+  const ivRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
   useEffect(() => {
     onTypingChange?.(!done)
   }, [done, onTypingChange])
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setDisplayed('')
     setDone(false)
     let i = 0
-    const iv = setInterval(() => {
+    ivRef.current = setInterval(() => {
       i++
       if (i >= text.length) {
-        clearInterval(iv)
+        clearInterval(ivRef.current!)
+        ivRef.current = null
         setDone(true)
       }
       setDisplayed(text.slice(0, i))
     }, 22)
-    return () => clearInterval(iv)
+    return () => {
+      if (ivRef.current) clearInterval(ivRef.current)
+    }
   }, [text])
+
+  const handleSkip = () => {
+    if (ivRef.current) {
+      clearInterval(ivRef.current)
+      ivRef.current = null
+    }
+    setDisplayed(text)
+    setDone(true)
+  }
 
   return (
     <div
@@ -71,7 +83,7 @@ export default function DialogBox({ speaker, text, portrait, onNext, isLast, onT
         </div>
         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 8 }}>
           {!done && (
-            <PixelButton small variant="secondary" onClick={() => { setDisplayed(text); setDone(true) }}>
+            <PixelButton small variant="secondary" onClick={handleSkip}>
               SKIP ▶▶
             </PixelButton>
           )}

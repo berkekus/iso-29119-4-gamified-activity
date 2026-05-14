@@ -200,7 +200,7 @@ export default function CasePlayScreen({ onNavigateOut }: Props) {
         phase={phase}
         caseTitle={caseTitle}
         actLabel={actLabel}
-        onBack={() => onNavigateOut('campaign')}
+        onBack={goBack}
         isPairSelector={isPairSelector}
       />
 
