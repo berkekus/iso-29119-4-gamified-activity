@@ -1,17 +1,21 @@
 import GraphPaperBg from './ui/GraphPaperBg'
 import { useGameStore } from './stores/gameStore'
 
-import MainMenuScreen      from './screens/MainMenuScreen'
-import CampaignMapScreen   from './screens/CampaignMapScreen'
-import BriefingScreen      from './screens/BriefingScreen'
-import InvestigationScreen from './screens/InvestigationScreen'
-import EvidenceScreen      from './screens/EvidenceScreen'
-import TrialScreen         from './screens/TrialScreen'
-import DebriefScreen       from './screens/DebriefScreen'
-import DesignSystemScreen  from './screens/DesignSystemScreen'
-import HowToPlayScreen     from './screens/HowToPlayScreen'
-import LawLibraryScreen    from './screens/LawLibraryScreen'
-import AchievementsScreen  from './screens/AchievementsScreen'
+import MainMenuScreen        from './screens/MainMenuScreen'
+import CampaignMapScreen     from './screens/CampaignMapScreen'
+import BriefingScreen        from './screens/BriefingScreen'
+import InvestigationScreen   from './screens/InvestigationScreen'
+import EvidenceScreen        from './screens/EvidenceScreen'
+import TrialScreen           from './screens/TrialScreen'
+import DebriefScreen         from './screens/DebriefScreen'
+import DesignSystemScreen    from './screens/DesignSystemScreen'
+import HowToPlayScreen       from './screens/HowToPlayScreen'
+import LawLibraryScreen      from './screens/LawLibraryScreen'
+import AchievementsScreen    from './screens/AchievementsScreen'
+import SpeedTrialLobbyScreen from './screens/SpeedTrialLobbyScreen'
+import SpeedTrialHostScreen  from './screens/SpeedTrialHostScreen'
+import SpeedTrialPlayerScreen from './screens/SpeedTrialPlayerScreen'
+import SpeedTrialWinnerScreen from './screens/SpeedTrialWinnerScreen'
 
 export default function App() {
   const { screen, navigate, goBack, completedCases, loadCaseById } = useGameStore()
@@ -49,6 +53,14 @@ export default function App() {
         return <LawLibraryScreen onBack={goBack} />
       case 'achievements':
         return <AchievementsScreen onBack={goBack} />
+      case 'speed-trial-lobby':
+        return <SpeedTrialLobbyScreen onNavigate={navigate} onBack={goBack} />
+      case 'speed-trial-host':
+        return <SpeedTrialHostScreen onNavigate={navigate} onBack={goBack} />
+      case 'speed-trial-player':
+        return <SpeedTrialPlayerScreen onNavigate={navigate} onBack={goBack} />
+      case 'speed-trial-winner':
+        return <SpeedTrialWinnerScreen onNavigate={navigate} onBack={goBack} />
       default:
         return <MainMenuScreen onNavigate={navigate} />
     }

@@ -63,6 +63,11 @@ export type Screen =
   | 'multiplayer'
   | 'achievements'
   | 'law-library'
+  // Speed Trial multiplayer screens
+  | 'speed-trial-lobby'
+  | 'speed-trial-host'
+  | 'speed-trial-player'
+  | 'speed-trial-winner'
 
 // ── MCDC namespace types ──────────────────────────────────────────────────────
 
