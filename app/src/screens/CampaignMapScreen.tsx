@@ -241,12 +241,6 @@ export default function CampaignMapScreen({ onNavigate, onBack, completedCases, 
         {/* Left: labels */}
         <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
           <div style={{
-            fontFamily: PIXEL_FONT, fontSize: 10, color: PAPER,
-            border: `2px solid ${BORDER}`, padding: '6px 14px',
-            background: '#2e1c0a', letterSpacing: 0.5,
-          }}>CAMPAIGN ARCHIVE</div>
-
-          <div style={{
             display: 'flex', alignItems: 'center', gap: 8,
             fontFamily: PIXEL_FONT, fontSize: 9, color: '#c8a870',
             border: `2px solid #5a3818`, padding: '6px 14px',
@@ -513,11 +507,6 @@ export default function CampaignMapScreen({ onNavigate, onBack, completedCases, 
           label="ACHIEVEMENTS"
           icon={<svg width="16" height="18" viewBox="0 0 16 18" fill="none"><rect x="4" y="1" width="8" height="10" rx="4" fill={PAPER} stroke={PAPER} strokeWidth="1"/><rect x="2" y="1" width="2" height="8" fill={PAPER}/><rect x="12" y="1" width="2" height="8" fill={PAPER}/><rect x="6" y="11" width="4" height="4" fill={PAPER}/><rect x="3" y="15" width="10" height="2" fill={PAPER}/></svg>}
           onClick={() => onNavigate('achievements')}
-        />
-        <NavBtn
-          label="CASE LOG"
-          icon={<svg width="14" height="16" viewBox="0 0 14 16" fill="none"><rect x="1" y="1" width="12" height="14" rx="1" fill={PAPER} stroke={PAPER} strokeWidth="1"/><line x1="3" y1="5" x2="11" y2="5" stroke="#8a7a60" strokeWidth="1.2"/><line x1="3" y1="8" x2="11" y2="8" stroke="#8a7a60" strokeWidth="1.2"/><line x1="3" y1="11" x2="8" y2="11" stroke="#8a7a60" strokeWidth="1.2"/></svg>}
-          disabled
         />
       </div>
     </div>
