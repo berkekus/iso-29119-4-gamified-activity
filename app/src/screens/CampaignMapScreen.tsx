@@ -237,22 +237,40 @@ export default function CampaignMapScreen({ onNavigate, onBack, completedCases, 
         justifyContent:'space-between',
         gap:           16,
         flexShrink:    0,
+        flexWrap:      'wrap',
       }}>
-        {/* Left: labels */}
-        <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-          <div style={{
-            display: 'flex', alignItems: 'center', gap: 8,
-            fontFamily: PIXEL_FONT, fontSize: 9, color: '#c8a870',
-            border: `2px solid #5a3818`, padding: '6px 14px',
-            background: '#2e1c0a', letterSpacing: 0.5,
-          }}>
-            {/* folder icon */}
-            <svg width="18" height="14" viewBox="0 0 18 14" fill="none">
-              <path d="M0 2h7l2 2h9v10H0V2z" fill="#c8a870" stroke="#8a6030" strokeWidth="1" />
-              <rect x="0" y="4" width="18" height="10" rx="0" fill="#d4b870" stroke="#8a6030" strokeWidth="1" />
-            </svg>
-            CASE FILE: {currentCaseDisplay}
-          </div>
+        {/* Left: nav buttons */}
+        <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
+          <NavBtn
+            label="MENU"
+            icon={<svg width="14" height="12" viewBox="0 0 14 12" fill="none"><polyline points="6,1 1,6 6,11" stroke={PAPER} strokeWidth="2" fill="none" strokeLinecap="square" /><line x1="1" y1="6" x2="13" y2="6" stroke={PAPER} strokeWidth="2" /></svg>}
+            onClick={onBack}
+          />
+          <NavBtn
+            label="LAW LIBRARY"
+            icon={<svg width="18" height="16" viewBox="0 0 18 16" fill="none"><rect x="1" y="1" width="7" height="14" fill={PAPER} stroke={PAPER} strokeWidth="1"/><rect x="10" y="1" width="7" height="14" fill={PAPER} stroke={PAPER} strokeWidth="1"/><rect x="8" y="0" width="2" height="16" fill="#8a7a60"/><line x1="2" y1="5" x2="7" y2="5" stroke="#8a7a60" strokeWidth="1"/><line x1="2" y1="8" x2="7" y2="8" stroke="#8a7a60" strokeWidth="1"/><line x1="11" y1="5" x2="16" y2="5" stroke="#8a7a60" strokeWidth="1"/><line x1="11" y1="8" x2="16" y2="8" stroke="#8a7a60" strokeWidth="1"/></svg>}
+            onClick={() => onNavigate('law-library')}
+          />
+          <NavBtn
+            label="ACHIEVEMENTS"
+            icon={<svg width="16" height="18" viewBox="0 0 16 18" fill="none"><rect x="4" y="1" width="8" height="10" rx="4" fill={PAPER} stroke={PAPER} strokeWidth="1"/><rect x="2" y="1" width="2" height="8" fill={PAPER}/><rect x="12" y="1" width="2" height="8" fill={PAPER}/><rect x="6" y="11" width="4" height="4" fill={PAPER}/><rect x="3" y="15" width="10" height="2" fill={PAPER}/></svg>}
+            onClick={() => onNavigate('achievements')}
+          />
+        </div>
+
+        {/* Center: case file indicator */}
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: 8,
+          fontFamily: PIXEL_FONT, fontSize: 9, color: '#c8a870',
+          border: `2px solid #5a3818`, padding: '6px 14px',
+          background: '#2e1c0a', letterSpacing: 0.5,
+        }}>
+          {/* folder icon */}
+          <svg width="18" height="14" viewBox="0 0 18 14" fill="none">
+            <path d="M0 2h7l2 2h9v10H0V2z" fill="#c8a870" stroke="#8a6030" strokeWidth="1" />
+            <rect x="0" y="4" width="18" height="10" rx="0" fill="#d4b870" stroke="#8a6030" strokeWidth="1" />
+          </svg>
+          CASE FILE: {currentCaseDisplay}
         </div>
 
         {/* Right: score chips */}
@@ -484,31 +502,6 @@ export default function CampaignMapScreen({ onNavigate, onBack, completedCases, 
         </div>
       </div>
 
-      {/* ── Bottom nav bar ──────────────────────────────────────────────────── */}
-      <div style={{
-        background:   '#1a0e06',
-        borderTop:    `3px solid #6a4020`,
-        padding:      '10px 20px',
-        display:      'flex',
-        gap:          12,
-        flexShrink:   0,
-      }}>
-        <NavBtn
-          label="MENU"
-          icon={<svg width="14" height="12" viewBox="0 0 14 12" fill="none"><polyline points="6,1 1,6 6,11" stroke={PAPER} strokeWidth="2" fill="none" strokeLinecap="square" /><line x1="1" y1="6" x2="13" y2="6" stroke={PAPER} strokeWidth="2" /></svg>}
-          onClick={onBack}
-        />
-        <NavBtn
-          label="LAW LIBRARY"
-          icon={<svg width="18" height="16" viewBox="0 0 18 16" fill="none"><rect x="1" y="1" width="7" height="14" fill={PAPER} stroke={PAPER} strokeWidth="1"/><rect x="10" y="1" width="7" height="14" fill={PAPER} stroke={PAPER} strokeWidth="1"/><rect x="8" y="0" width="2" height="16" fill="#8a7a60"/><line x1="2" y1="5" x2="7" y2="5" stroke="#8a7a60" strokeWidth="1"/><line x1="2" y1="8" x2="7" y2="8" stroke="#8a7a60" strokeWidth="1"/><line x1="11" y1="5" x2="16" y2="5" stroke="#8a7a60" strokeWidth="1"/><line x1="11" y1="8" x2="16" y2="8" stroke="#8a7a60" strokeWidth="1"/></svg>}
-          onClick={() => onNavigate('law-library')}
-        />
-        <NavBtn
-          label="ACHIEVEMENTS"
-          icon={<svg width="16" height="18" viewBox="0 0 16 18" fill="none"><rect x="4" y="1" width="8" height="10" rx="4" fill={PAPER} stroke={PAPER} strokeWidth="1"/><rect x="2" y="1" width="2" height="8" fill={PAPER}/><rect x="12" y="1" width="2" height="8" fill={PAPER}/><rect x="6" y="11" width="4" height="4" fill={PAPER}/><rect x="3" y="15" width="10" height="2" fill={PAPER}/></svg>}
-          onClick={() => onNavigate('achievements')}
-        />
-      </div>
     </div>
   )
 }
