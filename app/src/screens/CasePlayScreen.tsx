@@ -33,18 +33,6 @@ const PHASE_LABELS: Record<GamePhase, string> = {
   debrief:       'DEBRIEF',
 }
 
-// Act id → human-readable act name. Shown in the play-screen header instead
-// of a generic 'ACT I/II/...' chip so the player sees what topic they are
-// actually working in (matches the campaign map).
-const ACT_NAME: Record<string, string> = {
-  STMT_BRANCH:   'Statement & Branch',
-  DECISION_BC:   'Decision & BC',
-  BCC:           'BCC',
-  MCDC:          'MC/DC',
-  Combinatorial: 'BCC',
-  DataFlow:      'Coverage Trial',
-}
-
 function phaseAtLeast(current: GamePhase, target: GamePhase): boolean {
   return PHASES.indexOf(current) >= PHASES.indexOf(target)
 }
@@ -52,10 +40,9 @@ function phaseAtLeast(current: GamePhase, target: GamePhase): boolean {
 // ── Sticky header ─────────────────────────────────────────────────────────────
 
 function StickyHeader({
-  phase, actName, onBack, isPairSelector
+  phase, onBack, isPairSelector
 }: {
   phase: GamePhase
-  actName: string
   onBack: () => void
   isPairSelector: boolean
 }) {
@@ -71,39 +58,23 @@ function StickyHeader({
       background:   TC.cream,
       borderBottom: `3px solid ${TC.ink}`,
       padding:      '14px clamp(16px,4vw,40px)',
-      display:      'flex',
+      display:      'grid',
+      gridTemplateColumns: '1fr auto 1fr',
       alignItems:   'center',
       gap:          18,
-      flexWrap:     'wrap',
     }}>
       {/* Left: back — explicit destination so the user knows where they go */}
-      <PixelButton small variant="secondary" onClick={onBack}>← BACK TO MAP</PixelButton>
+      <div style={{ justifySelf: 'start' }}>
+        <PixelButton small variant="secondary" onClick={onBack}>← BACK TO MAP</PixelButton>
+      </div>
 
-      {/* Act name chip — contextual topic instead of generic 'ACT I' */}
-      {actName && (
-        <span style={{
-          fontFamily:    PIXEL_FONT,
-          fontSize:      9,
-          color:         TC.grey,
-          padding:       '6px 12px',
-          border:        `2px solid ${TC.grey}`,
-          background:    'transparent',
-          letterSpacing: 0.5,
-          textTransform: 'uppercase',
-          whiteSpace:    'nowrap',
-        }}>
-          {actName}
-        </span>
-      )}
-
-      {/* Phase stepper */}
+      {/* Center: phase stepper (breadcrumb) */}
       <div style={{
-        display:        'flex',
-        alignItems:     'center',
-        gap:            6,
-        flex:           1,
-        justifyContent: 'center',
-        flexWrap:       'wrap',
+        display:    'flex',
+        alignItems: 'center',
+        gap:        6,
+        flexWrap:   'wrap',
+        justifySelf: 'center',
       }}>
         {dynamicPhases.map((p, i) => (
           <div key={p} style={{ display: 'flex', alignItems: 'center' }}>
@@ -117,6 +88,8 @@ function StickyHeader({
             )}
             <div
               title={PHASE_LABELS[p]}
+              aria-label={PHASE_LABELS[p]}
+              aria-current={i === phaseIdx ? 'step' : undefined}
               style={{
                 width:          24,
                 height:         24,
@@ -136,19 +109,8 @@ function StickyHeader({
         ))}
       </div>
 
-      {/* Current phase chip — the only redundant-looking label kept, because
-         it tells the user what they are doing right now, in big letters. */}
-      <span style={{
-        fontFamily:    PIXEL_FONT,
-        fontSize:      9,
-        color:         currentColor,
-        padding:       '6px 12px',
-        border:        `2px solid ${currentColor}`,
-        background:    `${currentColor}15`,
-        letterSpacing: 0.5,
-      }}>
-        {PHASE_LABELS[phase]}
-      </span>
+      {/* Right spacer to balance the back button (keeps stepper truly centred) */}
+      <div />
     </div>
   )
 }
@@ -215,13 +177,10 @@ export default function CasePlayScreen({ onNavigateOut }: Props) {
     }
   }, [phase, isPairSelector, advancePhase])
 
-  const actName = caseFile ? ACT_NAME[caseFile.act] ?? '' : ''
-
   return (
     <div style={{ minHeight: '100vh', position: 'relative', zIndex: 1 }}>
       <StickyHeader
         phase={phase}
-        actName={actName}
         onBack={goBack}
         isPairSelector={isPairSelector}
       />
