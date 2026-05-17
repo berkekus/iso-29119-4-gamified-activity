@@ -355,7 +355,7 @@ export default function CampaignMapScreen({ onNavigate, onBack, completedCases, 
                   <ConnectorV />
 
                   {/* Case list */}
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                     {act.cases.map(c => {
                       const isComplete = completedCases.includes(c.id)
                       const isLocked   = !isComplete && !isCaseUnlocked(c.id, completedCases)
@@ -369,17 +369,27 @@ export default function CampaignMapScreen({ onNavigate, onBack, completedCases, 
                             onSelectCase?.(c.id)
                             onNavigate('play')
                           }}
+                          aria-label={
+                            isLocked
+                              ? `${c.name} — locked. Complete the previous case to unlock.`
+                              : isComplete
+                                ? `${c.name} — completed`
+                                : isCurrent
+                                  ? `${c.name} — current case`
+                                  : c.name
+                          }
                           title={isLocked ? 'Complete the previous case to unlock' : c.name}
                           style={{
                             background:  c.isBoss && !isLocked ? `${TC.magenta}18` : PAPER,
                             border:      `2px solid ${isLocked ? BORDER : c.isBoss ? TC.magenta : INK}`,
                             boxShadow:   !isLocked ? `2px 2px 0 ${INK}` : 'none',
-                            padding:     '7px 8px',
+                            padding:     '8px 9px',
+                            minHeight:   44,
                             display:     'flex',
                             alignItems:  'center',
-                            gap:         6,
+                            gap:         8,
                             cursor:      isLocked ? 'not-allowed' : 'pointer',
-                            opacity:     isLocked ? 0.52 : 1,
+                            opacity:     isLocked ? 0.6 : 1,
                             textAlign:   'left',
                             width:       '100%',
                           }}
@@ -396,17 +406,18 @@ export default function CampaignMapScreen({ onNavigate, onBack, completedCases, 
                           <div style={{ flex: 1, minWidth: 0 }}>
                             <div style={{
                               fontFamily:    PIXEL_FONT,
-                              fontSize:      8,
+                              fontSize:      9,
                               color:         isComplete ? TC.green : c.isBoss ? TC.magenta : INK,
-                              lineHeight:    1.4,
-                              overflow:      'hidden',
-                              textOverflow:  'ellipsis',
-                              whiteSpace:    'nowrap',
+                              lineHeight:    1.45,
+                              whiteSpace:    'normal',
+                              overflowWrap:  'break-word',
+                              wordBreak:     'break-word',
+                              hyphens:       'auto',
                             }}>
                               {c.name}
                             </div>
                             {c.isBoss && !isLocked && (
-                              <div style={{ fontFamily: PIXEL_FONT, fontSize: 6, color: TC.magenta, marginTop: 2 }}>
+                              <div style={{ fontFamily: PIXEL_FONT, fontSize: 7, color: TC.magenta, marginTop: 3, letterSpacing: 0.3 }}>
                                 -FINAL BOSS
                               </div>
                             )}
