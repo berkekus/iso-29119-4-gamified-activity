@@ -185,24 +185,126 @@ export default function BriefingSection({ isCompleted, onAdvance }: SectionProps
 
         {/* Right panel: Defendant + Dialog */}
         <div style={{ width: 340, display: 'flex', flexDirection: 'column', gap: 16 }}>
-          {/* Defendant */}
-          <div style={{
-            background: TC.cream, border: `3px solid ${TC.ink}`, boxShadow: `4px 4px 0 ${TC.ink}`,
-            padding: 16, textAlign: 'center',
-          }}>
-            <div style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: TC.ink, marginBottom: 4 }}>THE DEFENDANT</div>
-            {(caseFile?.defendant?.name || caseFile?.defendant_subtitle) && (
-              <div style={{ fontFamily: MONO_FONT, fontSize: 11, color: TC.magenta, marginBottom: 10 }}>
-                {caseFile?.defendant?.name || caseFile?.defendant_subtitle}
+          {/* Defendant — JRPG dialog-box layout: portrait+name on left, speech on right */}
+          {(() => {
+            const defName  = caseFile?.defendant?.name || caseFile?.defendant_subtitle
+            const defQuote = caseFile?.defendant?.quote || caseFile?.claim
+            return (
+              <div
+                role="group"
+                aria-label="The defendant"
+                style={{
+                  background: TC.cream,
+                  border:     `3px solid ${TC.ink}`,
+                  boxShadow:  `4px 4px 0 ${TC.ink}`,
+                  padding:    0,
+                  overflow:   'hidden',
+                }}
+              >
+                {/* Header strip */}
+                <div style={{
+                  background:    TC.ink,
+                  color:         TC.cream,
+                  fontFamily:    PIXEL_FONT,
+                  fontSize:      9,
+                  letterSpacing: 1,
+                  padding:       '6px 10px',
+                }}>
+                  THE DEFENDANT
+                </div>
+
+                {/* Body: portrait column + speech column */}
+                <div style={{
+                  display:             'grid',
+                  gridTemplateColumns: '120px 1fr',
+                  gap:                 0,
+                }}>
+                  {/* Left: portrait + name nameplate (like a JRPG character card) */}
+                  <div style={{
+                    background:    TC.grid,
+                    borderRight:   `2px solid ${TC.ink}`,
+                    display:       'flex',
+                    flexDirection: 'column',
+                    alignItems:    'center',
+                    justifyContent:'space-between',
+                    padding:       '12px 8px 0',
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 1 }}>
+                      <BugSprite
+                        size={90}
+                        type={caseFile?.technique === 'BCC' ? 'bcc' : 'mcdc'}
+                        mood="nervous"
+                      />
+                    </div>
+                    {defName && (
+                      <div style={{
+                        marginTop:     10,
+                        width:         '100%',
+                        background:    TC.ink,
+                        color:         TC.cream,
+                        fontFamily:    MONO_FONT,
+                        fontSize:      10,
+                        textAlign:     'center',
+                        padding:       '6px 4px',
+                        letterSpacing: 0.3,
+                        lineHeight:    1.3,
+                        wordBreak:     'break-word',
+                        marginLeft:    -8,
+                        marginRight:   -8,
+                        marginBottom:  0,
+                      }}>
+                        {defName}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Right: speech bubble area */}
+                  <div style={{
+                    position:   'relative',
+                    padding:    '14px 14px 16px',
+                    display:    'flex',
+                    alignItems: 'center',
+                    minHeight:  140,
+                  }}>
+                    {/* dialog tail pointing to portrait */}
+                    <div
+                      aria-hidden="true"
+                      style={{
+                        position:     'absolute',
+                        left:         -8,
+                        top:          24,
+                        width:        0,
+                        height:       0,
+                        borderTop:    '8px solid transparent',
+                        borderBottom: '8px solid transparent',
+                        borderRight:  `8px solid ${TC.ink}`,
+                      }}
+                    />
+                    {defQuote ? (
+                      <div style={{
+                        fontFamily: HAND_FONT,
+                        fontSize:   15,
+                        color:      TC.ink,
+                        lineHeight: 1.55,
+                        fontStyle:  'italic',
+                      }}>
+                        “{defQuote}”
+                      </div>
+                    ) : (
+                      <div style={{
+                        fontFamily: MONO_FONT,
+                        fontSize:   11,
+                        color:      TC.grey,
+                        letterSpacing: 0.4,
+                      }}>
+                        — NO STATEMENT ON RECORD —
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
-            )}
-            <BugSprite size={90} type={caseFile?.technique === 'BCC' ? 'bcc' : 'mcdc'} mood="nervous" />
-            {(caseFile?.defendant?.quote || caseFile?.claim) && (
-              <div style={{ fontFamily: HAND_FONT, fontSize: 16, color: TC.grey, marginTop: 8, fontStyle: 'italic', lineHeight: 1.5 }}>
-                "{caseFile?.defendant?.quote || caseFile?.claim}"
-              </div>
-            )}
-          </div>
+            )
+          })()}
 
           {/* Dialog */}
           {(() => {
