@@ -54,15 +54,7 @@ export default function TrialSection({ isCompleted, onAdvance }: SectionProps) {
       pointerEvents: isCompleted ? 'none' : 'auto',
       transition: 'opacity 0.2s',
     }}>
-      {isCompleted && (
-        <div style={{
-          fontFamily: PIXEL_FONT, fontSize: 8, color: TC.green,
-          border: `2px solid ${TC.green}`, padding: '4px 10px',
-          background: `${TC.green}10`, display: 'inline-block', marginBottom: 14,
-        }}>
-          ✓ COMPLETED — scroll up to review
-        </div>
-      )}
+
 
       {/* Courtroom scene */}
       <div style={{ textAlign: 'center', marginBottom: 30 }}>
@@ -103,11 +95,11 @@ export default function TrialSection({ isCompleted, onAdvance }: SectionProps) {
             border: `4px solid ${isGuilty ? TC.green : TC.magenta}`,
             boxShadow: `6px 6px 0 ${TC.ink}`,
           }}>
-            <div style={{ fontFamily: PIXEL_FONT, fontSize: 10, color: TC.grey, marginBottom: 10 }}>THE VERDICT IS</div>
+            <div style={{ fontFamily: PIXEL_FONT, fontSize: 10, fontWeight: 700, textTransform: 'uppercase', color: TC.grey, marginBottom: 10 }}>THE VERDICT IS</div>
             <div style={{ fontFamily: PIXEL_FONT, fontSize: 26, color: isGuilty ? TC.green : TC.magenta, lineHeight: 1.2 }}>
               {isGuilty ? 'GUILTY' : 'MISTRIAL'}
             </div>
-            <div style={{ fontFamily: HAND_FONT, fontSize: 18, color: TC.ink, marginTop: 12, lineHeight: 1.55 }}>
+            <div style={{ fontFamily: HAND_FONT, fontSize: 16, fontWeight: 400, color: TC.ink, marginTop: 12, lineHeight: 1.5 }}>
               {isGuilty
                 ? 'The defendant has been found guilty. All faults detected.'
                 : 'The defendant walks free. Your evidence was incomplete — the bug escapes.'}
@@ -117,7 +109,7 @@ export default function TrialSection({ isCompleted, onAdvance }: SectionProps) {
           {/* Coverage + Faults */}
           <div style={{ display: 'flex', gap: 16, marginBottom: 20 }}>
             <div style={{ flex: 1, background: TC.cream, border: `3px solid ${TC.ink}`, boxShadow: `4px 4px 0 ${TC.ink}`, padding: 16 }}>
-              <div style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: TC.blue, marginBottom: 12 }}>COVERAGE ACHIEVED</div>
+              <div style={{ fontFamily: PIXEL_FONT, fontSize: 10, fontWeight: 700, textTransform: 'uppercase', color: TC.blue, marginBottom: 12 }}>COVERAGE ACHIEVED</div>
               <CoverageMeter value={verdictResult.coveragePercent} max={100} color={TC.green} width={200} />
               {caseFile?.question_type === 'pair_selector' && (
                 <div style={{ marginTop: 10, display: 'flex', flexDirection: 'column', gap: 6 }}>
@@ -137,7 +129,7 @@ export default function TrialSection({ isCompleted, onAdvance }: SectionProps) {
             </div>
 
             <div style={{ flex: 1, background: TC.cream, border: `3px solid ${TC.ink}`, boxShadow: `4px 4px 0 ${TC.ink}`, padding: 16 }}>
-              <div style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: TC.magenta, marginBottom: 12 }}>FAULTS DETECTED</div>
+              <div style={{ fontFamily: PIXEL_FONT, fontSize: 10, fontWeight: 700, textTransform: 'uppercase', color: TC.magenta, marginBottom: 12 }}>FAULTS DETECTED</div>
               {faultResults.length > 0 ? (
                 faultResults.map(f => (
                   <div key={f.id} style={{
@@ -202,9 +194,9 @@ export default function TrialSection({ isCompleted, onAdvance }: SectionProps) {
               background: `${TC.magenta}10`, border: `3px solid ${TC.magenta}`,
               boxShadow: `4px 4px 0 ${TC.ink}`, padding: 16, marginBottom: 20,
             }}>
-              <div style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: TC.magenta, marginBottom: 10 }}>MISCONCEPTION DETECTED</div>
+              <div style={{ fontFamily: PIXEL_FONT, fontSize: 10, fontWeight: 700, textTransform: 'uppercase', color: TC.magenta, marginBottom: 10 }}>MISCONCEPTION DETECTED</div>
               {misconceptions.filter(m => m.triggered).map(m => (
-                <div key={m.id} style={{ fontFamily: HAND_FONT, fontSize: 18, color: TC.ink, lineHeight: 1.55, marginBottom: 8 }}>
+                <div key={m.id} style={{ fontFamily: HAND_FONT, fontSize: 16, fontWeight: 400, color: TC.ink, lineHeight: 1.5, marginBottom: 8 }}>
                   {m.explanation}
                 </div>
               ))}

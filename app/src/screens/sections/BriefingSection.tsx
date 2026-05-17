@@ -61,7 +61,6 @@ export default function BriefingSection({ isCompleted, onAdvance }: SectionProps
   const techniqueLine = caseFile?.technique
     ? TECHNIQUE_LABEL[caseFile.technique] ?? `Technique: ${caseFile.technique}`
     : 'Coverage standard pending'
-  const caseFileNum = caseFile ? `CASE FILE · ${caseFile.id.toUpperCase()}` : 'CASE FILE'
 
   const dialogs = caseFile
     ? [
@@ -77,15 +76,7 @@ export default function BriefingSection({ isCompleted, onAdvance }: SectionProps
       pointerEvents: isCompleted ? 'none' : 'auto',
       transition: 'opacity 0.2s',
     }}>
-      {isCompleted && (
-        <div style={{
-          fontFamily: PIXEL_FONT, fontSize: 8, color: TC.green,
-          border: `2px solid ${TC.green}`, padding: '4px 10px',
-          background: `${TC.green}10`, display: 'inline-block', marginBottom: 14,
-        }}>
-          ✓ COMPLETED — scroll up to review
-        </div>
-      )}
+
 
       <div className="responsive-row" style={{ gap: 30, maxWidth: 1100, margin: '0 auto' }}>
         {/* Case File */}
@@ -100,16 +91,15 @@ export default function BriefingSection({ isCompleted, onAdvance }: SectionProps
               border: `2px solid ${TC.magenta}`, padding: '4px 8px', transform: 'rotate(3deg)',
             }}>CLASSIFIED</div>
 
-            <div style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: TC.grey, marginBottom: 6 }}>{caseFileNum}</div>
             <h2 style={{ fontFamily: PIXEL_FONT, fontSize: 18, color: TC.ink, margin: '0 0 18px 0', lineHeight: 1.4 }}>{caseData.title}</h2>
 
-            <div style={{ fontFamily: HAND_FONT, fontSize: 18, color: TC.ink, lineHeight: 1.6, marginBottom: 20 }}>
+            <div style={{ fontFamily: HAND_FONT, fontSize: 16, fontWeight: 400, color: TC.ink, lineHeight: 1.5, marginBottom: 20 }}>
               {caseData.narrative}
             </div>
 
             {/* Code exhibit */}
             <div style={{ marginBottom: 20 }}>
-              <div style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: TC.orange, marginBottom: 8 }}>EXHIBIT A — SOURCE CODE</div>
+              <div style={{ fontFamily: PIXEL_FONT, fontSize: 10, fontWeight: 700, textTransform: 'uppercase', color: TC.orange, marginBottom: 8 }}>EXHIBIT A — SOURCE CODE</div>
               <div style={{
                 background: '#1e1e2e', color: '#cdd6f4', fontFamily: MONO_FONT, fontSize: 13,
                 padding: 16, border: `2px solid ${TC.ink}`, lineHeight: 1.6, overflow: 'auto',
@@ -121,12 +111,12 @@ export default function BriefingSection({ isCompleted, onAdvance }: SectionProps
 
             {/* Charges */}
             <div>
-              <div style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: TC.magenta, marginBottom: 10 }}>CHARGES</div>
+              <div style={{ fontFamily: PIXEL_FONT, fontSize: 10, fontWeight: 700, textTransform: 'uppercase', color: TC.magenta, marginBottom: 10 }}>CHARGES</div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                 {caseData.charges.map((ch, i) => (
                   <div key={i} style={{
                     display: 'flex', gap: 8, alignItems: 'flex-start',
-                    fontFamily: HAND_FONT, fontSize: 18, color: TC.ink, lineHeight: 1.5,
+                    fontFamily: HAND_FONT, fontSize: 16, fontWeight: 400, color: TC.ink, lineHeight: 1.5,
                     padding: '6px 0', borderBottom: `1px solid ${TC.grid}`,
                   }}>
                     <span style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: TC.magenta, marginTop: 4 }}>{i + 1}.</span>
@@ -158,22 +148,22 @@ export default function BriefingSection({ isCompleted, onAdvance }: SectionProps
                     border: `2px solid ${TC.orange}`,
                     padding: 16,
                   }}>
-                    <div style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: TC.orange, marginBottom: 8 }}>
+                    <div style={{ fontFamily: PIXEL_FONT, fontSize: 10, fontWeight: 700, textTransform: 'uppercase', color: TC.orange, marginBottom: 8 }}>
                       LAW CARD · {lawCard.iso_clause}
                     </div>
-                    <div style={{ fontFamily: PIXEL_FONT, fontSize: 12, color: TC.ink, marginBottom: 12, lineHeight: 1.4 }}>
+                    <div style={{ fontFamily: PIXEL_FONT, fontSize: 12, fontWeight: 700, color: TC.ink, marginBottom: 12, lineHeight: 1.4 }}>
                       {lawCard.title}
                     </div>
-                    <div style={{ fontFamily: HAND_FONT, fontSize: 18, color: TC.ink, lineHeight: 1.55, marginBottom: 10 }}>
+                    <div style={{ fontFamily: HAND_FONT, fontSize: 16, fontWeight: 400, color: TC.ink, lineHeight: 1.5, marginBottom: 10 }}>
                       {lawCard.short_definition}
                     </div>
-                    <div style={{ fontFamily: HAND_FONT, fontSize: 16, color: TC.ink, lineHeight: 1.55, marginBottom: 12 }}>
+                    <div style={{ fontFamily: HAND_FONT, fontSize: 16, fontWeight: 400, color: TC.ink, lineHeight: 1.5, marginBottom: 12 }}>
                       {lawCard.long_description}
                     </div>
-                    <div style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: TC.magenta, marginBottom: 6 }}>
+                    <div style={{ fontFamily: PIXEL_FONT, fontSize: 10, fontWeight: 700, textTransform: 'uppercase', color: TC.magenta, marginBottom: 6 }}>
                       COMMON PITFALL
                     </div>
-                    <div style={{ fontFamily: HAND_FONT, fontSize: 16, color: TC.ink, lineHeight: 1.55 }}>
+                    <div style={{ fontFamily: HAND_FONT, fontSize: 16, fontWeight: 400, color: TC.ink, lineHeight: 1.5 }}>
                       {lawCard.pitfall}
                     </div>
                   </div>
@@ -283,9 +273,10 @@ export default function BriefingSection({ isCompleted, onAdvance }: SectionProps
                     {defQuote ? (
                       <div style={{
                         fontFamily: HAND_FONT,
-                        fontSize:   15,
+                        fontSize:   16,
+                        fontWeight: 400,
                         color:      TC.ink,
-                        lineHeight: 1.55,
+                        lineHeight: 1.5,
                         fontStyle:  'italic',
                       }}>
                         “{defQuote}”
@@ -317,8 +308,8 @@ export default function BriefingSection({ isCompleted, onAdvance }: SectionProps
                 onTypingChange={setIsTyping}
                 portrait={
                   dialogIdx === 0 || dialogIdx === 2
-                    ? <JudgeSprite size={60} isTalking={isTyping} />
-                    : <ProsecutorSprite size={60} isTalking={isTyping} />
+                    ? <JudgeSprite size={90} isTalking={isTyping} />
+                    : <ProsecutorSprite size={90} isTalking={isTyping} />
                 }
                 onNext={() => {
                   if (dialogIdx < dialogs.length - 1) setDialogIdx(dialogIdx + 1)

@@ -115,33 +115,25 @@ export default function InvestigationSection({ isCompleted, onAdvance }: Section
         pointerEvents: isCompleted ? 'none' : 'auto',
         transition: 'opacity 0.2s',
       }}>
-        {isCompleted && (
-          <div style={{
-            fontFamily: PIXEL_FONT, fontSize: 8, color: TC.green,
-            border: `2px solid ${TC.green}`, padding: '4px 10px',
-            background: `${TC.green}10`, display: 'inline-block', marginBottom: 14,
-          }}>
-            ✓ COMPLETED — scroll up to review
-          </div>
-        )}
+
 
         <div className="responsive-row" style={{ gap: 30, maxWidth: 1100, margin: '0 auto' }}>
           <div style={{ flex: 1 }}>
             <div style={{
               background: TC.cream, border: `3px solid ${TC.ink}`, boxShadow: `5px 5px 0 ${TC.ink}`,
-              padding: 24,
+              padding: 32,
             }}>
-              <div style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: TC.grey, marginBottom: 8 }}>CASE BRIEF</div>
-              <div style={{ fontFamily: HAND_FONT, fontSize: 18, color: TC.ink, lineHeight: 1.6, marginBottom: 18 }}>
+              <div style={{ fontFamily: PIXEL_FONT, fontSize: 10, fontWeight: 700, textTransform: 'uppercase', color: TC.grey, marginBottom: 12 }}>CASE BRIEF</div>
+              <div style={{ fontFamily: HAND_FONT, fontSize: 16, fontWeight: 400, color: TC.ink, lineHeight: 1.5, marginBottom: 32 }}>
                 {narrative}
               </div>
 
               {code && (
-                <div style={{ marginBottom: 18 }}>
-                  <div style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: TC.orange, marginBottom: 8 }}>EXHIBIT — SOURCE CODE</div>
+                <div style={{ marginBottom: 32 }}>
+                  <div style={{ fontFamily: PIXEL_FONT, fontSize: 10, fontWeight: 700, textTransform: 'uppercase', color: TC.orange, marginBottom: 12 }}>EXHIBIT — SOURCE CODE</div>
                   <div style={{
                     background: '#1e1e2e', color: '#cdd6f4', fontFamily: MONO_FONT, fontSize: 13,
-                    padding: 16, border: `2px solid ${TC.ink}`, lineHeight: 1.6, overflow: 'auto',
+                    padding: 20, border: `2px solid ${TC.ink}`, lineHeight: 1.6, overflow: 'auto',
                     whiteSpace: 'pre-wrap',
                   }}>
                     {code}
@@ -150,13 +142,13 @@ export default function InvestigationSection({ isCompleted, onAdvance }: Section
               )}
 
               {testSet.length > 0 && questionType !== 'coverage_table' && questionType !== 'test_designer' && (
-                <div style={{ marginBottom: 18 }}>
-                  <div style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: TC.blue, marginBottom: 8 }}>TEST SET ON RECORD</div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                <div style={{ marginBottom: 32 }}>
+                  <div style={{ fontFamily: PIXEL_FONT, fontSize: 10, fontWeight: 700, textTransform: 'uppercase', color: TC.blue, marginBottom: 12 }}>TEST SET ON RECORD</div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                     {testSet.map((t) => (
                       <div key={t.id} style={{
                         fontFamily: MONO_FONT, fontSize: 12, color: TC.ink, lineHeight: 1.55,
-                        padding: '6px 10px', background: `${TC.blue}10`, border: `1px solid ${TC.blue}`,
+                        padding: '10px 14px', background: `${TC.blue}10`, border: `1px solid ${TC.blue}`,
                       }}>
                         <strong>{t.id}</strong>: inputs = {JSON.stringify(t.inputs)} → outcome = {String(t.outcome)}
                       </div>
@@ -167,66 +159,117 @@ export default function InvestigationSection({ isCompleted, onAdvance }: Section
 
               {claim && (
                 <div style={{
-                  background: `${TC.magenta}10`, border: `2px solid ${TC.magenta}`, padding: 14,
-                  marginTop: 8,
+                  background: `${TC.magenta}10`, border: `2px solid ${TC.magenta}`, padding: 20,
+                  marginTop: 16, marginBottom: 32,
                 }}>
-                  <div style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: TC.magenta, marginBottom: 8 }}>THE CLAIM UNDER REVIEW</div>
-                  <div style={{ fontFamily: HAND_FONT, fontSize: 18, color: TC.ink, lineHeight: 1.55 }}>
+                  <div style={{ fontFamily: PIXEL_FONT, fontSize: 10, fontWeight: 700, textTransform: 'uppercase', color: TC.magenta, marginBottom: 12 }}>THE CLAIM UNDER REVIEW</div>
+                  <div style={{ fontFamily: HAND_FONT, fontSize: 16, fontWeight: 400, color: TC.ink, lineHeight: 1.5 }}>
                     "{claim}"
                   </div>
                 </div>
               )}
 
               {caseFile && (questionType === 'binary_verdict' || questionType === 'level_picker') && (
-                <OptionListPicker caseFile={caseFile} feedback={feedback} onSubmit={handleAnswer} />
+                <OptionListPicker caseFile={caseFile} feedback={feedback} onSubmit={handleAnswer} onAdvance={onAdvance} isCompleted={isCompleted} />
               )}
               {caseFile && questionType === 'coverage_table' && (
-                <CoverageTablePicker caseFile={caseFile} feedback={feedback} onSubmit={handleAnswer} />
+                <CoverageTablePicker caseFile={caseFile} feedback={feedback} onSubmit={handleAnswer} onAdvance={onAdvance} isCompleted={isCompleted} />
               )}
               {caseFile && questionType === 'test_designer' && (
-                <TestDesignerPicker caseFile={caseFile} feedback={feedback} onSubmit={handleAnswer} />
+                <TestDesignerPicker caseFile={caseFile} feedback={feedback} onSubmit={handleAnswer} onAdvance={onAdvance} isCompleted={isCompleted} />
               )}
               {caseFile && questionType === 'numeric_input' && (
-                <NumericInputPicker caseFile={caseFile} feedback={feedback} onSubmit={handleAnswer} />
+                <NumericInputPicker caseFile={caseFile} feedback={feedback} onSubmit={handleAnswer} onAdvance={onAdvance} isCompleted={isCompleted} />
               )}
               {caseFile && questionType === 'dialogue_objection' && (
-                <DialogueObjectionPicker caseFile={caseFile} feedback={feedback} onSubmit={handleAnswer} />
+                <DialogueObjectionPicker caseFile={caseFile} feedback={feedback} onSubmit={handleAnswer} onAdvance={onAdvance} isCompleted={isCompleted} />
               )}
               {caseFile && questionType === 'evidence_board' && (
-                <EvidenceBoardPicker caseFile={caseFile} feedback={feedback} onSubmit={handleAnswer} />
+                <EvidenceBoardPicker caseFile={caseFile} feedback={feedback} onSubmit={handleAnswer} onAdvance={onAdvance} isCompleted={isCompleted} />
               )}
               {caseFile && questionType === 'budget_strategy' && (
-                <BudgetStrategyPicker caseFile={caseFile} feedback={feedback} onSubmit={handleAnswer} />
+                <BudgetStrategyPicker caseFile={caseFile} feedback={feedback} onSubmit={handleAnswer} onAdvance={onAdvance} isCompleted={isCompleted} />
               )}
               {caseFile && questionType === 'mcdc_pair_builder' && (
-                <McdcPairBuilderPicker caseFile={caseFile} feedback={feedback} onSubmit={handleAnswer} />
-              )}
-              
-              {feedback && !isCompleted && (
-                <div style={{ marginTop: 16, display: 'flex', justifyContent: 'flex-end' }}>
-                  <PixelButton
-                    variant={feedback.type === 'success' ? 'primary' : 'danger'}
-                    onClick={onAdvance}
-                  >
-                    PROCEED TO TRIAL →
-                  </PixelButton>
-                </div>
+                <McdcPairBuilderPicker caseFile={caseFile} feedback={feedback} onSubmit={handleAnswer} onAdvance={onAdvance} isCompleted={isCompleted} />
               )}
             </div>
           </div>
 
-          <div style={{ width: 280, display: 'flex', flexDirection: 'column', gap: 16 }}>
-            <div style={{ textAlign: 'center', padding: 16, border: `3px solid ${TC.ink}`, background: TC.cream, boxShadow: `4px 4px 0 ${TC.ink}` }}>
-              <JudgeSprite size={90} />
-              <div style={{ fontFamily: HAND_FONT, fontSize: 16, color: TC.ink, marginTop: 10, lineHeight: 1.55 }}>
-                "Read the claim carefully. Does the evidence support it under the required coverage standard?"
+          <div style={{ width: 340, display: 'flex', flexDirection: 'column', gap: 16 }}>
+            <div style={{
+              background: TC.cream,
+              border: `3px solid ${TC.ink}`,
+              boxShadow: `4px 4px 0 ${TC.ink}`,
+              padding: 0,
+              overflow: 'hidden',
+            }}>
+              <div style={{
+                background: TC.ink,
+                color: TC.cream,
+                fontFamily: PIXEL_FONT,
+                fontSize: 9,
+                letterSpacing: 1,
+                padding: '6px 10px',
+              }}>
+                THE JUDGE
+              </div>
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: '120px 1fr',
+                gap: 0,
+              }}>
+                <div style={{
+                  background: TC.grid,
+                  borderRight: `2px solid ${TC.ink}`,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  padding: '12px 8px 12px',
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 1 }}>
+                    <JudgeSprite size={90} />
+                  </div>
+                </div>
+                <div style={{
+                  position: 'relative',
+                  padding: '14px 14px 16px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  minHeight: 140,
+                }}>
+                  <div
+                    aria-hidden="true"
+                    style={{
+                      position: 'absolute',
+                      left: -8,
+                      top: 24,
+                      width: 0,
+                      height: 0,
+                      borderTop: '8px solid transparent',
+                      borderBottom: '8px solid transparent',
+                      borderRight: `8px solid ${TC.ink}`,
+                    }}
+                  />
+                  <div style={{
+                    fontFamily: HAND_FONT,
+                    fontSize: 16,
+                    fontWeight: 400,
+                    color: TC.ink,
+                    lineHeight: 1.5,
+                    fontStyle: 'italic',
+                  }}>
+                    "Read the claim carefully. Does the evidence support it under the required coverage standard?"
+                  </div>
+                </div>
               </div>
             </div>
 
             {(caseFile?.hints?.length ?? 0) > 0 && (
-              <div style={{ padding: 14, border: `2px solid ${TC.grid}`, background: TC.cream }}>
+              <div style={{ padding: 14, border: `3px solid ${TC.ink}`, background: TC.cream, boxShadow: `4px 4px 0 ${TC.ink}` }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-                  <div style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: TC.blue }}>
+                  <div style={{ fontFamily: PIXEL_FONT, fontSize: 10, fontWeight: 700, textTransform: 'uppercase', color: TC.blue }}>
                     HINT {hintLevel + 1}/{caseFile?.hints?.length}
                   </div>
                   {hintLevel < (caseFile?.hints?.length ?? 1) - 1 && (
@@ -238,7 +281,7 @@ export default function InvestigationSection({ isCompleted, onAdvance }: Section
                     </button>
                   )}
                 </div>
-                <div style={{ fontFamily: MONO_FONT, fontSize: 12, color: TC.ink, lineHeight: 1.6 }}>
+                <div style={{ fontFamily: HAND_FONT, fontSize: 16, fontWeight: 400, color: TC.ink, lineHeight: 1.5 }}>
                   {caseFile?.hints?.[hintLevel]}
                 </div>
               </div>
@@ -256,15 +299,7 @@ export default function InvestigationSection({ isCompleted, onAdvance }: Section
       pointerEvents: isCompleted ? 'none' : 'auto',
       transition: 'opacity 0.2s',
     }}>
-      {isCompleted && (
-        <div style={{
-          fontFamily: PIXEL_FONT, fontSize: 8, color: TC.green,
-          border: `2px solid ${TC.green}`, padding: '4px 10px',
-          background: `${TC.green}10`, display: 'inline-block', marginBottom: 14,
-        }}>
-          ✓ COMPLETED — scroll up to review
-        </div>
-      )}
+
 
       <div className="responsive-row" style={{ gap: 30, maxWidth: 1100, margin: '0 auto' }}>
         <div style={{ flex: 1 }}>
@@ -301,12 +336,13 @@ export default function InvestigationSection({ isCompleted, onAdvance }: Section
                   return (
                     <tr
                       key={row.id}
-                      onClick={() => toggleRow(row.id)}
+                      onClick={() => { if (!validated) toggleRow(row.id) }}
                       style={{
                         borderBottom: `1px solid ${TC.grid}`,
                         background: marked ? `${TC.blue}12` : 'transparent',
-                        cursor: 'pointer',
+                        cursor: validated ? 'default' : 'pointer',
                         transition: 'background 0.06s steps(2)',
+                        opacity: validated && !marked ? 0.6 : 1,
                       }}
                     >
                       <td style={tdStyle}>{row.id}</td>
@@ -336,12 +372,16 @@ export default function InvestigationSection({ isCompleted, onAdvance }: Section
             <div style={{ fontFamily: MONO_FONT, fontSize: 11, color: TC.grey }}>
               Selected: <strong style={{ color: TC.blue }}>{selectedCount}</strong> / Required: <strong>≥ 4</strong> (N+1)
             </div>
-            <PixelButton
-              variant={validated ? 'success' : 'primary'}
-              onClick={validated ? onAdvance : handleValidate}
-            >
-              {validated ? 'PROCEED TO EVIDENCE →' : 'VALIDATE MODEL'}
-            </PixelButton>
+            <div style={{ display: 'flex', gap: 12 }}>
+              <PixelButton variant="primary" onClick={handleValidate} disabled={validated}>
+                VALIDATE MODEL
+              </PixelButton>
+              {validated && !isCompleted && (
+                <PixelButton variant="success" onClick={onAdvance}>
+                  PROCEED TO EVIDENCE →
+                </PixelButton>
+              )}
+            </div>
           </div>
 
           {feedback && (
@@ -349,23 +389,85 @@ export default function InvestigationSection({ isCompleted, onAdvance }: Section
               marginTop: 12, padding: '10px 14px',
               background: feedback.type === 'success' ? `${TC.green}15` : `${TC.magenta}15`,
               border: `2px solid ${feedback.type === 'success' ? TC.green : TC.magenta}`,
-              fontFamily: HAND_FONT, fontSize: 18, color: TC.ink, lineHeight: 1.55,
+              fontFamily: HAND_FONT, fontSize: 16, fontWeight: 400, color: TC.ink, lineHeight: 1.5,
             }}>
               {feedback.type === 'error' && '⚠  '}{feedback.msg}
             </div>
           )}
         </div>
 
-        <div style={{ width: 280, display: 'flex', flexDirection: 'column', gap: 16 }}>
-          <div style={{ textAlign: 'center', padding: 16, border: `3px solid ${TC.ink}`, background: TC.cream, boxShadow: `4px 4px 0 ${TC.ink}` }}>
-            <JudgeSprite size={90} />
-            <div style={{ fontFamily: HAND_FONT, fontSize: 16, color: TC.ink, marginTop: 10, lineHeight: 1.55 }}>
-              "Build the truth table first. Identify which rows you'll need for your independence pairs."
+        <div style={{ width: 340, display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <div style={{
+            background: TC.cream,
+            border: `3px solid ${TC.ink}`,
+            boxShadow: `4px 4px 0 ${TC.ink}`,
+            padding: 0,
+            overflow: 'hidden',
+          }}>
+            <div style={{
+              background: TC.ink,
+              color: TC.cream,
+              fontFamily: PIXEL_FONT,
+              fontSize: 9,
+              letterSpacing: 1,
+              padding: '6px 10px',
+            }}>
+              THE JUDGE
+            </div>
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: '120px 1fr',
+              gap: 0,
+            }}>
+              <div style={{
+                background: TC.grid,
+                borderRight: `2px solid ${TC.ink}`,
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                padding: '12px 8px 12px',
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 1 }}>
+                  <JudgeSprite size={90} />
+                </div>
+              </div>
+              <div style={{
+                position: 'relative',
+                padding: '14px 14px 16px',
+                display: 'flex',
+                alignItems: 'center',
+                minHeight: 140,
+              }}>
+                <div
+                  aria-hidden="true"
+                  style={{
+                    position: 'absolute',
+                    left: -8,
+                    top: 24,
+                    width: 0,
+                    height: 0,
+                    borderTop: '8px solid transparent',
+                    borderBottom: '8px solid transparent',
+                    borderRight: `8px solid ${TC.ink}`,
+                  }}
+                />
+                <div style={{
+                  fontFamily: HAND_FONT,
+                  fontSize: 16,
+                  fontWeight: 400,
+                  color: TC.ink,
+                  lineHeight: 1.5,
+                  fontStyle: 'italic',
+                }}>
+                  "Build the truth table first. Identify which rows you'll need for your independence pairs."
+                </div>
+              </div>
             </div>
           </div>
 
-          <div style={{ padding: 14, border: `2px solid ${TC.grid}`, background: TC.cream }}>
-            <div style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: TC.blue, marginBottom: 8 }}>QUICK REF</div>
+          <div style={{ padding: 14, border: `3px solid ${TC.ink}`, background: TC.cream, boxShadow: `4px 4px 0 ${TC.ink}` }}>
+            <div style={{ fontFamily: PIXEL_FONT, fontSize: 10, fontWeight: 700, textTransform: 'uppercase', color: TC.blue, marginBottom: 8 }}>QUICK REF</div>
             <div style={{ fontFamily: MONO_FONT, fontSize: 12, color: TC.ink, lineHeight: 1.6 }}>
               • N conditions → N+1 tests min<br />
               • Each condition must independently<br />

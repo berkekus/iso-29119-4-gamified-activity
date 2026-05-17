@@ -135,17 +135,17 @@ export default function DebriefSection({ onNavigateOut }: DebriefSectionProps) {
 
             <div style={{ display: 'flex', gap: 20, marginBottom: 20 }}>
               <div style={{ flex: 1 }}>
-                <div style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: TC.grey, marginBottom: 8 }}>VERDICT</div>
+                <div style={{ fontFamily: PIXEL_FONT, fontSize: 10, fontWeight: 700, textTransform: 'uppercase', color: TC.grey, marginBottom: 8 }}>VERDICT</div>
                 <div style={{ fontFamily: PIXEL_FONT, fontSize: 14, color: isGuilty ? TC.green : TC.magenta }}>
                   {isGuilty ? 'GUILTY' : 'MISTRIAL'}
                 </div>
               </div>
               <div style={{ flex: 1 }}>
-                <div style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: TC.grey, marginBottom: 8 }}>COVERAGE</div>
+                <div style={{ fontFamily: PIXEL_FONT, fontSize: 10, fontWeight: 700, textTransform: 'uppercase', color: TC.grey, marginBottom: 8 }}>COVERAGE</div>
                 <CoverageMeter value={coverageVal} max={100} color={isGuilty ? TC.green : TC.orange} width={140} />
               </div>
               <div style={{ flex: 1 }}>
-                <div style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: TC.grey, marginBottom: 8 }}>
+                <div style={{ fontFamily: PIXEL_FONT, fontSize: 10, fontWeight: 700, textTransform: 'uppercase', color: TC.grey, marginBottom: 8 }}>
                   {caseFile?.question_type === 'pair_selector' ? 'PAIRS SUBMITTED' : 'ANSWER'}
                 </div>
                 <div style={{ fontFamily: PIXEL_FONT, fontSize: 14, color: TC.blue }}>
@@ -173,10 +173,10 @@ export default function DebriefSection({ onNavigateOut }: DebriefSectionProps) {
                 padding: 16,
                 marginBottom: 16,
               }}>
-                <div style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: TC.green, marginBottom: 10 }}>
+                <div style={{ fontFamily: PIXEL_FONT, fontSize: 10, fontWeight: 700, textTransform: 'uppercase', color: TC.green, marginBottom: 10 }}>
                   OBJECTION SUSTAINED — CASE RECAP
                 </div>
-                <div style={{ fontFamily: HAND_FONT, fontSize: 18, color: TC.ink, lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>
+                <div style={{ fontFamily: HAND_FONT, fontSize: 16, fontWeight: 400, color: TC.ink, lineHeight: 1.5, whiteSpace: 'pre-wrap' }}>
                   {dialogueDebrief}
                 </div>
               </div>
@@ -189,10 +189,10 @@ export default function DebriefSection({ onNavigateOut }: DebriefSectionProps) {
                 padding: 16,
                 marginBottom: 16,
               }}>
-                <div style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: TC.orange, marginBottom: 10 }}>
+                <div style={{ fontFamily: PIXEL_FONT, fontSize: 10, fontWeight: 700, textTransform: 'uppercase', color: TC.orange, marginBottom: 10 }}>
                   SUBPOENA STRATEGY — COVERAGE DEBRIEF
                 </div>
-                <div style={{ fontFamily: HAND_FONT, fontSize: 18, color: TC.ink, lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>
+                <div style={{ fontFamily: HAND_FONT, fontSize: 16, fontWeight: 400, color: TC.ink, lineHeight: 1.5, whiteSpace: 'pre-wrap' }}>
                   {budgetDebrief}
                 </div>
               </div>
@@ -205,10 +205,10 @@ export default function DebriefSection({ onNavigateOut }: DebriefSectionProps) {
                 padding: 16,
                 marginBottom: 16,
               }}>
-                <div style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: vaultBorderColor, marginBottom: 10 }}>
+                <div style={{ fontFamily: PIXEL_FONT, fontSize: 10, fontWeight: 700, textTransform: 'uppercase', color: vaultBorderColor, marginBottom: 10 }}>
                   INDEPENDENT EFFECT ANALYSIS
                 </div>
-                <div style={{ fontFamily: HAND_FONT, fontSize: 18, color: TC.ink, lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>
+                <div style={{ fontFamily: HAND_FONT, fontSize: 16, fontWeight: 400, color: TC.ink, lineHeight: 1.5, whiteSpace: 'pre-wrap' }}>
                   {lastVaultEvaluation.all_ok
                     ? 'You selected 4 rows that form valid independence pairs for M, K, and T.\n\nThis shows how a carefully interlocked N+1 suite can achieve MC/DC with fewer tests than full 2^N BCC. One test can participate in multiple independence pairs.'
                     : vaultPartialOk
@@ -219,15 +219,15 @@ export default function DebriefSection({ onNavigateOut }: DebriefSectionProps) {
             )}
 
             <div style={{ background: `${TC.blue}08`, border: `2px solid ${TC.blue}`, padding: 16, marginBottom: 16 }}>
-              <div style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: TC.blue, marginBottom: 10 }}>WHAT THE TEXTBOOK SAYS</div>
-              <div style={{ fontFamily: HAND_FONT, fontSize: 18, color: TC.ink, lineHeight: 1.6 }}>
+              <div style={{ fontFamily: PIXEL_FONT, fontSize: 10, fontWeight: 700, textTransform: 'uppercase', color: TC.blue, marginBottom: 10 }}>WHAT THE TEXTBOOK SAYS</div>
+              <div style={{ fontFamily: HAND_FONT, fontSize: 16, fontWeight: 400, color: TC.ink, lineHeight: 1.5 }}>
                 {(caseFile?.technique && TECHNIQUE_TEXTBOOK[caseFile.technique]) ??
                   'Apply the coverage technique required for this act and confirm the claim against the standard of proof.'}
               </div>
             </div>
 
             <div style={{ background: `${TC.orange}08`, border: `2px solid ${TC.orange}`, padding: 16 }}>
-              <div style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: TC.orange, marginBottom: 10 }}>ISO/IEC/IEEE 29119-4 REFERENCE</div>
+              <div style={{ fontFamily: PIXEL_FONT, fontSize: 10, fontWeight: 700, textTransform: 'uppercase', color: TC.orange, marginBottom: 10 }}>ISO/IEC/IEEE 29119-4 REFERENCE</div>
               <div style={{ fontFamily: MONO_FONT, fontSize: 13, color: TC.ink, lineHeight: 1.6 }}>
                 {(caseFile?.iso_clauses ?? []).map((cl) => (
                   <div key={cl}><strong>{cl}</strong></div>
@@ -242,7 +242,7 @@ export default function DebriefSection({ onNavigateOut }: DebriefSectionProps) {
           {/* Fault analysis */}
           {faultResults.length > 0 && (
             <div style={{ background: TC.cream, border: `3px solid ${TC.ink}`, boxShadow: `4px 4px 0 ${TC.ink}`, padding: 16, marginBottom: 20 }}>
-              <div style={{ fontFamily: PIXEL_FONT, fontSize: 10, color: TC.ink, marginBottom: 12 }}>FAULT ANALYSIS</div>
+              <div style={{ fontFamily: PIXEL_FONT, fontSize: 10, fontWeight: 700, textTransform: 'uppercase', color: TC.ink, marginBottom: 12 }}>FAULT ANALYSIS</div>
               {faultResults.map(f => (
                 <div key={f.id} style={{
                   display: 'flex', gap: 10, alignItems: 'flex-start',
@@ -255,7 +255,7 @@ export default function DebriefSection({ onNavigateOut }: DebriefSectionProps) {
                     <div style={{ fontFamily: PIXEL_FONT, fontSize: 8, color: f.detected ? TC.green : TC.magenta }}>
                       {f.detected ? 'DETECTED' : 'ESCAPED'}
                     </div>
-                    <div style={{ fontFamily: HAND_FONT, fontSize: 16, color: TC.ink, marginTop: 4, lineHeight: 1.55 }}>
+                    <div style={{ fontFamily: HAND_FONT, fontSize: 16, fontWeight: 400, color: TC.ink, marginTop: 4, lineHeight: 1.5 }}>
                       {seededFaultMap[f.id] ?? 'Seeded fault — see case file for details.'}
                       {!f.detected && ' To detect this, construct a test that exercises the masked path.'}
                     </div>
@@ -279,7 +279,7 @@ export default function DebriefSection({ onNavigateOut }: DebriefSectionProps) {
         <div style={{ width: 260, display: 'flex', flexDirection: 'column', gap: 16 }}>
           <div style={{ textAlign: 'center', padding: 16, border: `3px solid ${TC.ink}`, background: TC.cream, boxShadow: `4px 4px 0 ${TC.ink}` }}>
             <JudgeSprite size={100} pose="verdict" />
-            <div style={{ fontFamily: HAND_FONT, fontSize: 16, color: TC.ink, marginTop: 10, lineHeight: 1.55 }}>
+            <div style={{ fontFamily: HAND_FONT, fontSize: 16, fontWeight: 400, color: TC.ink, marginTop: 10, lineHeight: 1.5 }}>
               {isGuilty
                 ? '"Excellent work, Prosecutor. The standard is satisfied. Case closed."'
                 : '"A mistrial is not a failure — it\'s a lesson. Return with stronger evidence."'}
@@ -288,11 +288,11 @@ export default function DebriefSection({ onNavigateOut }: DebriefSectionProps) {
 
           {triggeredMisconceptions.length > 0 && (
             <div style={{ padding: 14, border: `3px solid ${TC.magenta}`, background: `${TC.magenta}08`, boxShadow: `4px 4px 0 ${TC.ink}` }}>
-              <div style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: TC.magenta, marginBottom: 10 }}>MISCONCEPTION LOG</div>
+              <div style={{ fontFamily: PIXEL_FONT, fontSize: 10, fontWeight: 700, textTransform: 'uppercase', color: TC.magenta, marginBottom: 10 }}>MISCONCEPTION LOG</div>
               {mcdc.misconceptions.filter(m => m.triggered).map(m => (
                 <div key={m.id}>
                   <div style={{ fontFamily: PIXEL_FONT, fontSize: 8, color: TC.ink, marginBottom: 6 }}>{m.id}</div>
-                  <div style={{ fontFamily: HAND_FONT, fontSize: 16, color: TC.ink, lineHeight: 1.55 }}>
+                  <div style={{ fontFamily: HAND_FONT, fontSize: 16, fontWeight: 400, color: TC.ink, lineHeight: 1.5 }}>
                     {misconceptionMap[m.id] ?? m.explanation ?? 'A reasoning trap was triggered — re-read the hint chain in the case file.'}
                   </div>
                 </div>
@@ -301,7 +301,7 @@ export default function DebriefSection({ onNavigateOut }: DebriefSectionProps) {
           )}
 
           <div style={{ padding: 14, border: `2px solid ${TC.grid}`, background: TC.cream }}>
-            <div style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: TC.grey, marginBottom: 10 }}>PROGRESS</div>
+            <div style={{ fontFamily: PIXEL_FONT, fontSize: 10, fontWeight: 700, textTransform: 'uppercase', color: TC.grey, marginBottom: 10 }}>PROGRESS</div>
             <CoverageMeter value={totalCompleted} max={CASE_ORDER.length} label="TOTAL CASES" color={TC.blue} width={220} />
           </div>
 

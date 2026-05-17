@@ -5,11 +5,11 @@ import { useGameStore } from '../stores/gameStore'
 import type { Screen } from '../stores/gameStore'
 import type { GamePhase } from '../engine/types'
 
-import BriefingSection     from './sections/BriefingSection'
+import BriefingSection from './sections/BriefingSection'
 import InvestigationSection from './sections/InvestigationSection'
-import EvidenceSection     from './sections/EvidenceSection'
-import TrialSection        from './sections/TrialSection'
-import DebriefSection      from './sections/DebriefSection'
+import EvidenceSection from './sections/EvidenceSection'
+import TrialSection from './sections/TrialSection'
+import DebriefSection from './sections/DebriefSection'
 
 interface Props {
   onNavigateOut: (screen: Screen) => void
@@ -18,19 +18,19 @@ interface Props {
 const PHASES: GamePhase[] = ['briefing', 'investigation', 'evidence', 'trial', 'debrief']
 
 const PHASE_COLORS: Record<GamePhase, string> = {
-  briefing:      TC.grey,
+  briefing: TC.grey,
   investigation: TC.orange,
-  evidence:      TC.green,
-  trial:         TC.magenta,
-  debrief:       TC.blue,
+  evidence: TC.green,
+  trial: TC.magenta,
+  debrief: TC.blue,
 }
 
 const PHASE_LABELS: Record<GamePhase, string> = {
-  briefing:      'BRIEFING',
+  briefing: 'BRIEFING',
   investigation: 'INVESTIGATION',
-  evidence:      'EVIDENCE',
-  trial:         'TRIAL',
-  debrief:       'DEBRIEF',
+  evidence: 'EVIDENCE',
+  trial: 'TRIAL',
+  debrief: 'DEBRIEF',
 }
 
 function phaseAtLeast(current: GamePhase, target: GamePhase): boolean {
@@ -51,16 +51,16 @@ function StickyHeader({
 
   return (
     <div style={{
-      position:     'sticky',
-      top:          0,
-      zIndex:       10,
-      background:   TC.cream,
+      position: 'sticky',
+      top: 0,
+      zIndex: 10,
+      background: TC.cream,
       borderBottom: `3px solid ${TC.ink}`,
-      padding:      '14px clamp(16px,4vw,40px)',
-      display:      'grid',
+      padding: '14px clamp(16px,4vw,40px)',
+      display: 'grid',
       gridTemplateColumns: '1fr auto 1fr',
-      alignItems:   'center',
-      gap:          18,
+      alignItems: 'center',
+      gap: 18,
     }}>
       {/* Left: back — explicit destination so the user knows where they go */}
       <div style={{ justifySelf: 'start' }}>
@@ -69,10 +69,10 @@ function StickyHeader({
 
       {/* Center: phase stepper (breadcrumb) */}
       <div style={{
-        display:    'flex',
+        display: 'flex',
         alignItems: 'center',
-        gap:        6,
-        flexWrap:   'wrap',
+        gap: 6,
+        flexWrap: 'wrap',
         justifySelf: 'center',
       }}>
         {dynamicPhases.map((p, i) => {
@@ -80,20 +80,20 @@ function StickyHeader({
           //   done    → tobacco brown (TC.orange) ink-stamp + ✓
           //   active  → vivid amber highlight, draws the eye like a marker swipe
           //   pending → empty + faded grid frame
-          const isDone    = i < phaseIdx
-          const isActive  = i === phaseIdx
-          const DONE      = TC.orange   // #6B4A2B tobacco brown
+          const isDone = i < phaseIdx
+          const isActive = i === phaseIdx
+          const DONE = TC.orange   // #6B4A2B tobacco brown
           const ACTIVE_BG = '#D89B2A'   // amber highlight — only place this hue appears
-          const frame     = isActive ? '#8A5E13' : isDone ? DONE : TC.grid
-          const bg        = isActive ? ACTIVE_BG : isDone ? DONE : 'transparent'
-          const fg        = isActive ? TC.ink : isDone ? '#fff' : TC.grey
+          const frame = isActive ? '#8A5E13' : isDone ? DONE : TC.grid
+          const bg = isActive ? ACTIVE_BG : isDone ? DONE : 'transparent'
+          const fg = isActive ? TC.ink : isDone ? '#fff' : TC.grey
           return (
             <div key={p} style={{ display: 'flex', alignItems: 'center' }}>
               {i > 0 && (
                 <div style={{
-                  width:       18,
-                  height:      2,
-                  background:  i <= phaseIdx ? DONE : TC.grid,
+                  width: 18,
+                  height: 2,
+                  background: i <= phaseIdx ? DONE : TC.grid,
                   marginRight: 6,
                 }} />
               )}
@@ -102,18 +102,18 @@ function StickyHeader({
                 aria-label={PHASE_LABELS[p]}
                 aria-current={isActive ? 'step' : undefined}
                 style={{
-                  width:          isActive ? 28 : 24,
-                  height:         isActive ? 28 : 24,
-                  border:         `2px solid ${frame}`,
-                  background:     bg,
-                  boxShadow:      isActive ? '0 0 0 2px rgba(216,155,42,0.25)' : 'none',
-                  display:        'flex',
-                  alignItems:     'center',
+                  width: isActive ? 28 : 24,
+                  height: isActive ? 28 : 24,
+                  border: `2px solid ${frame}`,
+                  background: bg,
+                  boxShadow: isActive ? '0 0 0 2px rgba(216,155,42,0.25)' : 'none',
+                  display: 'flex',
+                  alignItems: 'center',
                   justifyContent: 'center',
-                  fontFamily:     PIXEL_FONT,
-                  fontSize:       9,
-                  color:          fg,
-                  transition:     'all 120ms ease-out',
+                  fontFamily: PIXEL_FONT,
+                  fontSize: 9,
+                  color: fg,
+                  transition: 'all 120ms ease-out',
                 }}
               >
                 {isDone ? '✓' : i + 1}
@@ -132,12 +132,13 @@ function StickyHeader({
 // ── Section divider ───────────────────────────────────────────────────────────
 
 function SectionDivider({ phaseLabel, phaseNumber, color }: { phaseLabel: string; phaseNumber: number; color: string }) {
+  const isFirst = phaseNumber === 1
   return (
     <div style={{
       display: 'flex', alignItems: 'center', gap: 14,
-      padding: '18px 0 14px',
-      borderTop: `2px solid ${TC.grid}`,
-      marginTop: 32,
+      padding: isFirst ? '0 0 14px' : '18px 0 14px',
+      borderTop: isFirst ? 'none' : `2px solid ${TC.grid}`,
+      marginTop: isFirst ? 0 : 32,
       marginBottom: 24,
     }}>
       <div style={{
@@ -149,7 +150,7 @@ function SectionDivider({ phaseLabel, phaseNumber, color }: { phaseLabel: string
       }}>
         {phaseNumber}
       </div>
-      <div style={{ fontFamily: PIXEL_FONT, fontSize: 9, color, letterSpacing: 0.5 }}>
+      <div style={{ fontFamily: PIXEL_FONT, fontSize: 14, color, letterSpacing: 1 }}>
         PHASE {phaseNumber}: {phaseLabel}
       </div>
     </div>
@@ -161,22 +162,22 @@ function SectionDivider({ phaseLabel, phaseNumber, color }: { phaseLabel: string
 export default function CasePlayScreen({ onNavigateOut }: Props) {
   const { phase, advancePhase, caseFile, goBack } = useGameStore()
 
-  const briefingRef      = useRef<HTMLDivElement>(null)
+  const briefingRef = useRef<HTMLDivElement>(null)
   const investigationRef = useRef<HTMLDivElement>(null)
-  const evidenceRef      = useRef<HTMLDivElement>(null)
-  const trialRef         = useRef<HTMLDivElement>(null)
-  const debriefRef       = useRef<HTMLDivElement>(null)
+  const evidenceRef = useRef<HTMLDivElement>(null)
+  const trialRef = useRef<HTMLDivElement>(null)
+  const debriefRef = useRef<HTMLDivElement>(null)
 
   const isPairSelector = caseFile?.question_type === 'pair_selector'
 
   // Auto-scroll to the newly revealed section on phase advance
   useEffect(() => {
     const refMap: Partial<Record<GamePhase, React.RefObject<HTMLDivElement>>> = {
-      briefing:      briefingRef,
+      briefing: briefingRef,
       investigation: investigationRef,
-      evidence:      evidenceRef,
-      trial:         trialRef,
-      debrief:       debriefRef,
+      evidence: evidenceRef,
+      trial: trialRef,
+      debrief: debriefRef,
     }
     const target = refMap[phase]?.current
     if (target) {
