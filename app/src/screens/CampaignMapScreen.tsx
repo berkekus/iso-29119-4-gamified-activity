@@ -10,7 +10,7 @@ import { CASE_ORDER } from '../content/caseOrder'
 // preserved, but saturation/brightness are dialled down so the cards feel
 // like printed ink stamps instead of neon UI chips.
 const ACT_COLORS = {
-  stmtBranch:   '#B8541F', // burnt sienna   (was TC.orange)
+  stmtBranch:   '#6B4A2B', // tobacco brown  (was TC.orange)
   decisionBc:   '#4F7A3A', // olive ink      (was TC.green)
   bcc:          '#2D5C8A', // navy ink       (was TC.blue)
   mcdc:         '#8A3D6B', // dried plum     (was TC.magenta)
