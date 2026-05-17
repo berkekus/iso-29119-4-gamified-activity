@@ -33,13 +33,16 @@ const PHASE_LABELS: Record<GamePhase, string> = {
   debrief:       'DEBRIEF',
 }
 
-const ACT_LABEL: Record<string, string> = {
-  STMT_BRANCH:   'ACT I',
-  DECISION_BC:   'ACT II',
-  BCC:           'ACT III',
-  MCDC:          'ACT IV',
-  Combinatorial: 'ACT III',
-  DataFlow:      'ACT V',
+// Act id → human-readable act name. Shown in the play-screen header instead
+// of a generic 'ACT I/II/...' chip so the player sees what topic they are
+// actually working in (matches the campaign map).
+const ACT_NAME: Record<string, string> = {
+  STMT_BRANCH:   'Statement & Branch',
+  DECISION_BC:   'Decision & BC',
+  BCC:           'BCC',
+  MCDC:          'MC/DC',
+  Combinatorial: 'BCC',
+  DataFlow:      'Coverage Trial',
 }
 
 function phaseAtLeast(current: GamePhase, target: GamePhase): boolean {
@@ -49,11 +52,10 @@ function phaseAtLeast(current: GamePhase, target: GamePhase): boolean {
 // ── Sticky header ─────────────────────────────────────────────────────────────
 
 function StickyHeader({
-  phase, caseTitle, actLabel, onBack, isPairSelector
+  phase, actName, onBack, isPairSelector
 }: {
   phase: GamePhase
-  caseTitle: string
-  actLabel: string
+  actName: string
   onBack: () => void
   isPairSelector: boolean
 }) {
@@ -63,65 +65,87 @@ function StickyHeader({
 
   return (
     <div style={{
-      position: 'sticky',
-      top: 0,
-      zIndex: 10,
-      background: TC.cream,
+      position:     'sticky',
+      top:          0,
+      zIndex:       10,
+      background:   TC.cream,
       borderBottom: `3px solid ${TC.ink}`,
-      padding: '10px clamp(16px,4vw,40px)',
-      display: 'flex',
-      alignItems: 'center',
-      gap: 14,
-      flexWrap: 'wrap',
+      padding:      '14px clamp(16px,4vw,40px)',
+      display:      'flex',
+      alignItems:   'center',
+      gap:          18,
+      flexWrap:     'wrap',
     }}>
-      <PixelButton small variant="secondary" onClick={onBack}>← CAMPAIGN</PixelButton>
+      {/* Left: back — explicit destination so the user knows where they go */}
+      <PixelButton small variant="secondary" onClick={onBack}>← BACK TO MAP</PixelButton>
 
-      {actLabel && (
+      {/* Act name chip — contextual topic instead of generic 'ACT I' */}
+      {actName && (
         <span style={{
-          fontFamily: PIXEL_FONT, fontSize: 8, color: TC.magenta,
-          padding: '4px 10px', border: `2px solid ${TC.magenta}`,
+          fontFamily:    PIXEL_FONT,
+          fontSize:      9,
+          color:         TC.grey,
+          padding:       '6px 12px',
+          border:        `2px solid ${TC.grey}`,
+          background:    'transparent',
+          letterSpacing: 0.5,
+          textTransform: 'uppercase',
+          whiteSpace:    'nowrap',
         }}>
-          {actLabel}
+          {actName}
         </span>
       )}
 
       {/* Phase stepper */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 4, flex: 1, justifyContent: 'center', flexWrap: 'wrap' }}>
+      <div style={{
+        display:        'flex',
+        alignItems:     'center',
+        gap:            6,
+        flex:           1,
+        justifyContent: 'center',
+        flexWrap:       'wrap',
+      }}>
         {dynamicPhases.map((p, i) => (
           <div key={p} style={{ display: 'flex', alignItems: 'center' }}>
             {i > 0 && (
-              <div style={{ width: 14, height: 2, background: i <= phaseIdx ? TC.ink : TC.grid, marginRight: 4 }} />
+              <div style={{
+                width:       18,
+                height:      2,
+                background:  i <= phaseIdx ? TC.ink : TC.grid,
+                marginRight: 6,
+              }} />
             )}
-            <div style={{
-              width: 20, height: 20,
-              border: `2px solid ${i <= phaseIdx ? TC.ink : TC.grid}`,
-              background: i < phaseIdx ? TC.ink : i === phaseIdx ? currentColor : 'transparent',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontFamily: PIXEL_FONT, fontSize: 8,
-              color: i <= phaseIdx ? '#fff' : TC.grey,
-              title: PHASE_LABELS[p],
-            }}>
+            <div
+              title={PHASE_LABELS[p]}
+              style={{
+                width:          24,
+                height:         24,
+                border:         `2px solid ${i <= phaseIdx ? TC.ink : TC.grid}`,
+                background:     i < phaseIdx ? TC.ink : i === phaseIdx ? currentColor : 'transparent',
+                display:        'flex',
+                alignItems:     'center',
+                justifyContent: 'center',
+                fontFamily:     PIXEL_FONT,
+                fontSize:       9,
+                color:          i <= phaseIdx ? '#fff' : TC.grey,
+              }}
+            >
               {i < phaseIdx ? '✓' : i + 1}
             </div>
           </div>
         ))}
       </div>
 
-      {/* Case title (truncated) */}
+      {/* Current phase chip — the only redundant-looking label kept, because
+         it tells the user what they are doing right now, in big letters. */}
       <span style={{
-        fontFamily: PIXEL_FONT, fontSize: 8,
-        color: TC.ink,
-        maxWidth: 200,
-        overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-      }}>
-        {caseTitle}
-      </span>
-
-      {/* Current phase chip */}
-      <span style={{
-        fontFamily: PIXEL_FONT, fontSize: 8, color: currentColor,
-        padding: '4px 10px', border: `2px solid ${currentColor}`,
-        background: `${currentColor}15`,
+        fontFamily:    PIXEL_FONT,
+        fontSize:      9,
+        color:         currentColor,
+        padding:       '6px 12px',
+        border:        `2px solid ${currentColor}`,
+        background:    `${currentColor}15`,
+        letterSpacing: 0.5,
       }}>
         {PHASE_LABELS[phase]}
       </span>
@@ -191,15 +215,13 @@ export default function CasePlayScreen({ onNavigateOut }: Props) {
     }
   }, [phase, isPairSelector, advancePhase])
 
-  const actLabel = caseFile ? ACT_LABEL[caseFile.act] ?? 'ACT' : ''
-  const caseTitle = caseFile?.scenario.title ?? ''
+  const actName = caseFile ? ACT_NAME[caseFile.act] ?? '' : ''
 
   return (
     <div style={{ minHeight: '100vh', position: 'relative', zIndex: 1 }}>
       <StickyHeader
         phase={phase}
-        caseTitle={caseTitle}
-        actLabel={actLabel}
+        actName={actName}
         onBack={goBack}
         isPairSelector={isPairSelector}
       />
