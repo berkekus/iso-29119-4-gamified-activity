@@ -90,9 +90,13 @@ button {
 
 /* ── Responsive layout helpers ─────────────────────────────── */
 
+/*
+ * Full-width screen wrapper. Do NOT clamp max-width here — individual
+ * screens render edge-to-edge top/bottom bars that must reach the
+ * viewport edges. Each screen is responsible for centering its own
+ * inner content with a local max-width if needed.
+ */
 .app-center {
-  max-width: 1400px;
-  margin: 0 auto;
   width: 100%;
 }
 

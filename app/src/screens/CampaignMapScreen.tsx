@@ -208,7 +208,7 @@ function NavBtn({
 }
 
 // ── Progress stat chip (matches NavBtn frame) ─────────────────────────────────
-function StatChip({ label, value, accent }: { label: string; value: string; accent: string }) {
+function StatChip({ label, value }: { label: string; value: string }) {
   return (
     <div
       aria-label={`${label} ${value}`}
@@ -216,26 +216,16 @@ function StatChip({ label, value, accent }: { label: string; value: string; acce
         background:    '#2a1a08',
         border:        `2px solid ${BORDER}`,
         boxShadow:     `3px 3px 0 ${INK}`,
-        padding:       '10px 16px 10px 12px',
+        padding:       '10px 16px',
         display:       'flex',
         alignItems:    'center',
-        gap:           10,
+        gap:           8,
         fontFamily:    PIXEL_FONT,
         fontSize:      9,
-        color:         '#f0e5cb',
         letterSpacing: 0.5,
         whiteSpace:    'nowrap',
       }}
     >
-      {/* coloured accent strip on the left, like an indicator LED */}
-      <span style={{
-        display:    'inline-block',
-        width:      8,
-        height:     16,
-        background: accent,
-        border:     `1px solid ${INK}`,
-        flexShrink: 0,
-      }} />
       <span style={{ color: '#c8a870' }}>{label}</span>
       <span style={{ color: '#f0e5cb' }}>{value}</span>
     </div>
@@ -293,8 +283,8 @@ export default function CampaignMapScreen({ onNavigate, onBack, completedCases, 
 
         {/* Right: progress chips (uses NavBtn-style frame for visual consistency) */}
         <div style={{ display: 'flex', gap: 10 }}>
-          <StatChip label="CASES" value={`${String(completedCount).padStart(2, '0')}/${String(TOTAL_CASES).padStart(2, '0')}`} accent={TC.blue} />
-          <StatChip label="ACTS"  value={`${String(completedActs).padStart(2, '0')}/${String(acts.length).padStart(2, '0')}`} accent={TC.green} />
+          <StatChip label="CASES" value={`${String(completedCount).padStart(2, '0')}/${String(TOTAL_CASES).padStart(2, '0')}`} />
+          <StatChip label="ACTS"  value={`${String(completedActs).padStart(2, '0')}/${String(acts.length).padStart(2, '0')}`} />
         </div>
       </div>
 
