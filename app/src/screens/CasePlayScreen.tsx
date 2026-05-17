@@ -46,7 +46,6 @@ function StickyHeader({
   onBack: () => void
   isPairSelector: boolean
 }) {
-  const currentColor = PHASE_COLORS[phase]
   const dynamicPhases = isPairSelector ? PHASES : PHASES.filter(p => p !== 'evidence')
   const phaseIdx = dynamicPhases.indexOf(phase)
 
@@ -76,37 +75,52 @@ function StickyHeader({
         flexWrap:   'wrap',
         justifySelf: 'center',
       }}>
-        {dynamicPhases.map((p, i) => (
-          <div key={p} style={{ display: 'flex', alignItems: 'center' }}>
-            {i > 0 && (
-              <div style={{
-                width:       18,
-                height:      2,
-                background:  i <= phaseIdx ? TC.ink : TC.grid,
-                marginRight: 6,
-              }} />
-            )}
-            <div
-              title={PHASE_LABELS[p]}
-              aria-label={PHASE_LABELS[p]}
-              aria-current={i === phaseIdx ? 'step' : undefined}
-              style={{
-                width:          24,
-                height:         24,
-                border:         `2px solid ${i <= phaseIdx ? TC.ink : TC.grid}`,
-                background:     i < phaseIdx ? TC.ink : i === phaseIdx ? currentColor : 'transparent',
-                display:        'flex',
-                alignItems:     'center',
-                justifyContent: 'center',
-                fontFamily:     PIXEL_FONT,
-                fontSize:       9,
-                color:          i <= phaseIdx ? '#fff' : TC.grey,
-              }}
-            >
-              {i < phaseIdx ? '✓' : i + 1}
+        {dynamicPhases.map((p, i) => {
+          // Stepper state colours:
+          //   done    → tobacco brown (TC.orange) ink-stamp + ✓
+          //   active  → vivid amber highlight, draws the eye like a marker swipe
+          //   pending → empty + faded grid frame
+          const isDone    = i < phaseIdx
+          const isActive  = i === phaseIdx
+          const DONE      = TC.orange   // #6B4A2B tobacco brown
+          const ACTIVE_BG = '#D89B2A'   // amber highlight — only place this hue appears
+          const frame     = isActive ? '#8A5E13' : isDone ? DONE : TC.grid
+          const bg        = isActive ? ACTIVE_BG : isDone ? DONE : 'transparent'
+          const fg        = isActive ? TC.ink : isDone ? '#fff' : TC.grey
+          return (
+            <div key={p} style={{ display: 'flex', alignItems: 'center' }}>
+              {i > 0 && (
+                <div style={{
+                  width:       18,
+                  height:      2,
+                  background:  i <= phaseIdx ? DONE : TC.grid,
+                  marginRight: 6,
+                }} />
+              )}
+              <div
+                title={PHASE_LABELS[p]}
+                aria-label={PHASE_LABELS[p]}
+                aria-current={isActive ? 'step' : undefined}
+                style={{
+                  width:          isActive ? 28 : 24,
+                  height:         isActive ? 28 : 24,
+                  border:         `2px solid ${frame}`,
+                  background:     bg,
+                  boxShadow:      isActive ? '0 0 0 2px rgba(216,155,42,0.25)' : 'none',
+                  display:        'flex',
+                  alignItems:     'center',
+                  justifyContent: 'center',
+                  fontFamily:     PIXEL_FONT,
+                  fontSize:       9,
+                  color:          fg,
+                  transition:     'all 120ms ease-out',
+                }}
+              >
+                {isDone ? '✓' : i + 1}
+              </div>
             </div>
-          </div>
-        ))}
+          )
+        })}
       </div>
 
       {/* Right spacer to balance the back button (keeps stepper truly centred) */}
