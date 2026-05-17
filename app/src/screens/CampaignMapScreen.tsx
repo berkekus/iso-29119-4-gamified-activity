@@ -308,27 +308,39 @@ export default function CampaignMapScreen({ onNavigate, onBack, completedCases, 
       </div>
 
       {/* ── Desk surface ────────────────────────────────────────────────────── */}
-      <div style={{ flex: 1, position: 'relative', padding: '14px 22px 10px', overflow: 'hidden' }}>
+      <div style={{ flex: 1, position: 'relative', padding: '32px 22px 10px', overflow: 'hidden' }}>
 
         {/* ── Main content ───────────────────────────────────────────────── */}
         <div style={{ position: 'relative', zIndex: 1, maxWidth: 1260, margin: '0 auto' }}>
 
           {/* Title panel */}
-          <div style={{ textAlign: 'center', marginBottom: 14 }}>
+          <div style={{ textAlign: 'center', marginBottom: 28 }}>
             <div style={{
-              display:    'inline-flex',
-              alignItems: 'center',
-              gap:        14,
-              background: PAPER,
-              border:     `2px solid ${INK}`,
-              boxShadow:  `4px 4px 0 ${INK}`,
-              padding:    '9px 28px',
+              display:       'inline-flex',
+              flexDirection: 'column',
+              alignItems:    'center',
+              gap:           8,
+              background:    PAPER,
+              border:        `2px solid ${INK}`,
+              boxShadow:     `4px 4px 0 ${INK}`,
+              padding:       '14px 36px',
             }}>
-              <CrosshairIcon />
-              <span style={{ fontFamily: PIXEL_FONT, fontSize: 13, color: INK, letterSpacing: 1 }}>
-                COVERAGE HIERARCHY · ISO 29119-4
-              </span>
-              <CrosshairIcon />
+              <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+                <CrosshairIcon />
+                <span style={{ fontFamily: PIXEL_FONT, fontSize: 13, color: INK, letterSpacing: 1 }}>
+                  COVERAGE HIERARCHY · ISO 29119-4
+                </span>
+                <CrosshairIcon />
+              </div>
+              <div style={{
+                fontFamily:    HAND_FONT,
+                fontSize:      12,
+                color:         TC.grey,
+                letterSpacing: 0.4,
+                fontStyle:     'italic',
+              }}>
+                Five acts · fifteen cases · one verdict
+              </div>
             </div>
           </div>
 
