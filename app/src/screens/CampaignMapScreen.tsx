@@ -3,6 +3,25 @@ import { BugSprite } from '../ui/CharacterSprites'
 import type { Screen } from '../stores/gameStore'
 import { CASE_ORDER } from '../content/caseOrder'
 
+// ── Act palette ──────────────────────────────────────────────────────────────────────────
+// Custom desaturated palette tuned for the noir / case-file aesthetic of the
+// campaign map (paper background, sepia frame). Each act keeps a distinct hue
+// (warm → cool → violet → neutral) so the existing visual progression is
+// preserved, but saturation/brightness are dialled down so the cards feel
+// like printed ink stamps instead of neon UI chips.
+const ACT_COLORS = {
+  stmtBranch:   '#B8541F', // burnt sienna   (was TC.orange)
+  decisionBc:   '#4F7A3A', // olive ink      (was TC.green)
+  bcc:          '#2D5C8A', // navy ink       (was TC.blue)
+  mcdc:         '#8A3D6B', // dried plum     (was TC.magenta)
+  coverageMix:  '#5C5246', // deep sepia grey (was TC.grey)
+} as const
+
+// Semantic accents used inside case cards. Tuned to sit on the PAPER
+// background and stay within the same desaturated print palette.
+const INK_COMPLETE = '#4F7A3A' // olive ink — case solved
+const INK_BOSS     = '#8E2A2A' // burnt bordeaux — final boss flag
+
 interface Props {
   onNavigate: (screen: Screen) => void
   onBack: () => void
@@ -34,7 +53,7 @@ const acts: ActEntry[] = [
     name: 'ACT I',
     title: 'Statement & Branch',
     subtitle: 'Recognition',
-    color: TC.orange,
+    color: ACT_COLORS.stmtBranch,
     bugType: 'combinatorial',
     clauses: '§5.3.1 – §5.3.2',
     cases: [
@@ -48,7 +67,7 @@ const acts: ActEntry[] = [
     name: 'ACT II',
     title: 'Decision & BC',
     subtitle: 'Discrimination',
-    color: TC.green,
+    color: ACT_COLORS.decisionBc,
     bugType: 'bcc',
     clauses: '§5.3.3 – §5.3.4',
     cases: [
@@ -62,7 +81,7 @@ const acts: ActEntry[] = [
     name: 'ACT III',
     title: 'BCC',
     subtitle: 'Combinatorial Cost',
-    color: TC.blue,
+    color: ACT_COLORS.bcc,
     bugType: 'bcc',
     clauses: '§5.3.5',
     cases: [
@@ -76,7 +95,7 @@ const acts: ActEntry[] = [
     name: 'ACT IV',
     title: 'MC/DC',
     subtitle: 'Independence Pairs',
-    color: TC.magenta,
+    color: ACT_COLORS.mcdc,
     bugType: 'mcdc',
     clauses: '§5.3.6',
     cases: [
@@ -90,7 +109,7 @@ const acts: ActEntry[] = [
     name: 'ACT V',
     title: 'Coverage Trial',
     subtitle: 'The Final Exam',
-    color: TC.grey,
+    color: ACT_COLORS.coverageMix,
     bugType: 'dataflow',
     clauses: '§5.3.1 – §5.3.6',
     cases: [
@@ -140,7 +159,7 @@ function CheckIcon() {
   return (
     <svg width="12" height="10" viewBox="0 0 12 10" fill="none">
       <polyline points="1,5 4.5,8.5 11,1"
-        stroke={TC.green} strokeWidth="2" fill="none" strokeLinecap="square" />
+        stroke={INK_COMPLETE} strokeWidth="2" fill="none" strokeLinecap="square" />
     </svg>
   )
 }
@@ -388,8 +407,8 @@ export default function CampaignMapScreen({ onNavigate, onBack, completedCases, 
                           }
                           title={isLocked ? 'Complete the previous case to unlock' : c.name}
                           style={{
-                            background:  c.isBoss && !isLocked ? `${TC.magenta}18` : PAPER,
-                            border:      `2px solid ${isLocked ? BORDER : c.isBoss ? TC.magenta : INK}`,
+                            background:  c.isBoss && !isLocked ? `${INK_BOSS}14` : PAPER,
+                            border:      `2px solid ${isLocked ? BORDER : c.isBoss ? INK_BOSS : INK}`,
                             boxShadow:   !isLocked ? `2px 2px 0 ${INK}` : 'none',
                             padding:     '8px 9px',
                             minHeight:   44,
@@ -415,7 +434,7 @@ export default function CampaignMapScreen({ onNavigate, onBack, completedCases, 
                             <div style={{
                               fontFamily:    PIXEL_FONT,
                               fontSize:      9,
-                              color:         isComplete ? TC.green : c.isBoss ? TC.magenta : INK,
+                              color:         isComplete ? INK_COMPLETE : c.isBoss ? INK_BOSS : INK,
                               lineHeight:    1.45,
                               whiteSpace:    'normal',
                               overflowWrap:  'break-word',
@@ -425,7 +444,7 @@ export default function CampaignMapScreen({ onNavigate, onBack, completedCases, 
                               {c.name}
                             </div>
                             {c.isBoss && !isLocked && (
-                              <div style={{ fontFamily: PIXEL_FONT, fontSize: 7, color: TC.magenta, marginTop: 3, letterSpacing: 0.3 }}>
+                              <div style={{ fontFamily: PIXEL_FONT, fontSize: 7, color: INK_BOSS, marginTop: 3, letterSpacing: 0.3 }}>
                                 -FINAL BOSS
                               </div>
                             )}
