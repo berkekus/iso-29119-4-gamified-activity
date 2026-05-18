@@ -29,6 +29,7 @@ export interface MockTrialState {
 
   // Live argument feed (per court)
   liveArguments: Record<string, { prosecutor?: { argId: string; sentence: string }; defense?: { argId: string; sentence: string } }>
+  liveVotes: Record<string, Side>
 
   // Reveal phase data
   revealData: {
@@ -73,6 +74,7 @@ const INITIAL = {
   myCourtId: null as string | null,
   myRole: null as MockTrialRole | null,
   liveArguments: {} as MockTrialState['liveArguments'],
+  liveVotes: {} as Record<string, Side>,
   revealData: null as MockTrialState['revealData'],
   finalLeaderboard: [] as LeaderboardCourt[],
 }
@@ -105,8 +107,23 @@ export const useMockTrialStore = create<MockTrialState>()((set, get) => {
       const derived = deriveMyCourtRole(state, playerId)
       set({ roomState: state, ...derived })
     })
-    s.on(MT_EV.CASE_START, ({ case: c }: { case: CasePublic; caseIdx: number; phase: MockTrialPhase; endsAt: number }) => {
-      set({ currentCase: c, liveArguments: {}, revealData: null })
+    s.on(MT_EV.CASE_START, ({ case: c, caseIdx, phase, endsAt }: { case: CasePublic; caseIdx: number; phase: MockTrialPhase; endsAt: number }) => {
+      set((st) => ({
+        currentCase: c,
+        liveArguments: {},
+        liveVotes: {},
+        revealData: null,
+        roomState: st.roomState
+          ? { ...st.roomState, status: 'in_case', currentCaseIdx: caseIdx, currentPhase: phase, phaseEndsAt: endsAt }
+          : st.roomState,
+      }))
+    })
+    s.on(MT_EV.PHASE_CHANGE, ({ phase, endsAt }: { phase: MockTrialPhase; endsAt: number }) => {
+      set((st) => ({
+        roomState: st.roomState
+          ? { ...st.roomState, currentPhase: phase, phaseEndsAt: endsAt }
+          : st.roomState,
+      }))
     })
     s.on(MT_EV.ARGUMENT_RECEIVED, ({ courtId, role, argId, sentence }: { courtId: string; role: 'prosecutor' | 'defense'; argId: string; sentence: string }) => {
       set((st) => ({
@@ -116,14 +133,27 @@ export const useMockTrialStore = create<MockTrialState>()((set, get) => {
         },
       }))
     })
+    s.on(MT_EV.VOTE_RECEIVED, ({ courtId, side }: { courtId: string; side: Side }) => {
+      set((st) => ({ liveVotes: { ...st.liveVotes, [courtId]: side } }))
+    })
     s.on(MT_EV.CASE_REVEAL, (payload: MockTrialState['revealData']) => {
-      set({ revealData: payload })
+      set((st) => ({
+        revealData: payload,
+        roomState: st.roomState
+          ? { ...st.roomState, status: 'reveal', currentPhase: 'reveal' }
+          : st.roomState,
+      }))
     })
     s.on(MT_EV.LEADERBOARD, ({ courts }: { courts: LeaderboardCourt[] }) => {
       set({ finalLeaderboard: courts })
     })
     s.on(MT_EV.GAME_FINISHED, ({ finalLeaderboard }: { finalLeaderboard: LeaderboardCourt[] }) => {
-      set({ finalLeaderboard })
+      set((st) => ({
+        finalLeaderboard,
+        roomState: st.roomState
+          ? { ...st.roomState, status: 'finished', currentPhase: null, phaseEndsAt: null }
+          : st.roomState,
+      }))
     })
     s.on(MT_EV.ERROR, ({ message }: { message: string }) => set({ error: message }))
   }

@@ -69,6 +69,38 @@ function clearPhaseTimer(room: MockTrialRoom): void {
   if (room.phaseTimer) { clearTimeout(room.phaseTimer); room.phaseTimer = null }
 }
 
+function currentCourtResults(room: MockTrialRoom) {
+  const c = room.cases[room.currentCaseIdx]
+  if (!c) return []
+  return Array.from(room.courts.values())
+    .map((court) => {
+      const result = court.caseHistory[court.caseHistory.length - 1]
+      if (!result || result.caseId !== c.id) return null
+      return {
+        courtId: court.id,
+        courtName: court.name,
+        submission: result.submission,
+        verdictScore: result.verdictScore,
+        prosecutorBonus: result.prosecutorBonus,
+        defenseBonus: result.defenseBonus,
+        juryBonus: result.juryBonus,
+        caseTotal: result.caseTotal,
+      }
+    })
+    .filter((result): result is NonNullable<typeof result> => result !== null)
+}
+
+function emitReveal(nsp: Namespace, room: MockTrialRoom): void {
+  const c = room.cases[room.currentCaseIdx]
+  if (!c) return
+  nsp.to(room.code).emit(MT_EV.CASE_REVEAL, {
+    correctVerdict: c.correctVerdict,
+    answerExplanation: c.answerExplanation,
+    pitfallTag: c.pitfallTag,
+    courtResults: currentCourtResults(room),
+  })
+}
+
 // ─── Phase transitions (state machine) ───────────────────────────────────────
 
 function startBriefing(nsp: Namespace, room: MockTrialRoom): void {
@@ -125,22 +157,11 @@ function startReveal(nsp: Namespace, room: MockTrialRoom): void {
   if (!c) return
 
   // Compute case results for every court with a valid baseline lineup
-  const courtResults = []
   for (const court of room.courts.values()) {
     if (!court.slots.prosecutor || !court.slots.defense || !court.slots.scribe) continue
     const result = computeCaseScore(c, court.currentSubmission)
     court.caseHistory.push(result)
     court.totalScore += result.caseTotal
-    courtResults.push({
-      courtId: court.id,
-      courtName: court.name,
-      submission: result.submission,
-      verdictScore: result.verdictScore,
-      prosecutorBonus: result.prosecutorBonus,
-      defenseBonus: result.defenseBonus,
-      juryBonus: result.juryBonus,
-      caseTotal: result.caseTotal,
-    })
   }
 
   room.currentPhase = 'reveal'
@@ -148,12 +169,8 @@ function startReveal(nsp: Namespace, room: MockTrialRoom): void {
   const endsAt = Date.now() + REVEAL_SEC * 1000
   room.phaseEndsAt = endsAt
 
-  nsp.to(room.code).emit(MT_EV.CASE_REVEAL, {
-    correctVerdict: c.correctVerdict,
-    answerExplanation: c.answerExplanation,
-    pitfallTag: c.pitfallTag,
-    courtResults,
-  })
+  emitReveal(nsp, room)
+  broadcastRoomState(nsp, room)
 
   // Reveal does not auto-advance — host clicks "Next Case"
 }
@@ -299,7 +316,8 @@ export function registerMockTrial(io: Server): void {
       if (!court) return
       // Only allow first self-score submission
       const last = court.caseHistory[court.caseHistory.length - 1]
-      if (!last || last.juryBonus !== 0) return
+      if (!last || last.submission.selfScore !== null) return
+      if (slot.role === 'scribe' && (court.slots.jury1 || court.slots.jury2)) return
       // Recompute with the new selfScore
       court.currentSubmission.selfScore = score
       const c = room.cases[room.currentCaseIdx]
@@ -309,6 +327,7 @@ export function registerMockTrial(io: Server): void {
       const fresh = computeCaseScore(c, court.currentSubmission)
       court.caseHistory[court.caseHistory.length - 1] = fresh
       court.totalScore += fresh.caseTotal
+      emitReveal(nsp, room)
       broadcastRoomState(nsp, room)
     })
 
@@ -323,6 +342,7 @@ export function registerMockTrial(io: Server): void {
       const updated = applyHostOverride(last, delta)
       court.caseHistory[court.caseHistory.length - 1] = updated
       court.totalScore += updated.caseTotal
+      emitReveal(nsp, room)
       broadcastRoomState(nsp, room)
     })
 
