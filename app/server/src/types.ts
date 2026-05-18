@@ -3,6 +3,7 @@
 export type Technique = 'STATEMENT' | 'BRANCH' | 'BCC' | 'MCDC' | 'DATA_FLOW'
 export type Difficulty = 'easy' | 'medium' | 'hard'
 export type RoomStatus = 'lobby' | 'question' | 'leaderboard' | 'grand_jury' | 'finished'
+export type AvatarId = 'new_judge' | 'new_prosecutor' | 'new_defense' | 'bug-defendant'
 
 export interface QuestionOption {
   id: string
@@ -44,6 +45,7 @@ export interface PlayerAnswer {
 export interface Player {
   id: string
   nickname: string
+  avatar: AvatarId
   score: number
   answers: Record<string, PlayerAnswer>
   connected: boolean
@@ -52,6 +54,7 @@ export interface Player {
 export interface LeaderboardEntry {
   playerId: string
   nickname: string
+  avatar: AvatarId
   score: number
   rank: number
   correctAnswers: number
@@ -61,6 +64,7 @@ export interface LeaderboardEntry {
 export interface PlayerInfo {
   id: string
   nickname: string
+  avatar: AvatarId
   score: number
   connected: boolean
   isHost: boolean
@@ -69,6 +73,8 @@ export interface PlayerInfo {
 export interface Room {
   code: string
   hostId: string
+  hostNickname: string
+  hostAvatar: AvatarId
   players: Map<string, Player>
   status: RoomStatus
   currentRound: number
@@ -82,8 +88,8 @@ export interface Room {
 
 // ─── Socket event payloads (Client → Server) ─────────────────────────────────
 
-export interface C2S_CreateRoom { nickname: string }
-export interface C2S_JoinRoom   { code: string; nickname: string }
+export interface C2S_CreateRoom { nickname: string; avatar: AvatarId }
+export interface C2S_JoinRoom   { code: string; nickname: string; avatar: AvatarId }
 export interface C2S_SubmitAnswer { questionId: string; optionId: string }
 
 // ─── Socket event payloads (Server → Client) ─────────────────────────────────

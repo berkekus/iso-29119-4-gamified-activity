@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, type ReactNode } from 'react'
-import { TC, PIXEL_FONT, HAND_FONT } from './tokens'
+import { TC, PIXEL_FONT, HAND_FONT, MONO_FONT } from './tokens'
 import PixelButton from './PixelButton'
 
 interface Props {
@@ -53,45 +53,96 @@ export default function DialogBox({ speaker, text, portrait, onNext, isLast, onT
         background: TC.cream,
         border: `3px solid ${TC.ink}`,
         boxShadow: `4px 4px 0 ${TC.ink}`,
-        padding: 16,
-        display: 'flex',
-        gap: 16,
-        alignItems: 'flex-start',
+        padding: 0,
+        overflow: 'hidden',
         maxWidth: 700,
+        width: '100%',
       }}
     >
-      {portrait && <div style={{ flexShrink: 0 }}>{portrait}</div>}
-      <div style={{ flex: 1 }}>
-        {speaker && (
-          <div style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: TC.blue, marginBottom: 8 }}>
-            {speaker}
+      {/* Header strip */}
+      <div style={{
+        background:    TC.ink,
+        color:         TC.cream,
+        fontFamily:    PIXEL_FONT,
+        fontSize:      9,
+        letterSpacing: 1,
+        padding:       '6px 10px',
+      }}>
+        {speaker ? speaker.toUpperCase() : 'DIALOGUE'}
+      </div>
+
+      <div style={{
+        display:             'grid',
+        gridTemplateColumns: portrait ? '120px 1fr' : '1fr',
+        gap:                 0,
+      }}>
+        {portrait && (
+          <div style={{
+            background:    TC.grid,
+            borderRight:   `2px solid ${TC.ink}`,
+            display:       'flex',
+            flexDirection: 'column',
+            alignItems:    'center',
+            justifyContent:'space-between',
+            padding:       '12px 8px 12px',
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 1 }}>
+              {portrait}
+            </div>
           </div>
         )}
-        <div
-          style={{
-            fontFamily: HAND_FONT,
-            fontSize: 18,
-            color: TC.ink,
-            lineHeight: 1.55,
-            minHeight: 50,
-          }}
-        >
-          {displayed}
-          {!done && (
-            <span style={{ animation: 'blink 0.5s steps(2) infinite' }}>▋</span>
+
+        <div style={{
+          position:   'relative',
+          padding:    '14px 14px 16px',
+          display:    'flex',
+          flexDirection: 'column',
+          minHeight:  140,
+        }}>
+          {portrait && (
+            <div
+              aria-hidden="true"
+              style={{
+                position:     'absolute',
+                left:         -8,
+                top:          24,
+                width:        0,
+                height:       0,
+                borderTop:    '8px solid transparent',
+                borderBottom: '8px solid transparent',
+                borderRight:  `8px solid ${TC.ink}`,
+              }}
+            />
           )}
-        </div>
-        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 8 }}>
-          {!done && (
-            <PixelButton small variant="secondary" onClick={handleSkip}>
-              SKIP ▶▶
-            </PixelButton>
-          )}
-          {done && (
-            <PixelButton small variant="secondary" onClick={onNext}>
-              {isLast ? 'PROCEED' : 'NEXT ▶'}
-            </PixelButton>
-          )}
+
+          <div
+            style={{
+              fontFamily: HAND_FONT,
+              fontSize: 16,
+              fontWeight: 400,
+              color: TC.ink,
+              lineHeight: 1.5,
+              flex: 1,
+            }}
+          >
+            “{displayed}”
+            {!done && (
+              <span style={{ animation: 'blink 0.5s steps(2) infinite' }}>▋</span>
+            )}
+          </div>
+          
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 12 }}>
+            {!done && (
+              <PixelButton small variant="secondary" onClick={handleSkip}>
+                SKIP ▶▶
+              </PixelButton>
+            )}
+            {done && (
+              <PixelButton small variant="secondary" onClick={onNext}>
+                {isLast ? 'PROCEED' : 'NEXT ▶'}
+              </PixelButton>
+            )}
+          </div>
         </div>
       </div>
     </div>

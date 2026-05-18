@@ -61,7 +61,6 @@ export default function BriefingSection({ isCompleted, onAdvance }: SectionProps
   const techniqueLine = caseFile?.technique
     ? TECHNIQUE_LABEL[caseFile.technique] ?? `Technique: ${caseFile.technique}`
     : 'Coverage standard pending'
-  const caseFileNum = caseFile ? `CASE FILE · ${caseFile.id.toUpperCase()}` : 'CASE FILE'
 
   const dialogs = caseFile
     ? [
@@ -77,15 +76,7 @@ export default function BriefingSection({ isCompleted, onAdvance }: SectionProps
       pointerEvents: isCompleted ? 'none' : 'auto',
       transition: 'opacity 0.2s',
     }}>
-      {isCompleted && (
-        <div style={{
-          fontFamily: PIXEL_FONT, fontSize: 8, color: TC.green,
-          border: `2px solid ${TC.green}`, padding: '4px 10px',
-          background: `${TC.green}10`, display: 'inline-block', marginBottom: 14,
-        }}>
-          ✓ COMPLETED — scroll up to review
-        </div>
-      )}
+
 
       <div className="responsive-row" style={{ gap: 30, maxWidth: 1100, margin: '0 auto' }}>
         {/* Case File */}
@@ -100,16 +91,15 @@ export default function BriefingSection({ isCompleted, onAdvance }: SectionProps
               border: `2px solid ${TC.magenta}`, padding: '4px 8px', transform: 'rotate(3deg)',
             }}>CLASSIFIED</div>
 
-            <div style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: TC.grey, marginBottom: 6 }}>{caseFileNum}</div>
             <h2 style={{ fontFamily: PIXEL_FONT, fontSize: 18, color: TC.ink, margin: '0 0 18px 0', lineHeight: 1.4 }}>{caseData.title}</h2>
 
-            <div style={{ fontFamily: HAND_FONT, fontSize: 18, color: TC.ink, lineHeight: 1.6, marginBottom: 20 }}>
+            <div style={{ fontFamily: HAND_FONT, fontSize: 16, fontWeight: 400, color: TC.ink, lineHeight: 1.5, marginBottom: 20 }}>
               {caseData.narrative}
             </div>
 
             {/* Code exhibit */}
             <div style={{ marginBottom: 20 }}>
-              <div style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: TC.orange, marginBottom: 8 }}>EXHIBIT A — SOURCE CODE</div>
+              <div style={{ fontFamily: PIXEL_FONT, fontSize: 10, fontWeight: 700, textTransform: 'uppercase', color: TC.orange, marginBottom: 8 }}>EXHIBIT A — SOURCE CODE</div>
               <div style={{
                 background: '#1e1e2e', color: '#cdd6f4', fontFamily: MONO_FONT, fontSize: 13,
                 padding: 16, border: `2px solid ${TC.ink}`, lineHeight: 1.6, overflow: 'auto',
@@ -121,12 +111,12 @@ export default function BriefingSection({ isCompleted, onAdvance }: SectionProps
 
             {/* Charges */}
             <div>
-              <div style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: TC.magenta, marginBottom: 10 }}>CHARGES</div>
+              <div style={{ fontFamily: PIXEL_FONT, fontSize: 10, fontWeight: 700, textTransform: 'uppercase', color: TC.magenta, marginBottom: 10 }}>CHARGES</div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                 {caseData.charges.map((ch, i) => (
                   <div key={i} style={{
                     display: 'flex', gap: 8, alignItems: 'flex-start',
-                    fontFamily: HAND_FONT, fontSize: 18, color: TC.ink, lineHeight: 1.5,
+                    fontFamily: HAND_FONT, fontSize: 16, fontWeight: 400, color: TC.ink, lineHeight: 1.5,
                     padding: '6px 0', borderBottom: `1px solid ${TC.grid}`,
                   }}>
                     <span style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: TC.magenta, marginTop: 4 }}>{i + 1}.</span>
@@ -158,22 +148,22 @@ export default function BriefingSection({ isCompleted, onAdvance }: SectionProps
                     border: `2px solid ${TC.orange}`,
                     padding: 16,
                   }}>
-                    <div style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: TC.orange, marginBottom: 8 }}>
+                    <div style={{ fontFamily: PIXEL_FONT, fontSize: 10, fontWeight: 700, textTransform: 'uppercase', color: TC.orange, marginBottom: 8 }}>
                       LAW CARD · {lawCard.iso_clause}
                     </div>
-                    <div style={{ fontFamily: PIXEL_FONT, fontSize: 12, color: TC.ink, marginBottom: 12, lineHeight: 1.4 }}>
+                    <div style={{ fontFamily: PIXEL_FONT, fontSize: 12, fontWeight: 700, color: TC.ink, marginBottom: 12, lineHeight: 1.4 }}>
                       {lawCard.title}
                     </div>
-                    <div style={{ fontFamily: HAND_FONT, fontSize: 18, color: TC.ink, lineHeight: 1.55, marginBottom: 10 }}>
+                    <div style={{ fontFamily: HAND_FONT, fontSize: 16, fontWeight: 400, color: TC.ink, lineHeight: 1.5, marginBottom: 10 }}>
                       {lawCard.short_definition}
                     </div>
-                    <div style={{ fontFamily: HAND_FONT, fontSize: 16, color: TC.ink, lineHeight: 1.55, marginBottom: 12 }}>
+                    <div style={{ fontFamily: HAND_FONT, fontSize: 16, fontWeight: 400, color: TC.ink, lineHeight: 1.5, marginBottom: 12 }}>
                       {lawCard.long_description}
                     </div>
-                    <div style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: TC.magenta, marginBottom: 6 }}>
+                    <div style={{ fontFamily: PIXEL_FONT, fontSize: 10, fontWeight: 700, textTransform: 'uppercase', color: TC.magenta, marginBottom: 6 }}>
                       COMMON PITFALL
                     </div>
-                    <div style={{ fontFamily: HAND_FONT, fontSize: 16, color: TC.ink, lineHeight: 1.55 }}>
+                    <div style={{ fontFamily: HAND_FONT, fontSize: 16, fontWeight: 400, color: TC.ink, lineHeight: 1.5 }}>
                       {lawCard.pitfall}
                     </div>
                   </div>
@@ -185,24 +175,127 @@ export default function BriefingSection({ isCompleted, onAdvance }: SectionProps
 
         {/* Right panel: Defendant + Dialog */}
         <div style={{ width: 340, display: 'flex', flexDirection: 'column', gap: 16 }}>
-          {/* Defendant */}
-          <div style={{
-            background: TC.cream, border: `3px solid ${TC.ink}`, boxShadow: `4px 4px 0 ${TC.ink}`,
-            padding: 16, textAlign: 'center',
-          }}>
-            <div style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: TC.ink, marginBottom: 4 }}>THE DEFENDANT</div>
-            {(caseFile?.defendant?.name || caseFile?.defendant_subtitle) && (
-              <div style={{ fontFamily: MONO_FONT, fontSize: 11, color: TC.magenta, marginBottom: 10 }}>
-                {caseFile?.defendant?.name || caseFile?.defendant_subtitle}
+          {/* Defendant — JRPG dialog-box layout: portrait+name on left, speech on right */}
+          {(() => {
+            const defName  = caseFile?.defendant?.name || caseFile?.defendant_subtitle
+            const defQuote = caseFile?.defendant?.quote || caseFile?.claim
+            return (
+              <div
+                role="group"
+                aria-label="The defendant"
+                style={{
+                  background: TC.cream,
+                  border:     `3px solid ${TC.ink}`,
+                  boxShadow:  `4px 4px 0 ${TC.ink}`,
+                  padding:    0,
+                  overflow:   'hidden',
+                }}
+              >
+                {/* Header strip */}
+                <div style={{
+                  background:    TC.ink,
+                  color:         TC.cream,
+                  fontFamily:    PIXEL_FONT,
+                  fontSize:      9,
+                  letterSpacing: 1,
+                  padding:       '6px 10px',
+                }}>
+                  THE DEFENDANT
+                </div>
+
+                {/* Body: portrait column + speech column */}
+                <div style={{
+                  display:             'grid',
+                  gridTemplateColumns: '120px 1fr',
+                  gap:                 0,
+                }}>
+                  {/* Left: portrait + name nameplate (like a JRPG character card) */}
+                  <div style={{
+                    background:    TC.grid,
+                    borderRight:   `2px solid ${TC.ink}`,
+                    display:       'flex',
+                    flexDirection: 'column',
+                    alignItems:    'center',
+                    justifyContent:'space-between',
+                    padding:       '12px 8px 0',
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 1 }}>
+                      <BugSprite
+                        size={90}
+                        type={caseFile?.technique === 'BCC' ? 'bcc' : 'mcdc'}
+                        mood="nervous"
+                      />
+                    </div>
+                    {defName && (
+                      <div style={{
+                        marginTop:     10,
+                        width:         '100%',
+                        background:    TC.ink,
+                        color:         TC.cream,
+                        fontFamily:    MONO_FONT,
+                        fontSize:      10,
+                        textAlign:     'center',
+                        padding:       '6px 4px',
+                        letterSpacing: 0.3,
+                        lineHeight:    1.3,
+                        wordBreak:     'break-word',
+                        marginLeft:    -8,
+                        marginRight:   -8,
+                        marginBottom:  0,
+                      }}>
+                        {defName}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Right: speech bubble area */}
+                  <div style={{
+                    position:   'relative',
+                    padding:    '14px 14px 16px',
+                    display:    'flex',
+                    alignItems: 'center',
+                    minHeight:  140,
+                  }}>
+                    {/* dialog tail pointing to portrait */}
+                    <div
+                      aria-hidden="true"
+                      style={{
+                        position:     'absolute',
+                        left:         -8,
+                        top:          24,
+                        width:        0,
+                        height:       0,
+                        borderTop:    '8px solid transparent',
+                        borderBottom: '8px solid transparent',
+                        borderRight:  `8px solid ${TC.ink}`,
+                      }}
+                    />
+                    {defQuote ? (
+                      <div style={{
+                        fontFamily: HAND_FONT,
+                        fontSize:   16,
+                        fontWeight: 400,
+                        color:      TC.ink,
+                        lineHeight: 1.5,
+                        fontStyle:  'normal',
+                      }}>
+                        “{defQuote}”
+                      </div>
+                    ) : (
+                      <div style={{
+                        fontFamily: MONO_FONT,
+                        fontSize:   11,
+                        color:      TC.grey,
+                        letterSpacing: 0.4,
+                      }}>
+                        — NO STATEMENT ON RECORD —
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
-            )}
-            <BugSprite size={90} type={caseFile?.technique === 'BCC' ? 'bcc' : 'mcdc'} mood="nervous" />
-            {(caseFile?.defendant?.quote || caseFile?.claim) && (
-              <div style={{ fontFamily: HAND_FONT, fontSize: 16, color: TC.grey, marginTop: 8, fontStyle: 'italic', lineHeight: 1.5 }}>
-                "{caseFile?.defendant?.quote || caseFile?.claim}"
-              </div>
-            )}
-          </div>
+            )
+          })()}
 
           {/* Dialog */}
           {(() => {
@@ -215,8 +308,8 @@ export default function BriefingSection({ isCompleted, onAdvance }: SectionProps
                 onTypingChange={setIsTyping}
                 portrait={
                   dialogIdx === 0 || dialogIdx === 2
-                    ? <JudgeSprite size={60} isTalking={isTyping} />
-                    : <ProsecutorSprite size={60} isTalking={isTyping} />
+                    ? <JudgeSprite size={90} isTalking={isTyping} />
+                    : <ProsecutorSprite size={90} isTalking={isTyping} />
                 }
                 onNext={() => {
                   if (dialogIdx < dialogs.length - 1) setDialogIdx(dialogIdx + 1)

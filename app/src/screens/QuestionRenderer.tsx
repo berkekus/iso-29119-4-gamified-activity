@@ -13,11 +13,13 @@ interface BaseProps {
   caseFile: CaseFile
   feedback: { type: 'success' | 'error'; msg: string } | null
   onSubmit: (payload: AnswerPayload) => void
+  onAdvance?: () => void
+  isCompleted?: boolean
 }
 
 // ── Option list (binary_verdict + level_picker) ─────────────────────────────
 
-export function OptionListPicker({ caseFile, feedback, onSubmit }: BaseProps) {
+export function OptionListPicker({ caseFile, feedback, onSubmit, onAdvance, isCompleted }: BaseProps) {
   const [picked, setPicked] = useState<string | null>(null)
   const options = caseFile.options ?? []
   const qType = caseFile.question_type
@@ -41,7 +43,8 @@ export function OptionListPicker({ caseFile, feedback, onSubmit }: BaseProps) {
           return (
             <button
               key={opt.id}
-              onClick={() => setPicked(opt.id)}
+              onClick={() => { if (!feedback) setPicked(opt.id) }}
+              disabled={feedback !== null}
               style={{
                 textAlign: 'left',
                 fontFamily: HAND_FONT,
@@ -51,7 +54,7 @@ export function OptionListPicker({ caseFile, feedback, onSubmit }: BaseProps) {
                 background: selected ? `${TC.blue}15` : TC.cream,
                 border: `3px solid ${selected ? TC.blue : TC.ink}`,
                 boxShadow: selected ? `4px 4px 0 ${TC.blue}` : `4px 4px 0 ${TC.ink}`,
-                cursor: 'pointer',
+                cursor: feedback ? 'default' : 'pointer',
                 lineHeight: 1.5,
               }}
             >
@@ -64,10 +67,15 @@ export function OptionListPicker({ caseFile, feedback, onSubmit }: BaseProps) {
         })}
       </div>
 
-      <div style={{ marginTop: 16, textAlign: 'center' }}>
-        <PixelButton variant="primary" disabled={submitDisabled} onClick={submit}>
+      <div style={{ marginTop: 16, display: 'flex', gap: 12, justifyContent: 'center' }}>
+        <PixelButton variant="primary" disabled={submitDisabled || feedback !== null} onClick={submit}>
           SUBMIT ANSWER
         </PixelButton>
+        {feedback && onAdvance && !isCompleted && (
+          <PixelButton variant={feedback.type === 'success' ? 'primary' : 'danger'} onClick={onAdvance}>
+            PROCEED TO TRIAL →
+          </PixelButton>
+        )}
       </div>
 
       <FeedbackBanner feedback={feedback} />
@@ -77,7 +85,7 @@ export function OptionListPicker({ caseFile, feedback, onSubmit }: BaseProps) {
 
 // ── Coverage table — toggle test rows ───────────────────────────────────────
 
-export function CoverageTablePicker({ caseFile, feedback, onSubmit }: BaseProps) {
+export function CoverageTablePicker({ caseFile, feedback, onSubmit, onAdvance, isCompleted }: BaseProps) {
   const rows = caseFile.coverage_table ?? []
   const condIds = caseFile.scenario.conditions.map((c) => c.id)
   const [selected, setSelected] = useState<Record<string, boolean>>({})
@@ -112,11 +120,11 @@ export function CoverageTablePicker({ caseFile, feedback, onSubmit }: BaseProps)
               return (
                 <tr
                   key={row.id}
-                  onClick={() => toggle(row.id)}
+                  onClick={() => { if (!feedback) toggle(row.id) }}
                   style={{
                     borderBottom: `1px solid ${TC.grid}`,
                     background: marked ? `${TC.blue}12` : 'transparent',
-                    cursor: 'pointer',
+                    cursor: feedback ? 'default' : 'pointer',
                   }}
                 >
                   <td style={tableCellStyle}>{row.id}</td>
@@ -150,9 +158,16 @@ export function CoverageTablePicker({ caseFile, feedback, onSubmit }: BaseProps)
         <div style={{ fontFamily: MONO_FONT, fontSize: 11, color: TC.grey }}>
           Selected: <strong style={{ color: TC.blue }}>{selectedIds.length}</strong> / {rows.length}
         </div>
-        <PixelButton variant="primary" onClick={submit} disabled={selectedIds.length === 0}>
-          SUBMIT TEST SUITE
-        </PixelButton>
+        <div style={{ display: 'flex', gap: 12 }}>
+          <PixelButton variant="primary" onClick={submit} disabled={selectedIds.length === 0 || feedback !== null}>
+            SUBMIT TEST SUITE
+          </PixelButton>
+          {feedback && onAdvance && !isCompleted && (
+            <PixelButton variant={feedback.type === 'success' ? 'primary' : 'danger'} onClick={onAdvance}>
+              PROCEED TO TRIAL →
+            </PixelButton>
+          )}
+        </div>
       </div>
 
       <FeedbackBanner feedback={feedback} />
@@ -162,7 +177,7 @@ export function CoverageTablePicker({ caseFile, feedback, onSubmit }: BaseProps)
 
 // ── Test designer — pick exactly N rows from a 16-row truth table ───────────
 
-export function TestDesignerPicker({ caseFile, feedback, onSubmit }: BaseProps) {
+export function TestDesignerPicker({ caseFile, feedback, onSubmit, onAdvance, isCompleted }: BaseProps) {
   const rows = caseFile.coverage_table ?? []
   const condIds = caseFile.scenario.conditions.map((c) => c.id)
   const expectedCount = caseFile.required_pick_count ?? 0
@@ -200,11 +215,11 @@ export function TestDesignerPicker({ caseFile, feedback, onSubmit }: BaseProps) 
               return (
                 <tr
                   key={row.id}
-                  onClick={() => toggle(row.id)}
+                  onClick={() => { if (!feedback) toggle(row.id) }}
                   style={{
                     borderBottom: `1px solid ${TC.grid}`,
                     background: marked ? `${TC.blue}12` : 'transparent',
-                    cursor: 'pointer',
+                    cursor: feedback ? 'default' : 'pointer',
                   }}
                 >
                   <td style={tableCellStyle}>{row.id}</td>
@@ -241,9 +256,16 @@ export function TestDesignerPicker({ caseFile, feedback, onSubmit }: BaseProps) 
           </strong> / Required: <strong>{expectedCount}</strong>
           {overLimit && ' — too many'}
         </div>
-        <PixelButton variant="primary" onClick={submit} disabled={!atLimit}>
-          CERTIFY VAULT
-        </PixelButton>
+        <div style={{ display: 'flex', gap: 12 }}>
+          <PixelButton variant="primary" onClick={submit} disabled={!atLimit || feedback !== null}>
+            CERTIFY VAULT
+          </PixelButton>
+          {feedback && onAdvance && !isCompleted && (
+            <PixelButton variant={feedback.type === 'success' ? 'primary' : 'danger'} onClick={onAdvance}>
+              PROCEED TO TRIAL →
+            </PixelButton>
+          )}
+        </div>
       </div>
 
       <FeedbackBanner feedback={feedback} />
@@ -253,7 +275,7 @@ export function TestDesignerPicker({ caseFile, feedback, onSubmit }: BaseProps) 
 
 // ── Numeric input — one or more labeled number fields ───────────────────────
 
-export function NumericInputPicker({ caseFile, feedback, onSubmit }: BaseProps) {
+export function NumericInputPicker({ caseFile, feedback, onSubmit, onAdvance, isCompleted }: BaseProps) {
   const prompts = caseFile.numeric_prompts ?? []
   const [values, setValues] = useState<string[]>(() => prompts.map(() => ''))
 
@@ -286,6 +308,7 @@ export function NumericInputPicker({ caseFile, feedback, onSubmit }: BaseProps) 
                 type="number"
                 value={values[i] ?? ''}
                 onChange={(e) => setAt(i, e.target.value)}
+                disabled={feedback !== null}
                 style={{
                   fontFamily: MONO_FONT, fontSize: 16, color: TC.ink,
                   background: '#fff', border: `2px solid ${TC.ink}`,
@@ -300,10 +323,15 @@ export function NumericInputPicker({ caseFile, feedback, onSubmit }: BaseProps) 
         ))}
       </div>
 
-      <div style={{ marginTop: 16, textAlign: 'center' }}>
-        <PixelButton variant="primary" onClick={submit} disabled={!allFilled}>
+      <div style={{ marginTop: 16, display: 'flex', gap: 12, justifyContent: 'center' }}>
+        <PixelButton variant="primary" onClick={submit} disabled={!allFilled || feedback !== null}>
           SUBMIT ESTIMATES
         </PixelButton>
+        {feedback && onAdvance && !isCompleted && (
+          <PixelButton variant={feedback.type === 'success' ? 'primary' : 'danger'} onClick={onAdvance}>
+            PROCEED TO TRIAL →
+          </PixelButton>
+        )}
       </div>
 
       <FeedbackBanner feedback={feedback} />
@@ -338,7 +366,7 @@ function FeedbackBanner({ feedback }: { feedback: { type: 'success' | 'error'; m
 }
 
 // ── Dialogue Objection ────────────────────────────────────────────────────────
-export function DialogueObjectionPicker({ caseFile, feedback, onSubmit }: BaseProps) {
+export function DialogueObjectionPicker({ caseFile, feedback, onSubmit, onAdvance, isCompleted }: BaseProps) {
   const fragments = caseFile.fragments ?? [];
   const requiredCount =
     (caseFile.dialogue_valid_sequences?.[0]?.length) ??
@@ -363,7 +391,7 @@ export function DialogueObjectionPicker({ caseFile, feedback, onSubmit }: BasePr
       <div style={{ background: TC.cream, border: `3px solid ${TC.ink}`, padding: 16, marginBottom: 16, minHeight: 60, display: 'flex', gap: 8, flexWrap: 'wrap' }}>
         <span style={{ fontFamily: PIXEL_FONT, fontSize: 12, color: TC.magenta, alignSelf: 'center' }}>[OBJECTION!]</span>
         {selected.map((f, i) => (
-          <button key={i} onClick={() => toggleFragment(f)} style={{ padding: '6px 10px', background: `${TC.magenta}15`, border: `2px solid ${TC.magenta}`, cursor: 'pointer', fontFamily: HAND_FONT, fontSize: 16 }}>
+          <button key={i} onClick={() => { if (!feedback) toggleFragment(f) }} disabled={feedback !== null} style={{ padding: '6px 10px', background: `${TC.magenta}15`, border: `2px solid ${TC.magenta}`, cursor: feedback ? 'default' : 'pointer', fontFamily: HAND_FONT, fontSize: 16 }}>
             {f}
           </button>
         ))}
@@ -372,14 +400,19 @@ export function DialogueObjectionPicker({ caseFile, feedback, onSubmit }: BasePr
         {fragments.map(f => {
           if (selected.includes(f)) return null;
           return (
-            <button key={f} onClick={() => toggleFragment(f)} style={{ padding: '6px 10px', background: 'white', border: `2px solid ${TC.ink}`, cursor: 'pointer', fontFamily: HAND_FONT, fontSize: 16 }}>
+            <button key={f} onClick={() => { if (!feedback) toggleFragment(f) }} disabled={feedback !== null} style={{ padding: '6px 10px', background: 'white', border: `2px solid ${TC.ink}`, cursor: feedback ? 'default' : 'pointer', fontFamily: HAND_FONT, fontSize: 16 }}>
               {f}
             </button>
           )
         })}
       </div>
-      <div style={{ textAlign: 'center' }}>
-        <PixelButton variant="primary" onClick={submit} disabled={selected.length !== requiredCount}>PRESENT OBJECTION</PixelButton>
+      <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }}>
+        <PixelButton variant="primary" onClick={submit} disabled={selected.length !== requiredCount || feedback !== null}>PRESENT OBJECTION</PixelButton>
+        {feedback && onAdvance && !isCompleted && (
+          <PixelButton variant={feedback.type === 'success' ? 'primary' : 'danger'} onClick={onAdvance}>
+            PROCEED TO TRIAL →
+          </PixelButton>
+        )}
       </div>
       <FeedbackBanner feedback={feedback} />
     </div>
@@ -387,7 +420,7 @@ export function DialogueObjectionPicker({ caseFile, feedback, onSubmit }: BasePr
 }
 
 // ── Evidence Board ───────────────────────────────────────────────────────────
-export function EvidenceBoardPicker({ caseFile, feedback, onSubmit }: BaseProps) {
+export function EvidenceBoardPicker({ caseFile, feedback, onSubmit, onAdvance, isCompleted }: BaseProps) {
   const clues = caseFile.evidence_board_clues ?? [];
   const [selected, setSelected] = useState<string[]>([]);
 
@@ -407,11 +440,11 @@ export function EvidenceBoardPicker({ caseFile, feedback, onSubmit }: BaseProps)
         {clues.map(c => {
           const sel = selected.includes(c.id);
           return (
-            <button key={c.id} onClick={() => toggle(c.id)} style={{
+            <button key={c.id} onClick={() => { if (!feedback) toggle(c.id) }} disabled={feedback !== null} style={{
               background: sel ? `${TC.orange}15` : '#fff',
               border: `3px solid ${sel ? TC.orange : TC.ink}`,
               boxShadow: `3px 3px 0 ${TC.ink}`,
-              padding: 16, cursor: 'pointer', textAlign: 'left',
+              padding: 16, cursor: feedback ? 'default' : 'pointer', textAlign: 'left',
               fontFamily: HAND_FONT, fontSize: 16, color: TC.ink,
               position: 'relative'
             }}>
@@ -421,8 +454,13 @@ export function EvidenceBoardPicker({ caseFile, feedback, onSubmit }: BaseProps)
           )
         })}
       </div>
-      <div style={{ textAlign: 'center' }}>
-        <PixelButton variant="primary" onClick={submit} disabled={selected.length !== 2}>CONNECT CLUES</PixelButton>
+      <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }}>
+        <PixelButton variant="primary" onClick={submit} disabled={selected.length !== 2 || feedback !== null}>CONNECT CLUES</PixelButton>
+        {feedback && onAdvance && !isCompleted && (
+          <PixelButton variant={feedback.type === 'success' ? 'primary' : 'danger'} onClick={onAdvance}>
+            PROCEED TO TRIAL →
+          </PixelButton>
+        )}
       </div>
       <FeedbackBanner feedback={feedback} />
     </div>
@@ -430,7 +468,7 @@ export function EvidenceBoardPicker({ caseFile, feedback, onSubmit }: BaseProps)
 }
 
 // ── Budget Strategy ──────────────────────────────────────────────────────────
-export function BudgetStrategyPicker({ caseFile, feedback, onSubmit }: BaseProps) {
+export function BudgetStrategyPicker({ caseFile, feedback, onSubmit, onAdvance, isCompleted }: BaseProps) {
   const rows = caseFile.coverage_table ?? []
   const condIds = caseFile.scenario.conditions.map((c) => c.id)
   const expectedCount = caseFile.required_pick_count ?? 0
@@ -464,11 +502,11 @@ export function BudgetStrategyPicker({ caseFile, feedback, onSubmit }: BaseProps
               return (
                 <tr
                   key={row.id}
-                  onClick={() => toggle(row.id)}
+                  onClick={() => { if (!feedback) toggle(row.id) }}
                   style={{
                     borderBottom: `1px solid ${TC.grid}`,
                     background: marked ? `${TC.orange}15` : 'transparent',
-                    cursor: 'pointer',
+                    cursor: feedback ? 'default' : 'pointer',
                   }}
                 >
                   <td style={tableCellStyle}>{row.id}</td>
@@ -498,9 +536,16 @@ export function BudgetStrategyPicker({ caseFile, feedback, onSubmit }: BaseProps
         <div style={{ fontFamily: MONO_FONT, fontSize: 11, color: TC.grey }}>
           Budget Used: <strong style={{ color: atLimit ? TC.green : TC.orange }}>{selectedIds.length}</strong> / {expectedCount}
         </div>
-        <PixelButton variant="primary" onClick={submit} disabled={!atLimit}>
-          SUBMIT SUBPOENAS
-        </PixelButton>
+        <div style={{ display: 'flex', gap: 12 }}>
+          <PixelButton variant="primary" onClick={submit} disabled={!atLimit || feedback !== null}>
+            SUBMIT SUBPOENAS
+          </PixelButton>
+          {feedback && onAdvance && !isCompleted && (
+            <PixelButton variant={feedback.type === 'success' ? 'primary' : 'danger'} onClick={onAdvance}>
+              PROCEED TO TRIAL →
+            </PixelButton>
+          )}
+        </div>
       </div>
       {feedback?.type === 'success' && (
         <div style={{ marginTop: 16, padding: 14, border: `2px dashed ${TC.magenta}`, background: `${TC.magenta}10`, fontFamily: HAND_FONT, fontSize: 16, color: TC.ink, lineHeight: 1.5 }}>
@@ -513,7 +558,7 @@ export function BudgetStrategyPicker({ caseFile, feedback, onSubmit }: BaseProps
 }
 
 // ── MCDC Pair Builder ────────────────────────────────────────────────────────
-export function McdcPairBuilderPicker({ caseFile, feedback, onSubmit }: BaseProps) {
+export function McdcPairBuilderPicker({ caseFile, feedback, onSubmit, onAdvance, isCompleted }: BaseProps) {
   const rows = caseFile.coverage_table ?? []
   const condIds = caseFile.scenario.conditions.map((c) => c.id)
   const expectedCount = caseFile.required_pick_count ?? 0
@@ -539,12 +584,13 @@ export function McdcPairBuilderPicker({ caseFile, feedback, onSubmit }: BaseProp
           return (
             <button
               key={row.id}
-              onClick={() => toggle(row.id)}
+              onClick={() => { if (!feedback) toggle(row.id) }}
+              disabled={feedback !== null}
               style={{
                 background: marked ? `${TC.blue}15` : TC.cream,
                 border: `3px solid ${marked ? TC.blue : TC.ink}`,
                 boxShadow: `3px 3px 0 ${marked ? TC.blue : TC.ink}`,
-                padding: 10, cursor: 'pointer', textAlign: 'center',
+                padding: 10, cursor: feedback ? 'default' : 'pointer', textAlign: 'center',
                 fontFamily: MONO_FONT, fontSize: 12, color: TC.ink,
               }}
             >
@@ -573,9 +619,16 @@ export function McdcPairBuilderPicker({ caseFile, feedback, onSubmit }: BaseProp
           </strong> / {expectedCount}
           {overLimit && ' (Too many!)'}
         </div>
-        <PixelButton variant="primary" onClick={submit} disabled={!atLimit}>
-          CERTIFY MC/DC SUITE
-        </PixelButton>
+        <div style={{ display: 'flex', gap: 12 }}>
+          <PixelButton variant="primary" onClick={submit} disabled={!atLimit || feedback !== null}>
+            CERTIFY MC/DC SUITE
+          </PixelButton>
+          {feedback && onAdvance && !isCompleted && (
+            <PixelButton variant={feedback.type === 'success' ? 'primary' : 'danger'} onClick={onAdvance}>
+              PROCEED TO TRIAL →
+            </PixelButton>
+          )}
+        </div>
       </div>
 
       <FeedbackBanner feedback={feedback} />

@@ -1,0 +1,64 @@
+{
+  "lawCards": [
+    {
+      "id": "law-statement",
+      "technique": "STATEMENT",
+      "title": "Statement Coverage",
+      "iso_clause": "§5.3.1",
+      "short_definition": "Every executable statement in the code is exercised by at least one test.",
+      "long_description": "Statement coverage is the weakest structural criterion in ISO/IEC/IEEE 29119-4. It demands only that each executable line of code is reached by at least one test in the suite. Achieving 100% statement coverage is a baseline — it does not imply that any decision outcome, condition, or combination has been exercised.",
+      "pitfall": "Reaching every line is not the same as testing every behavior — an if without an else can hit 100% statements while leaving the FALSE outcome untested.",
+      "example_note": "For a function that contains a single if-then with no else, one test on the TRUE path can satisfy statement coverage while the implicit FALSE outcome remains unobserved."
+    },
+    {
+      "id": "law-branch",
+      "technique": "BRANCH",
+      "title": "Branch Coverage",
+      "iso_clause": "§5.3.2",
+      "short_definition": "Every branch (true/false outcome of every decision) is taken at least once.",
+      "long_description": "Branch coverage requires each edge of the control-flow graph to be exercised — including the implicit FALSE edge of an if without an else. It is strictly stronger than statement coverage: hitting every branch necessarily hits every statement, but not vice versa.",
+      "pitfall": "An empty loop body or a missing else branch may still leave a branch unexecuted even when every line of source has been visited.",
+      "example_note": "A while-loop whose condition is false on first entry skips the body entirely. Statement coverage may pass; branch coverage flags the unexecuted FALSE-of-loop-entry edge."
+    },
+    {
+      "id": "law-decision",
+      "technique": "DECISION",
+      "title": "Decision Coverage",
+      "iso_clause": "§5.3.3",
+      "short_definition": "Each decision (boolean expression) is evaluated to both true and false.",
+      "long_description": "Decision coverage requires every whole boolean decision to take both TRUE and FALSE outcomes across the test set. Under short-circuit evaluation it is stronger than branch coverage because the full decision must flip even when only some sub-conditions are evaluated at runtime.",
+      "pitfall": "Flipping just one operand of a compound decision may flip the decision but leaves other operands unprobed — decision coverage is not condition coverage.",
+      "example_note": "For if (A && B), tests {A=T,B=T} and {A=F,B=*} satisfy decision coverage by producing both TRUE and FALSE outcomes, even though B's effect is never observed."
+    },
+    {
+      "id": "law-bc",
+      "technique": "BC",
+      "title": "Branch Condition Coverage",
+      "iso_clause": "§5.3.4",
+      "short_definition": "Each individual condition within a decision is evaluated to both true and false.",
+      "long_description": "Branch Condition coverage requires every atomic condition inside a compound decision to be observed as TRUE and as FALSE across the test set. It detects single-condition oversights but does NOT require that each condition's flip actually changes the decision outcome.",
+      "pitfall": "A condition can be exercised both TRUE and FALSE while being permanently masked by another condition's value — BC will pass but the masked fault hides.",
+      "example_note": "For if (A || B), {A=T,B=T} and {A=F,B=F} cover each condition T and F. But B is masked whenever A is TRUE, so a fault inside B's expression can escape detection."
+    },
+    {
+      "id": "law-bcc",
+      "technique": "BCC",
+      "title": "Branch Condition Combination",
+      "iso_clause": "§5.3.5",
+      "short_definition": "ARTICLE 5.3.5: Every combination of condition values within a decision MUST be exhaustively tested.",
+      "long_description": "Under ISO/IEC/IEEE 29119-4 law, Branch Condition Combination (BCC) requires that all possible TRUE and FALSE combinations for N conditions are tested. This statute demands exactly 2^N test cases. It guarantees zero blind spots by forcing the execution of every single row in the truth table.",
+      "pitfall": "The Combinatorial Explosion Clause: Because it requires 2^N tests, BCC becomes practically impossible as the number of conditions grows. Applying this law to a decision with many conditions will bankrupt your testing budget.",
+      "example_note": "Case Law: A decision with 3 conditions legally requires 8 test cases. A decision with 10 conditions requires 1,024 test cases. Prosecutors should only apply this strict law to small or highly critical systems."
+    },
+    {
+      "id": "law-mcdc",
+      "technique": "MCDC",
+      "title": "Modified Condition / Decision Coverage",
+      "iso_clause": "§5.3.6",
+      "short_definition": "Each condition independently affects the decision outcome (DO-178C).",
+      "long_description": "MC/DC requires that for each condition in a decision, there exist test cases that show the condition independently affects the decision's outcome. \"Independently\" means exactly one condition changes between two test cases while all others remain fixed, and the decision outcome changes. MC/DC achieves N+1 test cases on average — far cheaper than BCC's 2^N — while ruling out masking.",
+      "pitfall": "Two tests that differ in more than one condition cannot prove independent effect — they only prove the decision changed somehow. The pair must be a single-flip pair.",
+      "example_note": "For if (A && (B || C)), an independence pair for B might be {A=T,B=T,C=F → decision=T} vs {A=T,B=F,C=F → decision=F}: only B flips, the decision flips, A and C are held fixed."
+    }
+  ]
+}

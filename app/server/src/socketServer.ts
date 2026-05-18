@@ -82,28 +82,28 @@ io.on('connection', (socket) => {
   console.log(`[+] ${socket.id} connected`)
 
   // ── create_room ─────────────────────────────────────────────────────────────
-  socket.on('create_room', ({ nickname }: C2S_CreateRoom) => {
+  socket.on('create_room', ({ nickname, avatar }: C2S_CreateRoom) => {
     if (!nickname?.trim()) {
       socket.emit('error', { message: 'Nickname is required.' }); return
     }
 
     const questions = [...ROUND_QUESTIONS]
-    const { room, playerId } = RM.createRoom(socket.id, questions, GRAND_JURY_QUESTION)
+    const { room, playerId } = RM.createRoom(socket.id, nickname.trim(), avatar || 'new_judge', questions, GRAND_JURY_QUESTION)
 
     activeRoomMap.set(room.code, room)
     socket.join(room.code)
 
     socket.emit('room_created', { code: room.code, playerId })
-    console.log(`[room] ${nickname} created room ${room.code}`)
+    console.log(`[room] ${nickname} created room ${room.code} with avatar ${avatar}`)
   })
 
   // ── join_room ────────────────────────────────────────────────────────────────
-  socket.on('join_room', ({ code, nickname }: C2S_JoinRoom) => {
+  socket.on('join_room', ({ code, nickname, avatar }: C2S_JoinRoom) => {
     if (!nickname?.trim() || !code?.trim()) {
       socket.emit('error', { message: 'Nickname and room code are required.' }); return
     }
 
-    const result = RM.joinRoom(socket.id, code.trim(), nickname.trim())
+    const result = RM.joinRoom(socket.id, code.trim(), nickname.trim(), avatar || 'new_defense')
 
     if ('error' in result) {
       socket.emit('error', { message: result.error }); return
@@ -121,7 +121,7 @@ io.on('connection', (socket) => {
 
     // Notify everyone in the room of the updated player list
     io.to(room.code).emit('player_list', { players: RM.getPlayerList(room) })
-    console.log(`[room] ${nickname} joined room ${room.code}`)
+    console.log(`[room] ${nickname} joined room ${room.code} with avatar ${avatar}`)
   })
 
   // ── start_tournament ─────────────────────────────────────────────────────────

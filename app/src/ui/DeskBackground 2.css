@@ -1,0 +1,258 @@
+.desk-bg-root {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  overflow: hidden;
+  pointer-events: none;
+  font-family: "Courier New", monospace;
+}
+
+.desk {
+  position: absolute;
+  inset: 0;
+  background: #6b472e;
+  border: 8px solid #050505;
+  overflow: hidden;
+}
+
+.paper-area {
+  position: absolute;
+  left: 5.6%;
+  top: 7%;
+  width: 83.6%;
+  height: 79.5%;
+  background: #f1d8b4;
+  border: 4px solid #111;
+  box-shadow:
+    inset 0 0 0 5px #c49c70,
+    inset 0 0 0 8px #2b1d13;
+}
+
+/* ── Coffee ─────────────────────────────────────────────── */
+.coffee {
+  position: absolute;
+  left: 1.2%;
+  top: 2%;
+  width: 9vw;
+  height: 9vw;
+  max-width: 120px;
+  max-height: 120px;
+  min-width: 60px;
+  min-height: 60px;
+  background: #e8d9bd;
+  border: 5px solid #070707;
+  border-radius: 50%;
+  box-shadow: 10px 10px 0 rgba(0, 0, 0, 0.35);
+}
+
+.coffee-inner {
+  position: absolute;
+  inset: 18%;
+  background: #2b160d;
+  border: 4px solid #fff4d8;
+  border-radius: 50%;
+}
+
+.coffee-handle {
+  position: absolute;
+  right: -28%;
+  top: 32%;
+  width: 38%;
+  height: 38%;
+  border: 7px solid #070707;
+  border-left: none;
+  border-radius: 0 50% 50% 0;
+  background: #e8d9bd;
+}
+
+/* ── Recorder ────────────────────────────────────────────── */
+.recorder {
+  position: absolute;
+  right: -2%;
+  top: -1%;
+  width: 13vw;
+  height: 9vw;
+  max-width: 170px;
+  max-height: 115px;
+  min-width: 90px;
+  min-height: 60px;
+  background: #9b9586;
+  border: 5px solid #070707;
+  transform: rotate(18deg);
+  box-shadow: 8px 8px 0 rgba(0, 0, 0, 0.45);
+}
+
+.recorder-top {
+  position: absolute;
+  right: 15%;
+  top: 18%;
+  width: 50%;
+  height: 35%;
+  background: #151515;
+  border: 4px solid #070707;
+}
+
+.recorder-button {
+  position: relative;
+  display: inline-block;
+  top: 65%;
+  left: 20%;
+  width: 18%;
+  height: 18%;
+  margin-right: 6%;
+  background: #333;
+  border: 3px solid #070707;
+}
+
+.recorder-button.red {
+  background: #a83a28;
+}
+
+/* ── Folder ──────────────────────────────────────────────── */
+.folder {
+  position: absolute;
+  left: 0.6%;
+  bottom: 3.5%;
+  width: 17vw;
+  height: 22vw;
+  max-width: 220px;
+  max-height: 260px;
+  min-width: 110px;
+  min-height: 140px;
+  background: #e6bf82;
+  border: 5px solid #070707;
+  transform: rotate(-9deg);
+  padding: 22% 10%;
+  box-shadow: 8px 8px 0 rgba(0, 0, 0, 0.35);
+  color: #6e665b;
+  font-size: clamp(10px, 1.2vw, 16px);
+  font-weight: 900;
+}
+
+.folder-tab {
+  position: absolute;
+  right: -8%;
+  top: 10%;
+  width: 18%;
+  height: 25%;
+  background: #e6bf82;
+  border: 5px solid #070707;
+  border-left: none;
+}
+
+.stamp {
+  display: inline-block;
+  color: #a83a38;
+  border: 4px solid #a83a38;
+  padding: 4px 8px;
+  margin-bottom: 16%;
+  font-weight: 900;
+  font-size: clamp(8px, 1vw, 13px);
+}
+
+.folder p {
+  margin: 0 0 4px 0;
+}
+
+/* ── Paperclip ───────────────────────────────────────────── */
+.paperclip {
+  position: absolute;
+  left: 18%;
+  bottom: 7%;
+  width: 28px;
+  height: 70px;
+  border: 5px solid #eee;
+  border-radius: 20px;
+  transform: rotate(-20deg);
+  box-shadow: inset 0 0 0 4px #6d6d6d;
+}
+
+/* ── Pencil ──────────────────────────────────────────────── */
+.pencil {
+  position: absolute;
+  right: 13%;
+  bottom: 8%;
+  width: 12vw;
+  height: 2vw;
+  max-width: 160px;
+  max-height: 28px;
+  min-width: 80px;
+  min-height: 14px;
+  transform: rotate(-52deg);
+}
+
+.pencil-body {
+  position: absolute;
+  left: 22%;
+  width: 62%;
+  height: 100%;
+  background: #e6b52e;
+  border: 4px solid #070707;
+}
+
+.pencil-tip {
+  position: absolute;
+  left: 0;
+  width: 26%;
+  height: 100%;
+  background: #f0d4a0;
+  border: 4px solid #070707;
+  clip-path: polygon(0 50%, 100% 0, 100% 100%);
+}
+
+.pencil-eraser {
+  position: absolute;
+  right: 0;
+  width: 17%;
+  height: 100%;
+  background: #d85c65;
+  border: 4px solid #070707;
+  border-radius: 50%;
+}
+
+/* ── Floppy disk ─────────────────────────────────────────── */
+.floppy {
+  position: absolute;
+  right: 3%;
+  bottom: 5%;
+  width: 10vw;
+  height: 10vw;
+  max-width: 135px;
+  max-height: 135px;
+  min-width: 70px;
+  min-height: 70px;
+  background: #104d86;
+  border: 5px solid #070707;
+  border-radius: 6px;
+  box-shadow: 8px 8px 0 rgba(0, 0, 0, 0.35);
+}
+
+.floppy-metal {
+  position: absolute;
+  top: 9%;
+  left: 24%;
+  width: 52%;
+  height: 33%;
+  background: #bfb9a8;
+  border: 4px solid #070707;
+}
+
+.floppy-slot {
+  position: absolute;
+  top: 12%;
+  right: 16%;
+  width: 13%;
+  height: 26%;
+  background: #15344f;
+  border: 3px solid #070707;
+}
+
+.floppy-label {
+  position: absolute;
+  left: 15%;
+  bottom: 13%;
+  width: 70%;
+  height: 33%;
+  background: #efe1c9;
+  border: 4px solid #070707;
+}

@@ -1,0 +1,48 @@
+{
+  "id": "bcc-vs-bc-01",
+  "act": "BCC",
+  "difficulty": 2,
+  "iso_clauses": ["§5.3.5", "§6.3.5"],
+  "technique": "BCC",
+  "layer": 4,
+  "question_type": "evidence_board",
+  "misconception_target": "BCC-VS-BC",
+  "concept_ref": "§2 Level 4a — 'BCC vs BC differences'",
+  "estimated_time_sec": 180,
+  "scenario": {
+    "title": "The Bank Loan Scandal",
+    "narrative": "An AI loan officer approved a massive, illegal loan to a bankrupt applicant. The decision was: salary_sufficient OR has_guarantor. The defense pinned four evidence cards on the board and claims they achieved 100% Branch Condition coverage. Your job is to show that 100% BC can still leave a whole slice of the decision unexplored — without taking their word for it.",
+    "code": "def approve_loan(salary_ok, has_guarantor):\n    if salary_ok or has_guarantor:\n        return grant_loan()\n    return reject_loan()",
+    "conditions": [
+      { "id": "salary_ok", "label": "Salary Sufficient" },
+      { "id": "has_guarantor", "label": "Has Guarantor" }
+    ],
+    "decision_expression": "salary_ok || has_guarantor"
+  },
+  "defendant_subtitle": "AI Test Lead",
+  "claim": "Look at our evidence, Prosecutor. We flipped Salary and we flipped Guarantor. Every input went True and False at least once. What more do you want?",
+  "charges": [
+    "The defense ran only two tests and claims this is enough to prove the loan logic is safe.",
+    "Each condition has been seen as TRUE and as FALSE somewhere in the suite, so their coverage claim sounds convincing at first glance.",
+    "Use the evidence board to reveal a missing input combination that still leaves part of the decision untested."
+  ],
+  "evidence_board_clues": [
+    { "id": "t1_salary", "label": "Test 1: Salary = True" },
+    { "id": "t1_guar", "label": "Test 1: Guarantor = False" },
+    { "id": "t2_salary", "label": "Test 2: Salary = False" },
+    { "id": "t2_guar", "label": "Test 2: Guarantor = True" }
+  ],
+  "required_connection": ["t2_salary", "t1_guar"],
+  "correct_answer_explanation": "You synthesized the missing F-F card and slammed it on the Judge's bench! Splicing \"Test 2: Salary = False\" with \"Test 1: Guarantor = False\" reconstructs the (Salary=F, Guarantor=F) combination — a row that was NEVER executed. The Judge realizes that 100% BC coverage is a dangerous illusion: each variable was observed as T and F, yet the entire F-F branch was skipped. Only BCC, which demands all 2^N combinations, would have caught this gap.",
+  "wrong_answer_explanation": "Those two clues don't reconstruct the missing combination. The defense already executed three of the four truth-table rows. Identify the one F-F combination that was never tested and connect the two FALSE evidence cards that point to it.",
+  "hints": [
+    "Don't just look at each condition separately. Try combining the FALSE clues from different tests and ask yourself: is there any situation where both checks would fail and we still never saw it?"
+  ],
+  "seeded_faults": [],
+  "misconceptions": [
+    {
+      "id": "BCC-VS-BC",
+      "explanation_md": "Branch Condition (BC) and Branch Condition Combination (BCC) are easy to confuse. **BC** only requires that each individual condition take both TRUE and FALSE values somewhere across the test suite — it can be satisfied by 2 tests for any predicate. **BCC** requires every cell of the 2^N truth table. As this case shows, a suite can hit 100% BC and still completely miss the F-F branch, leaving an entire equivalence class of inputs untested."
+    }
+  ]
+}

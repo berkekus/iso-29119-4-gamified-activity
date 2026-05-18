@@ -1,0 +1,68 @@
+{
+  "id": "bcc-explosion-01",
+  "act": "BCC",
+  "difficulty": 3,
+  "iso_clauses": ["§5.3.6", "§6.3.6"],
+  "technique": "BCC",
+  "layer": 4,
+  "question_type": "budget_strategy",
+  "required_pick_count": 3,
+  "misconception_target": "BCC-EXPLOSION",
+  "concept_ref": "§2 Level 4b — 'Exponential test explosion'",
+  "estimated_time_sec": 120,
+  "scenario": {
+    "title": "Autonomous Emergency Brake",
+    "narrative": "A self-driving car crashed during highway testing. The emergency brake decision depends on FOUR conditions: whether an obstacle is ahead, whether speed is above 50, whether the road is dry, and whether the human driver is pressing the brake.\n\nUnder full Branch Condition Combination Coverage (BCC), this single decision would require 2^4 = 16 distinct crash-test scenarios.\n\nThe Judge will not approve 16 expensive crash tests. You are allowed to submit only three crash-test logs as evidence. ",
+    "code": "if obstacle_ahead and speed_gt_50 and not_wet and no_manual_brake:\n    trigger_emergency_brake()",
+    "conditions": [
+      { "id": "obstacle", "label": "Blockage ahead in lane" },
+      { "id": "spd50", "label": "Velocity over 50" },
+      { "id": "dry", "label": "Road surface dry" },
+      { "id": "no_brk", "label": "Manual brake not applied" }
+    ],
+    "decision_expression": "obstacle && spd50 && dry && no_brk"
+  },
+  "defendant_subtitle": "Brake Systems Engineer",
+  "claim": "Full 16-case BCC testing is unrealistic and unnecessary, Prosecutor. We ran a few key scenarios, and the brakes behaved correctly. That should be enough to trust the system.",
+  "charges": [
+    "This brake decision has 4 boolean conditions, which means 16 possible input combinations.",
+    "Choose 3 logs that make the strongest safety argument you can - then face the fact that most of the decision's truth table is still untested under BCC."
+  ],
+  "test_set": [],
+  "coverage_table": [
+    { "id": "R1", "inputs": { "obstacle": true, "spd50": true, "dry": true, "no_brk": true }, "outcome": true, "required": false },
+    { "id": "R2", "inputs": { "obstacle": true, "spd50": true, "dry": true, "no_brk": false }, "outcome": false, "required": false },
+    { "id": "R3", "inputs": { "obstacle": true, "spd50": true, "dry": false, "no_brk": true }, "outcome": false, "required": false },
+    { "id": "R4", "inputs": { "obstacle": true, "spd50": true, "dry": false, "no_brk": false }, "outcome": false, "required": false },
+    { "id": "R5", "inputs": { "obstacle": true, "spd50": false, "dry": true, "no_brk": true }, "outcome": false, "required": false },
+    { "id": "R6", "inputs": { "obstacle": true, "spd50": false, "dry": true, "no_brk": false }, "outcome": false, "required": false },
+    { "id": "R7", "inputs": { "obstacle": true, "spd50": false, "dry": false, "no_brk": true }, "outcome": false, "required": false },
+    { "id": "R8", "inputs": { "obstacle": true, "spd50": false, "dry": false, "no_brk": false }, "outcome": false, "required": false },
+    { "id": "R9", "inputs": { "obstacle": false, "spd50": true, "dry": true, "no_brk": true }, "outcome": false, "required": false },
+    { "id": "R10", "inputs": { "obstacle": false, "spd50": true, "dry": true, "no_brk": false }, "outcome": false, "required": false },
+    { "id": "R11", "inputs": { "obstacle": false, "spd50": true, "dry": false, "no_brk": true }, "outcome": false, "required": false },
+    { "id": "R12", "inputs": { "obstacle": false, "spd50": true, "dry": false, "no_brk": false }, "outcome": false, "required": false },
+    { "id": "R13", "inputs": { "obstacle": false, "spd50": false, "dry": true, "no_brk": true }, "outcome": false, "required": false },
+    { "id": "R14", "inputs": { "obstacle": false, "spd50": false, "dry": true, "no_brk": false }, "outcome": false, "required": false },
+    { "id": "R15", "inputs": { "obstacle": false, "spd50": false, "dry": false, "no_brk": true }, "outcome": false, "required": false },
+    { "id": "R16", "inputs": { "obstacle": false, "spd50": false, "dry": false, "no_brk": false }, "outcome": false, "required": false }
+  ],
+  "budget_debrief": {
+    "fraction_paragraph": "You subpoenaed three crash-test logs, covering 3 of the 16 possible input combinations (18.75%). Most of the decision's truth table still lies outside what the jury can see under full Branch Condition Combination coverage - a concrete illustration of how fast BCC explodes once four independent conditions interact.",
+    "when_high_risk_included": "You chose scenarios where a missed brake would be catastrophic. That is strong prosecution strategy.\n\nBut even then, you only tested 3 out of 16 combinations (18.75%). This is why full BCC is so expensive in practice.",
+    "when_high_risk_missed": "You focused on low-risk or unlikely situations.\n\nYou still tested 3 out of 16 combinations (18.75%), but none of your choices really show how the brake behaves when a high-speed obstacle appears. Under BCC, you would still need to test all 16 combinations - and even your 3 tests are not strategically strong.",
+    "mc_dc_bridge": "Today you felt the weight of full BCC: 16 combinations for just 4 conditions.\nIn the next act, you will learn how MC/DC can give you much of the same confidence with far fewer tests - by proving each condition's independent effect on the decision."
+  },
+  "correct_answer_explanation": "Three subpoenas are on the record. Proceed to trial - your debrief will break down the 3/16 coverage gap and how your picks read to the jury.",
+  "wrong_answer_explanation": "The court budget is fixed at exactly three crash-test logs. Select three rows from the table, then submit.",
+  "hints": [
+    "Think like a safety engineer, not a statistician. Which three situations would you most want crash-tested for the jury: normal cruising, obvious safe cases, or the edge situations where a missed brake would be catastrophic?"
+  ],
+  "seeded_faults": [],
+  "misconceptions": [
+    {
+      "id": "BCC-EXPLOSION",
+      "explanation_md": "As the number of conditions N grows, BCC suffers from **combinatorial explosion**: the suite size doubles with every new condition (2^N). For N=10 that is already 1,024 tests, and for N=20 it is over a million. BCC is the mathematical gold standard for combination coverage, but it is rarely feasible in practice. MC/DC was introduced precisely to retain strong fault-detection guarantees while keeping the suite size linear (N+1)."
+    }
+  ]
+}

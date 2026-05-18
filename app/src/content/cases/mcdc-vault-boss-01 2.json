@@ -1,0 +1,137 @@
+{
+  "id": "mcdc-vault-boss-01",
+  "act": "MCDC",
+  "difficulty": 3,
+  "iso_clauses": [
+    "§5.3.6"
+  ],
+  "technique": "MCDC",
+  "layer": 5,
+  "question_type": "mcdc_pair_builder",
+  "required_pick_count": 4,
+  "misconception_target": "MCDC-N-PLUS-ONE",
+  "concept_ref": "§2 Level 5c — 'N+1 Minimum Suite'",
+  "estimated_time_sec": 180,
+  "scenario": {
+    "title": "The Casino Vault",
+    "narrative": "A casino vault was robbed. The vault decision is (Manager_Card OR Master_Key) AND Time_Safe. With 3 conditions, full BCC would demand 8 tests — but a well-chosen MC/DC suite needs only N+1 = 4. Build the minimum interlocked suite that proves independence for all three conditions.",
+    "code": "if (Manager_Card or Master_Key) and Time_Safe:\n    open_vault()",
+    "conditions": [
+      {
+        "id": "M",
+        "label": "Manager_Card"
+      },
+      {
+        "id": "K",
+        "label": "Master_Key"
+      },
+      {
+        "id": "T",
+        "label": "Time_Safe"
+      }
+    ],
+    "decision_expression": "(M || K) && T"
+  },
+  "defendant_subtitle": "Vault Test Lead",
+  "claim": "We’re not amateurs, Prosecutor. We didn’t brute-force all eight scenarios we carefully chose four tests that hit every important combination of card access and timing. That’s more than enough to prove the vault logic is solid.",
+  "charges": [
+    "The defense claims four tests are enough to prove the vault logic was thoroughly checked.",
+    "As Prosecutor, you must decide whether each of the three inputs can really be shown to change the open/closed decision on its own."
+  ],
+  "coverage_table": [
+    {
+      "id": "R1",
+      "inputs": {
+        "M": true,
+        "K": true,
+        "T": true
+      },
+      "outcome": true,
+      "required": false
+    },
+    {
+      "id": "R2",
+      "inputs": {
+        "M": true,
+        "K": true,
+        "T": false
+      },
+      "outcome": false,
+      "required": false
+    },
+    {
+      "id": "R3",
+      "inputs": {
+        "M": true,
+        "K": false,
+        "T": true
+      },
+      "outcome": true,
+      "required": false
+    },
+    {
+      "id": "R4",
+      "inputs": {
+        "M": true,
+        "K": false,
+        "T": false
+      },
+      "outcome": false,
+      "required": false
+    },
+    {
+      "id": "R5",
+      "inputs": {
+        "M": false,
+        "K": true,
+        "T": true
+      },
+      "outcome": true,
+      "required": false
+    },
+    {
+      "id": "R6",
+      "inputs": {
+        "M": false,
+        "K": true,
+        "T": false
+      },
+      "outcome": false,
+      "required": false
+    },
+    {
+      "id": "R7",
+      "inputs": {
+        "M": false,
+        "K": false,
+        "T": true
+      },
+      "outcome": false,
+      "required": false
+    },
+    {
+      "id": "R8",
+      "inputs": {
+        "M": false,
+        "K": false,
+        "T": false
+      },
+      "outcome": false,
+      "required": false
+    }
+  ],
+  "correct_answer_explanation": "Masterful — 4 tests, full MC/DC. You selected 4 rows that form valid independence pairs for M, K, and T. This shows how a carefully interlocked N+1 suite can achieve MC/DC with fewer tests than full 2^N BCC. One test can participate in multiple independence pairs.",
+  "wrong_answer_explanation": "With your chosen 4 tests, you did not achieve true MC/DC. You may have shown independence for some inputs, but not all three. Encourage the player to think about where they always changed more than one input at once, or where OUT did not change. Try to find a row pair where only the missing condition flips.",
+  "hints": [
+    "Strategy: pick a 'shared baseline' row that can partner two different independence pairs. R7 (M=F, K=F, T=T → outcome F) is a good base — it can pair with anything that flips just M, just K, or eventually T.",
+    "From R7, flip only M to land on R3 (T,F,T → T) — that proves M's independent effect. Flip only K from R7 to land on R5 (F,T,T → T) — that proves K's independent effect. You now need ONE more pair to cover T.",
+    "Worked solution: pick R3, R4, R5, R7. The pairs are: M via R3↔R7, K via R5↔R7, T via R3↔R4. R3 and R7 are each reused in two pairs — that is the N+1 trick."
+  ],
+  "seeded_faults": [],
+  "misconceptions": [
+    {
+      "id": "MCDC-N-PLUS-ONE",
+      "explanation_md": "MC/DC does NOT require two unique tests per condition. A well-designed suite REUSES tests across multiple independence pairs, which is why a decision with N conditions can usually be covered with **N+1 tests** (and at most 2N). For 3 conditions, 4 tests can suffice; for 4 conditions, 5 tests; and so on. This linear scaling is what makes MC/DC the practical sweet spot between weak Decision Coverage and infeasible BCC."
+    }
+  ]
+}
