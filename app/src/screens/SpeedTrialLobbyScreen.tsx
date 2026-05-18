@@ -105,7 +105,7 @@ export default function SpeedTrialLobbyScreen({ onNavigate, onBack }: Props) {
         boxShadow: `6px 6px 0 ${TC.ink}`,
         padding: '28px 32px',
         width: '100%',
-        maxWidth: 440,
+        maxWidth: 520,
         display: 'flex',
         flexDirection: 'column',
         gap: 16,
@@ -216,10 +216,10 @@ export default function SpeedTrialLobbyScreen({ onNavigate, onBack }: Props) {
 function AvatarSelector({ value, onChange }: { value: AvatarId; onChange: (v: AvatarId) => void }) {
   return (
     <div style={{ marginBottom: 4 }}>
-      <div style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: TC.ink, marginBottom: 8, textTransform: 'uppercase' }}>
+      <div style={{ fontFamily: PIXEL_FONT, fontSize: 10, color: TC.ink, marginBottom: 10, textTransform: 'uppercase', textAlign: 'center' }}>
         SELECT YOUR AVATAR
       </div>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
         {AVATARS.map((item) => (
           <button
             key={item.id}
@@ -228,12 +228,12 @@ function AvatarSelector({ value, onChange }: { value: AvatarId; onChange: (v: Av
             style={{
               background: value === item.id ? `${TC.blue}15` : TC.cream,
               border: `2px solid ${value === item.id ? TC.blue : TC.ink}`,
-              boxShadow: value === item.id ? `3px 3px 0 ${TC.blue}` : `2px 2px 0 ${TC.ink}`,
-              padding: '8px 4px',
+              boxShadow: value === item.id ? `4px 4px 0 ${TC.blue}` : `3px 3px 0 ${TC.ink}`,
+              padding: '12px 8px',
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'center',
-              gap: 8,
+              gap: 12,
               cursor: 'pointer',
               transition: 'all 0.1s ease',
               boxSizing: 'border-box',
@@ -242,9 +242,9 @@ function AvatarSelector({ value, onChange }: { value: AvatarId; onChange: (v: Av
             <img
               src={`/assets/${item.id}.png`}
               alt={item.label}
-              style={{ width: 44, height: 44, objectFit: 'contain', imageRendering: 'pixelated' }}
+              style={{ width: 72, height: 72, objectFit: 'contain', imageRendering: 'pixelated' }}
             />
-            <span style={{ fontFamily: PIXEL_FONT, fontSize: 8, color: value === item.id ? TC.blue : TC.ink }}>
+            <span style={{ fontFamily: PIXEL_FONT, fontSize: 10, color: value === item.id ? TC.blue : TC.ink, fontWeight: value === item.id ? 700 : 400 }}>
               {item.label}
             </span>
           </button>

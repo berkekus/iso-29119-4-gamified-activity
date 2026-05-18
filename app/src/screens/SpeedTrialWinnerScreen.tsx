@@ -10,7 +10,7 @@ interface Props {
   onBack: () => void
 }
 
-const CROWN = ['👑', '🥈', '🥉']
+const CROWN_TEXT = ['1ST PLACE', '2ND PLACE', '3RD PLACE']
 
 export default function SpeedTrialWinnerScreen({ onBack }: Props) {
   const { finalLeaderboard, playerId, reset } = useSpeedTrialStore()
@@ -61,21 +61,22 @@ export default function SpeedTrialWinnerScreen({ onBack }: Props) {
           width: '100%',
           boxSizing: 'border-box',
         }}>
-          <div style={{ fontSize: 48, marginBottom: 8 }}>👑</div>
-          <div style={{ fontFamily: PIXEL_FONT, fontSize: 10, fontWeight: 700, color: TC.grey, marginBottom: 12 }}>GRAND CHAMPION</div>
+          <div style={{ fontFamily: PIXEL_FONT, fontSize: 14, fontWeight: 700, color: TC.orange, marginBottom: 12, letterSpacing: 2 }}>
+            GRAND CHAMPION
+          </div>
           {winner.avatar && (
-            <div style={{ marginBottom: 12 }}>
+            <div style={{ marginBottom: 16 }}>
               <img
                 src={`/assets/${winner.avatar}.png`}
                 alt={winner.nickname}
-                style={{ width: 64, height: 64, objectFit: 'contain', imageRendering: 'pixelated' }}
+                style={{ width: 96, height: 96, objectFit: 'contain', imageRendering: 'pixelated' }}
               />
             </div>
           )}
-          <div style={{ fontFamily: PIXEL_FONT, fontSize: 22, color: TC.orange, marginBottom: 10 }}>
+          <div style={{ fontFamily: PIXEL_FONT, fontSize: 26, color: TC.ink, marginBottom: 10 }}>
             {winner.nickname}
           </div>
-          <div style={{ fontFamily: MONO_FONT, fontSize: 14, color: TC.ink }}>
+          <div style={{ fontFamily: MONO_FONT, fontSize: 16, color: TC.grey }}>
             {winner.score.toLocaleString()} pts · {winner.correctAnswers} correct
           </div>
           {winner.playerId === playerId && (
@@ -92,32 +93,39 @@ export default function SpeedTrialWinnerScreen({ onBack }: Props) {
 
       {/* Podium top 3 */}
       {top3.length > 1 && (
-        <div style={{ display: 'flex', gap: 16, alignItems: 'flex-end', justifyContent: 'center', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', gap: 20, alignItems: 'flex-end', justifyContent: 'center', flexWrap: 'wrap' }}>
           {top3.map((entry, idx) => (
             <div key={entry.playerId} style={{
               background: TC.cream,
               border: `3px solid ${TC.ink}`,
               boxShadow: `6px 6px 0 ${TC.ink}`,
-              padding: '16px 24px',
+              padding: '20px 28px',
               textAlign: 'center',
-              minWidth: 140,
-              transform: idx === 0 ? 'translateY(-12px)' : 'none',
+              minWidth: 160,
+              transform: idx === 0 ? 'translateY(-16px)' : 'none',
               boxSizing: 'border-box',
             }}>
-              <div style={{ fontSize: 32, marginBottom: 8 }}>{CROWN[idx]}</div>
+              <div style={{
+                fontFamily: PIXEL_FONT, fontSize: 10, fontWeight: 700,
+                background: idx === 0 ? '#F5A623' : idx === 1 ? '#9B9B9B' : '#C17B43',
+                color: TC.cream, padding: '4px 8px', display: 'inline-block', marginBottom: 12,
+                border: `2px solid ${TC.ink}`,
+              }}>
+                {CROWN_TEXT[idx]}
+              </div>
               {entry.avatar && (
-                <div style={{ marginBottom: 8 }}>
+                <div style={{ marginBottom: 12 }}>
                   <img
                     src={`/assets/${entry.avatar}.png`}
                     alt={entry.nickname}
-                    style={{ width: 40, height: 40, objectFit: 'contain', imageRendering: 'pixelated' }}
+                    style={{ width: 64, height: 64, objectFit: 'contain', imageRendering: 'pixelated' }}
                   />
                 </div>
               )}
-              <div style={{ fontFamily: PIXEL_FONT, fontSize: 10, color: TC.ink }}>
+              <div style={{ fontFamily: PIXEL_FONT, fontSize: 12, color: TC.ink, fontWeight: 700 }}>
                 {entry.nickname}
               </div>
-              <div style={{ fontFamily: MONO_FONT, fontSize: 12, color: TC.grey, marginTop: 6 }}>
+              <div style={{ fontFamily: MONO_FONT, fontSize: 14, color: TC.grey, marginTop: 8 }}>
                 {entry.score.toLocaleString()} PTS
               </div>
             </div>

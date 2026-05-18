@@ -67,20 +67,21 @@ export default function SpeedTrialHostScreen({ onNavigate, onBack }: Props) {
               background: TC.cream,
               border: `3px solid ${TC.ink}`,
               boxShadow: `4px 4px 0 ${TC.ink}`,
-              padding: '16px 24px',
+              padding: '20px 28px',
               width: '100%',
-              maxWidth: 380,
+              maxWidth: 440,
+              boxSizing: 'border-box',
             }}>
-              <div style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: TC.ink, marginBottom: 12 }}>
+              <div style={{ fontFamily: PIXEL_FONT, fontSize: 10, color: TC.ink, marginBottom: 14 }}>
                 {connectedCount} PLAYER{connectedCount !== 1 ? 'S' : ''} IN LOBBY
               </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8, maxHeight: 280, overflowY: 'auto' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12, maxHeight: 320, overflowY: 'auto' }}>
                 {players.map((p) => (
-                  <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '6px 0', borderBottom: `1px dashed ${TC.grid}` }}>
                     <span style={{
-                      width: 8, height: 8, borderRadius: '50%',
+                      width: 10, height: 10, borderRadius: '50%',
                       background: p.connected ? TC.green : TC.grey,
-                      border: `1px solid ${TC.ink}`,
+                      border: `2px solid ${TC.ink}`,
                       display: 'inline-block',
                       flexShrink: 0,
                     }} />
@@ -88,10 +89,10 @@ export default function SpeedTrialHostScreen({ onNavigate, onBack }: Props) {
                       <img
                         src={`/assets/${p.avatar}.png`}
                         alt={p.nickname}
-                        style={{ width: 28, height: 28, objectFit: 'contain', imageRendering: 'pixelated' }}
+                        style={{ width: 44, height: 44, objectFit: 'contain', imageRendering: 'pixelated', flexShrink: 0 }}
                       />
                     )}
-                    <span style={{ fontFamily: HAND_FONT, fontSize: 16, color: TC.ink, fontWeight: p.id === playerId ? 700 : 400 }}>
+                    <span style={{ fontFamily: HAND_FONT, fontSize: 18, color: TC.ink, fontWeight: p.id === playerId ? 700 : 400 }}>
                       {p.nickname}{p.id === playerId ? ' (HOST)' : ''}
                     </span>
                   </div>
@@ -242,7 +243,7 @@ function TopBar({ roomCode, currentRound, totalRounds, answeredCount, totalPlaye
       <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
         {status === 'question' && (
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#fff', border: `2px solid ${TC.ink}`, padding: '4px 10px', boxShadow: `2px 2px 0 ${TC.ink}` }}>
-            <span style={{ fontSize: 14 }}>👥</span>
+            <span style={{ fontFamily: PIXEL_FONT, fontSize: 10, color: TC.grey }}>COUNSELORS:</span>
             <span style={{ fontFamily: PIXEL_FONT, fontSize: 11, color: answeredCount === totalPlayers && totalPlayers > 0 ? TC.green : TC.ink }}>
               {answeredCount} / {totalPlayers} ANSWERS
             </span>
@@ -250,7 +251,7 @@ function TopBar({ roomCode, currentRound, totalRounds, answeredCount, totalPlaye
         )}
         {status === 'grand_jury' && (
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: TC.magenta, color: '#fff', border: `2px solid ${TC.ink}`, padding: '4px 10px', boxShadow: `2px 2px 0 ${TC.ink}` }}>
-            <span style={{ fontSize: 14 }}>⚖</span>
+            <span style={{ fontFamily: PIXEL_FONT, fontSize: 10, color: TC.cream }}>FINAL:</span>
             <span style={{ fontFamily: PIXEL_FONT, fontSize: 11 }}>
               GRAND JURY — {answeredCount} / {totalPlayers}
             </span>
@@ -312,8 +313,8 @@ function ActiveQuestionView({ question, startedAt, answeredCount, totalPlayers, 
       boxSizing: 'border-box',
     }}>
       {isGrandJury && (
-        <div style={{ fontFamily: PIXEL_FONT, fontSize: 10, color: TC.magenta, marginBottom: 12, fontWeight: 700 }}>
-          ⚖ GRAND JURY FINAL
+        <div style={{ fontFamily: PIXEL_FONT, fontSize: 12, letterSpacing: 1, color: TC.magenta, marginBottom: 12, fontWeight: 700 }}>
+          GRAND JURY FINAL
         </div>
       )}
       <div style={{ fontFamily: PIXEL_FONT, fontSize: 10, color: TC.grey, marginBottom: 12 }}>

@@ -79,27 +79,30 @@ export default function SpeedTrialPlayerScreen({ onNavigate, onBack }: Props) {
           background: TC.cream,
           border: `3px solid ${TC.ink}`,
           boxShadow: `4px 4px 0 ${TC.ink}`,
-          padding: '16px 24px',
+          padding: '20px 28px',
           width: '100%',
-          maxWidth: 320,
+          maxWidth: 380,
+          boxSizing: 'border-box',
         }}>
-          <div style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: TC.ink, marginBottom: 10 }}>
+          <div style={{ fontFamily: PIXEL_FONT, fontSize: 10, color: TC.ink, marginBottom: 14 }}>
             {connectedCount} IN LOBBY
           </div>
-          {players.map((p) => (
-            <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '4px 0' }}>
-              {p.avatar && (
-                <img
-                  src={`/assets/${p.avatar}.png`}
-                  alt={p.nickname}
-                  style={{ width: 28, height: 28, objectFit: 'contain', imageRendering: 'pixelated' }}
-                />
-              )}
-              <span style={{ fontFamily: HAND_FONT, fontSize: 16, color: p.id === playerId ? TC.blue : TC.ink, fontWeight: p.id === playerId ? 700 : 400 }}>
-                {p.nickname}{p.id === playerId ? ' ← YOU' : ''}{p.isHost ? ' [HOST]' : ''}
-              </span>
-            </div>
-          ))}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {players.map((p) => (
+              <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '6px 0', borderBottom: `1px dashed ${TC.grid}` }}>
+                {p.avatar && (
+                  <img
+                    src={`/assets/${p.avatar}.png`}
+                    alt={p.nickname}
+                    style={{ width: 44, height: 44, objectFit: 'contain', imageRendering: 'pixelated', flexShrink: 0 }}
+                  />
+                )}
+                <span style={{ fontFamily: HAND_FONT, fontSize: 18, color: p.id === playerId ? TC.blue : TC.ink, fontWeight: p.id === playerId ? 700 : 400 }}>
+                  {p.nickname}{p.id === playerId ? ' ← YOU' : ''}{p.isHost ? ' [HOST]' : ''}
+                </span>
+              </div>
+            ))}
+          </div>
         </div>
         <div style={{ fontFamily: HAND_FONT, fontSize: 16, color: TC.grey }}>
           Waiting for the host to start…
@@ -242,8 +245,7 @@ export default function SpeedTrialPlayerScreen({ onNavigate, onBack }: Props) {
           borderBottom: `3px solid ${TC.ink}`, gap: 16,
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <span style={{ fontSize: 18 }}>⚖</span>
-            <span style={{ fontFamily: PIXEL_FONT, fontSize: 12 }}>GRAND JURY FINAL</span>
+            <span style={{ fontFamily: PIXEL_FONT, fontSize: 12, letterSpacing: 2 }}>GRAND JURY FINAL</span>
           </div>
           <TimerChip timeLeft={gjTimeLeft} timeLimitSeconds={grandJuryQuestion?.timeLimitSeconds ?? 45} />
         </div>
@@ -343,7 +345,7 @@ function PlayerTopBar({ currentRound, totalRounds, timeLeft, timeLimitSeconds, a
         <TimerChip timeLeft={timeLeft} timeLimitSeconds={timeLimitSeconds} />
         
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#fff', border: `2px solid ${TC.ink}`, padding: '4px 10px', boxShadow: `2px 2px 0 ${TC.ink}` }}>
-          <span style={{ fontSize: 14 }}>👥</span>
+          <span style={{ fontFamily: PIXEL_FONT, fontSize: 10, color: TC.grey }}>COUNSELORS:</span>
           <span style={{ fontFamily: PIXEL_FONT, fontSize: 11, color: answeredCount === totalPlayers && totalPlayers > 0 ? TC.green : TC.ink }}>
             {answeredCount} / {totalPlayers}
           </span>
@@ -363,7 +365,7 @@ function TimerChip({ timeLeft, timeLimitSeconds }: {
 
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#fff', border: `2px solid ${TC.ink}`, padding: '4px 8px', boxShadow: `2px 2px 0 ${TC.ink}` }}>
-      <span style={{ fontSize: 14 }}>⏱</span>
+      <span style={{ fontFamily: PIXEL_FONT, fontSize: 10, color: TC.grey }}>TIME:</span>
       <div style={{ width: 60, height: 8, background: TC.grid, border: `1px solid ${TC.ink}`, overflow: 'hidden' }}>
         <div style={{ height: '100%', width: `${ratio * 100}%`, background: color, transition: 'width 0.25s linear, background 0.25s' }} />
       </div>
