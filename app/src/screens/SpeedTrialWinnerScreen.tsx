@@ -1,5 +1,6 @@
 import { TC, PIXEL_FONT, HAND_FONT, MONO_FONT } from '../ui/tokens'
 import PixelButton from '../ui/PixelButton'
+import { JudgeSprite, ProsecutorSprite } from '../ui/CharacterSprites'
 import SpeedTrialLeaderboard from './SpeedTrialLeaderboard'
 import { useSpeedTrialStore } from '../stores/speedTrialStore'
 import type { Screen } from '../stores/gameStore'
@@ -9,7 +10,7 @@ interface Props {
   onBack: () => void
 }
 
-const CROWN = ['👑', '🥈', '🥉']
+const CROWN_TEXT = ['1ST PLACE', '2ND PLACE', '3RD PLACE']
 
 export default function SpeedTrialWinnerScreen({ onBack }: Props) {
   const { finalLeaderboard, playerId, reset } = useSpeedTrialStore()
@@ -31,17 +32,21 @@ export default function SpeedTrialWinnerScreen({ onBack }: Props) {
       padding: 32,
       gap: 28,
     }}>
-      {/* Title banner */}
-      <div style={{ textAlign: 'center' }}>
-        <div style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: TC.grey, letterSpacing: 3, marginBottom: 10 }}>
-          SPEED TRIAL · FINAL VERDICT
+      {/* Title banner flanked by courtroom characters */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 24, flexWrap: 'wrap', marginTop: 16 }}>
+        <JudgeSprite size={120} pose="verdict" isTalking />
+        <div style={{ textAlign: 'center' }}>
+          <div style={{ fontFamily: PIXEL_FONT, fontSize: 10, color: TC.grey, letterSpacing: 3, marginBottom: 10 }}>
+            SPEED TRIAL · FINAL VERDICT
+          </div>
+          <h1 style={{ fontFamily: PIXEL_FONT, fontSize: 32, color: TC.orange, margin: 0, textShadow: `4px 4px 0 ${TC.ink}` }}>
+            TOURNAMENT
+          </h1>
+          <h1 style={{ fontFamily: PIXEL_FONT, fontSize: 32, color: TC.ink, margin: 0, textShadow: `4px 4px 0 ${TC.grid}` }}>
+            COMPLETE
+          </h1>
         </div>
-        <h1 style={{ fontFamily: PIXEL_FONT, fontSize: 28, color: TC.orange, margin: 0, textShadow: `4px 4px 0 ${TC.ink}` }}>
-          TOURNAMENT
-        </h1>
-        <h1 style={{ fontFamily: PIXEL_FONT, fontSize: 28, color: TC.ink, margin: 0, textShadow: `4px 4px 0 ${TC.grid}` }}>
-          COMPLETE
-        </h1>
+        <ProsecutorSprite size={120} pose="idle" />
       </div>
 
       {/* Winner callout */}
@@ -52,19 +57,33 @@ export default function SpeedTrialWinnerScreen({ onBack }: Props) {
           boxShadow: `8px 8px 0 ${TC.ink}`,
           padding: '24px 40px',
           textAlign: 'center',
+          maxWidth: 480,
+          width: '100%',
+          boxSizing: 'border-box',
         }}>
-          <div style={{ fontSize: 48, marginBottom: 8 }}>👑</div>
-          <div style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: TC.grey, marginBottom: 6 }}>GRAND CHAMPION</div>
-          <div style={{ fontFamily: PIXEL_FONT, fontSize: 20, color: TC.orange, marginBottom: 8 }}>
+          <div style={{ fontFamily: PIXEL_FONT, fontSize: 14, fontWeight: 700, color: TC.orange, marginBottom: 12, letterSpacing: 2 }}>
+            GRAND CHAMPION
+          </div>
+          {winner.avatar && (
+            <div style={{ marginBottom: 16 }}>
+              <img
+                src={`/assets/${winner.avatar}.png`}
+                alt={winner.nickname}
+                style={{ width: 96, height: 96, objectFit: 'contain', imageRendering: 'pixelated' }}
+              />
+            </div>
+          )}
+          <div style={{ fontFamily: PIXEL_FONT, fontSize: 26, color: TC.ink, marginBottom: 10 }}>
             {winner.nickname}
           </div>
-          <div style={{ fontFamily: MONO_FONT, fontSize: 14, color: TC.ink }}>
+          <div style={{ fontFamily: MONO_FONT, fontSize: 16, color: TC.grey }}>
             {winner.score.toLocaleString()} pts · {winner.correctAnswers} correct
           </div>
           {winner.playerId === playerId && (
             <div style={{
               fontFamily: HAND_FONT, fontSize: 18, color: TC.green,
-              marginTop: 10, border: `2px solid ${TC.green}`, padding: '4px 12px',
+              marginTop: 14, border: `2px solid ${TC.green}`, padding: '6px 14px',
+              background: `${TC.green}10`,
             }}>
               That's YOU! Excellent work, counselor.
             </div>
@@ -74,23 +93,40 @@ export default function SpeedTrialWinnerScreen({ onBack }: Props) {
 
       {/* Podium top 3 */}
       {top3.length > 1 && (
-        <div style={{ display: 'flex', gap: 12, alignItems: 'flex-end', justifyContent: 'center', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', gap: 20, alignItems: 'flex-end', justifyContent: 'center', flexWrap: 'wrap' }}>
           {top3.map((entry, idx) => (
             <div key={entry.playerId} style={{
               background: TC.cream,
               border: `3px solid ${TC.ink}`,
-              boxShadow: `4px 4px 0 ${TC.ink}`,
-              padding: '14px 20px',
+              boxShadow: `6px 6px 0 ${TC.ink}`,
+              padding: '20px 28px',
               textAlign: 'center',
-              minWidth: 120,
-              transform: idx === 0 ? 'translateY(-12px)' : 'none',
+              minWidth: 160,
+              transform: idx === 0 ? 'translateY(-16px)' : 'none',
+              boxSizing: 'border-box',
             }}>
-              <div style={{ fontSize: 28 }}>{CROWN[idx]}</div>
-              <div style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: TC.ink, marginTop: 6 }}>
+              <div style={{
+                fontFamily: PIXEL_FONT, fontSize: 10, fontWeight: 700,
+                background: idx === 0 ? '#F5A623' : idx === 1 ? '#9B9B9B' : '#C17B43',
+                color: TC.cream, padding: '4px 8px', display: 'inline-block', marginBottom: 12,
+                border: `2px solid ${TC.ink}`,
+              }}>
+                {CROWN_TEXT[idx]}
+              </div>
+              {entry.avatar && (
+                <div style={{ marginBottom: 12 }}>
+                  <img
+                    src={`/assets/${entry.avatar}.png`}
+                    alt={entry.nickname}
+                    style={{ width: 64, height: 64, objectFit: 'contain', imageRendering: 'pixelated' }}
+                  />
+                </div>
+              )}
+              <div style={{ fontFamily: PIXEL_FONT, fontSize: 12, color: TC.ink, fontWeight: 700 }}>
                 {entry.nickname}
               </div>
-              <div style={{ fontFamily: MONO_FONT, fontSize: 11, color: TC.grey, marginTop: 4 }}>
-                {entry.score.toLocaleString()}
+              <div style={{ fontFamily: MONO_FONT, fontSize: 14, color: TC.grey, marginTop: 8 }}>
+                {entry.score.toLocaleString()} PTS
               </div>
             </div>
           ))}
@@ -101,7 +137,7 @@ export default function SpeedTrialWinnerScreen({ onBack }: Props) {
       <SpeedTrialLeaderboard entries={finalLeaderboard} myPlayerId={playerId} isPodium />
 
       {/* Actions */}
-      <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', justifyContent: 'center' }}>
+      <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', justifyContent: 'center', marginTop: 12 }}>
         <PixelButton variant="primary" onClick={handleBack}>
           PLAY AGAIN
         </PixelButton>
@@ -110,7 +146,7 @@ export default function SpeedTrialWinnerScreen({ onBack }: Props) {
         </PixelButton>
       </div>
 
-      <div style={{ fontFamily: MONO_FONT, fontSize: 9, color: TC.greyLight }}>
+      <div style={{ fontFamily: MONO_FONT, fontSize: 10, color: TC.greyLight }}>
         ISO/IEC/IEEE 29119-4 · SENG 436
       </div>
     </div>

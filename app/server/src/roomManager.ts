@@ -1,4 +1,4 @@
-import type { Room, Player, PlayerInfo, LeaderboardEntry } from './types.js'
+import type { Room, Player, PlayerInfo, LeaderboardEntry, AvatarId } from './types.js'
 import type { SpeedTrialQuestion } from './types.js'
 
 // ─── In-memory store ──────────────────────────────────────────────────────────
@@ -26,6 +26,8 @@ function uniqueCode(): string {
 
 export function createRoom(
   hostSocketId: string,
+  nickname: string,
+  avatar: AvatarId,
   questions: SpeedTrialQuestion[],
   grandJuryQuestion: SpeedTrialQuestion,
 ): { room: Room; playerId: string } {
@@ -36,6 +38,8 @@ export function createRoom(
   const room: Room = {
     code,
     hostId: playerId,
+    hostNickname: nickname,
+    hostAvatar: avatar,
     players: new Map(),   // starts empty; only joining players are scored
     status: 'lobby',
     currentRound: 0,
@@ -58,6 +62,7 @@ export function joinRoom(
   socketId: string,
   code: string,
   nickname: string,
+  avatar: AvatarId,
 ): { room: Room; playerId: string } | { error: string } {
   const room = rooms.get(code.toUpperCase())
   if (!room) return { error: 'Room not found. Check the code and try again.' }
@@ -69,7 +74,7 @@ export function joinRoom(
   if (nicknameUsed) return { error: 'That nickname is already taken in this room.' }
 
   const playerId = socketId
-  const player: Player = { id: playerId, nickname, score: 0, answers: {}, connected: true }
+  const player: Player = { id: playerId, nickname, avatar, score: 0, answers: {}, connected: true }
 
   room.players.set(playerId, player)
   socketToRoom.set(socketId, code.toUpperCase())
@@ -114,13 +119,23 @@ export function isHost(socketId: string): boolean {
 }
 
 export function getPlayerList(room: Room, hostId?: string): PlayerInfo[] {
-  return Array.from(room.players.values()).map((p) => ({
+  const host: PlayerInfo = {
+    id: room.hostId,
+    nickname: room.hostNickname,
+    avatar: room.hostAvatar,
+    score: 0,
+    connected: true,
+    isHost: true,
+  }
+  const players: PlayerInfo[] = Array.from(room.players.values()).map((p) => ({
     id: p.id,
     nickname: p.nickname,
+    avatar: p.avatar,
     score: p.score,
     connected: p.connected,
-    isHost: p.id === (hostId ?? room.hostId),
+    isHost: false,
   }))
+  return [host, ...players]
 }
 
 export function recordAnswer(

@@ -5,7 +5,7 @@ interface Props {
   max: number
   label?: string
   color?: string
-  width?: number
+  width?: number | string
 }
 
 export default function CoverageMeter({ value, max, label, color = TC.green, width = 200 }: Props) {

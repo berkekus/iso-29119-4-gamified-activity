@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react'
 import { TC, PIXEL_FONT, HAND_FONT, MONO_FONT } from '../ui/tokens'
 import PixelButton from '../ui/PixelButton'
+import { JudgeSprite } from '../ui/CharacterSprites'
 import { useSpeedTrialStore } from '../stores/speedTrialStore'
 import type { Screen } from '../stores/gameStore'
+import type { AvatarId } from '../speed-trial/types'
 
 const SOCKET_URL = (import.meta.env.VITE_SOCKET_URL as string | undefined) ?? 'http://localhost:3001'
 
@@ -13,10 +15,18 @@ interface Props {
 
 type Tab = 'host' | 'join'
 
+const AVATARS: { id: AvatarId; label: string }[] = [
+  { id: 'new_judge', label: 'JUDGE' },
+  { id: 'new_prosecutor', label: 'PROSEC.' },
+  { id: 'new_defense', label: 'DEFENSE' },
+  { id: 'bug-defendant', label: 'BUG DEF.' },
+]
+
 export default function SpeedTrialLobbyScreen({ onNavigate, onBack }: Props) {
   const [tab, setTab]         = useState<Tab>('host')
   const [nickname, setNickname] = useState('')
   const [roomCode, setRoomCode] = useState('')
+  const [avatar, setAvatar]     = useState<AvatarId>('new_judge')
 
   const { connect, createRoom, joinRoom, roomCode: joinedCode, role, error, clearError, reset } = useSpeedTrialStore()
 
@@ -53,15 +63,16 @@ export default function SpeedTrialLobbyScreen({ onNavigate, onBack }: Props) {
       gap: 24,
     }}>
       {/* Header */}
-      <div style={{ textAlign: 'center' }}>
+      <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+        <JudgeSprite size={100} pose="idle" className="mb-2" />
         <div style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: TC.grey, letterSpacing: 3, marginBottom: 8 }}>
           ISO 29119-4 · CLASSROOM TOURNAMENT
         </div>
-        <h1 style={{ fontFamily: PIXEL_FONT, fontSize: 22, color: TC.orange, margin: 0, textShadow: `3px 3px 0 ${TC.grid}` }}>
+        <h1 style={{ fontFamily: PIXEL_FONT, fontSize: 28, color: TC.orange, margin: 0, textShadow: `3px 3px 0 ${TC.grid}` }}>
           SPEED TRIAL
         </h1>
         <div style={{ fontFamily: HAND_FONT, fontSize: 16, color: TC.grey, marginTop: 8 }}>
-          Hızlı Mahkeme Turnuvası — up to 70 players
+          Speed Court Tournament — up to 70 players
         </div>
       </div>
 
@@ -94,11 +105,14 @@ export default function SpeedTrialLobbyScreen({ onNavigate, onBack }: Props) {
         boxShadow: `6px 6px 0 ${TC.ink}`,
         padding: '28px 32px',
         width: '100%',
-        maxWidth: 400,
+        maxWidth: 520,
         display: 'flex',
         flexDirection: 'column',
         gap: 16,
+        boxSizing: 'border-box',
       }}>
+        <AvatarSelector value={avatar} onChange={setAvatar} />
+
         {tab === 'host' ? (
           <>
             <div style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: TC.ink, marginBottom: 4 }}>
@@ -114,7 +128,7 @@ export default function SpeedTrialLobbyScreen({ onNavigate, onBack }: Props) {
             <PixelButton
               variant="warning"
               disabled={!canSubmit}
-              onClick={() => canSubmit && createRoom(nickname.trim())}
+              onClick={() => canSubmit && createRoom(nickname.trim(), avatar)}
             >
               CREATE ROOM
             </PixelButton>
@@ -144,7 +158,7 @@ export default function SpeedTrialLobbyScreen({ onNavigate, onBack }: Props) {
             <PixelButton
               variant="primary"
               disabled={!canSubmit || roomCode.length < 4}
-              onClick={() => canSubmit && roomCode.length >= 4 && joinRoom(roomCode, nickname.trim())}
+              onClick={() => canSubmit && roomCode.length >= 4 && joinRoom(roomCode, nickname.trim(), avatar)}
             >
               JOIN ROOM
             </PixelButton>
@@ -195,6 +209,47 @@ export default function SpeedTrialLobbyScreen({ onNavigate, onBack }: Props) {
       <PixelButton variant="secondary" small onClick={handleBack}>
         ← BACK TO MENU
       </PixelButton>
+    </div>
+  )
+}
+
+function AvatarSelector({ value, onChange }: { value: AvatarId; onChange: (v: AvatarId) => void }) {
+  return (
+    <div style={{ marginBottom: 4 }}>
+      <div style={{ fontFamily: PIXEL_FONT, fontSize: 10, color: TC.ink, marginBottom: 10, textTransform: 'uppercase', textAlign: 'center' }}>
+        SELECT YOUR AVATAR
+      </div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
+        {AVATARS.map((item) => (
+          <button
+            key={item.id}
+            type="button"
+            onClick={() => onChange(item.id)}
+            style={{
+              background: value === item.id ? `${TC.blue}15` : TC.cream,
+              border: `2px solid ${value === item.id ? TC.blue : TC.ink}`,
+              boxShadow: value === item.id ? `4px 4px 0 ${TC.blue}` : `3px 3px 0 ${TC.ink}`,
+              padding: '12px 8px',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: 12,
+              cursor: 'pointer',
+              transition: 'all 0.1s ease',
+              boxSizing: 'border-box',
+            }}
+          >
+            <img
+              src={`/assets/${item.id}.png`}
+              alt={item.label}
+              style={{ width: 72, height: 72, objectFit: 'contain', imageRendering: 'pixelated' }}
+            />
+            <span style={{ fontFamily: PIXEL_FONT, fontSize: 10, color: value === item.id ? TC.blue : TC.ink, fontWeight: value === item.id ? 700 : 400 }}>
+              {item.label}
+            </span>
+          </button>
+        ))}
+      </div>
     </div>
   )
 }

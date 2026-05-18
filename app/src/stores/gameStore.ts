@@ -55,13 +55,7 @@ export type Screen =
   | 'how-to-play'
   | 'campaign'
   | 'play'
-  | 'briefing'
-  | 'investigation'
-  | 'evidence'
-  | 'trial'
-  | 'debrief'
   | 'design-system'
-  | 'multiplayer'
   | 'achievements'
   | 'law-library'
   // Speed Trial multiplayer screens

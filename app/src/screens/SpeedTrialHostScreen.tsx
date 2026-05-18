@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { TC, PIXEL_FONT, HAND_FONT, MONO_FONT } from '../ui/tokens'
 import PixelButton from '../ui/PixelButton'
+import { JudgeSprite } from '../ui/CharacterSprites'
 import SpeedTrialLeaderboard from './SpeedTrialLeaderboard'
 import { useSpeedTrialStore } from '../stores/speedTrialStore'
 import type { Screen } from '../stores/gameStore'
@@ -36,8 +37,7 @@ export default function SpeedTrialHostScreen({ onNavigate, onBack }: Props) {
       alignItems: 'center',
       position: 'relative',
       zIndex: 1,
-      padding: '16px 20px',
-      gap: 16,
+      width: '100%',
     }}>
       {/* Top bar */}
       <TopBar
@@ -49,108 +49,150 @@ export default function SpeedTrialHostScreen({ onNavigate, onBack }: Props) {
         status={roomStatus}
       />
 
-      {/* ── LOBBY ── */}
-      {roomStatus === 'lobby' && (
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 20, paddingTop: 16 }}>
-          <RoomCodeDisplay code={roomCode ?? '------'} />
+      <div style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        padding: '16px 20px',
+        gap: 16,
+        width: '100%',
+        boxSizing: 'border-box',
+      }}>
+        {/* ── LOBBY ── */}
+        {roomStatus === 'lobby' && (
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 20, paddingTop: 16 }}>
+            <RoomCodeDisplay code={roomCode ?? '------'} />
 
-          <div style={{
-            background: TC.cream,
-            border: `3px solid ${TC.ink}`,
-            boxShadow: `4px 4px 0 ${TC.ink}`,
-            padding: '16px 24px',
-            width: '100%',
-            maxWidth: 380,
-          }}>
-            <div style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: TC.ink, marginBottom: 12 }}>
-              {connectedCount} PLAYER{connectedCount !== 1 ? 'S' : ''} IN LOBBY
+            <div style={{
+              background: TC.cream,
+              border: `3px solid ${TC.ink}`,
+              boxShadow: `4px 4px 0 ${TC.ink}`,
+              padding: '20px 28px',
+              width: '100%',
+              maxWidth: 440,
+              boxSizing: 'border-box',
+            }}>
+              <div style={{ fontFamily: PIXEL_FONT, fontSize: 10, color: TC.ink, marginBottom: 14 }}>
+                {connectedCount} PLAYER{connectedCount !== 1 ? 'S' : ''} IN LOBBY
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12, maxHeight: 320, overflowY: 'auto' }}>
+                {players.map((p) => (
+                  <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '6px 0', borderBottom: `1px dashed ${TC.grid}` }}>
+                    <span style={{
+                      width: 10, height: 10, borderRadius: '50%',
+                      background: p.connected ? TC.green : TC.grey,
+                      border: `2px solid ${TC.ink}`,
+                      display: 'inline-block',
+                      flexShrink: 0,
+                    }} />
+                    {p.avatar && (
+                      <img
+                        src={`/assets/${p.avatar}.png`}
+                        alt={p.nickname}
+                        style={{ width: 44, height: 44, objectFit: 'contain', imageRendering: 'pixelated', flexShrink: 0 }}
+                      />
+                    )}
+                    <span style={{ fontFamily: HAND_FONT, fontSize: 18, color: TC.ink, fontWeight: p.id === playerId ? 700 : 400 }}>
+                      {p.nickname}{p.id === playerId ? ' (HOST)' : ''}
+                    </span>
+                  </div>
+                ))}
+              </div>
             </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, maxHeight: 280, overflowY: 'auto' }}>
-              {players.map((p) => (
-                <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <span style={{
-                    width: 8, height: 8, borderRadius: '50%',
-                    background: p.connected ? TC.green : TC.grey,
-                    border: `1px solid ${TC.ink}`,
-                    display: 'inline-block',
-                    flexShrink: 0,
-                  }} />
-                  <span style={{ fontFamily: HAND_FONT, fontSize: 16, color: TC.ink }}>
-                    {p.nickname}{p.id === playerId ? ' (HOST)' : ''}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
 
-          <PixelButton variant="warning" onClick={startTournament} disabled={connectedCount < 1}>
-            START TOURNAMENT ({connectedCount} ready)
-          </PixelButton>
-          <PixelButton variant="secondary" small onClick={handleBack}>← EXIT ROOM</PixelButton>
-        </div>
-      )}
-
-      {/* ── ACTIVE QUESTION ── */}
-      {(roomStatus === 'question' || roomStatus === 'grand_jury') && currentQuestion && (
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16, width: '100%', maxWidth: 580 }}>
-          <ActiveQuestionView
-            question={currentQuestion}
-            startedAt={questionStartedAt}
-            answeredCount={answeredCount}
-            totalPlayers={totalPlayerCount}
-            isGrandJury={roomStatus === 'grand_jury'}
-          />
-          <div style={{ fontFamily: HAND_FONT, fontSize: 15, color: TC.grey }}>
-            Waiting for all players to answer…
-          </div>
-        </div>
-      )}
-
-      {/* ── LEADERBOARD ── */}
-      {roomStatus === 'leaderboard' && roundResult && (
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16, width: '100%' }}>
-          <div style={{
-            background: `${TC.green}22`,
-            border: `3px solid ${TC.green}`,
-            padding: '10px 18px',
-            maxWidth: 480,
-            width: '100%',
-          }}>
-            <div style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: TC.green }}>CORRECT ANSWER</div>
-            <div style={{ fontFamily: HAND_FONT, fontSize: 15, color: TC.ink, marginTop: 4 }}>
-              {roundResult.explanation}
-            </div>
-          </div>
-
-          <SpeedTrialLeaderboard
-            entries={roundResult.leaderboard}
-            myPlayerId={playerId}
-          />
-
-          {!roundResult.isLastRound ? (
-            <PixelButton variant="primary" onClick={nextRound}>
-              NEXT ROUND →
+            <PixelButton variant="warning" onClick={startTournament} disabled={connectedCount < 1}>
+              START TOURNAMENT ({connectedCount} ready)
             </PixelButton>
-          ) : (
-            <div style={{ display: 'flex', gap: 12 }}>
-              <PixelButton variant="warning" onClick={startGrandJury}>
-                START GRAND JURY FINAL
-              </PixelButton>
-              <PixelButton variant="success" onClick={finishTournament}>
-                FINISH NOW
-              </PixelButton>
-            </div>
-          )}
-        </div>
-      )}
+            <PixelButton variant="secondary" small onClick={handleBack}>← EXIT ROOM</PixelButton>
+          </div>
+        )}
 
-      {roomStatus === 'finished' && finalLeaderboard.length > 0 && (
-        <SpeedTrialLeaderboard
-          entries={finalLeaderboard}
-          myPlayerId={playerId}
-          isPodium
-        />
-      )}
+        {/* ── ACTIVE QUESTION ── */}
+        {(roomStatus === 'question' || roomStatus === 'grand_jury') && currentQuestion && (
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16, width: '100%', maxWidth: 720 }}>
+            <ActiveQuestionView
+              question={currentQuestion}
+              startedAt={questionStartedAt}
+              answeredCount={answeredCount}
+              totalPlayers={totalPlayerCount}
+              isGrandJury={roomStatus === 'grand_jury'}
+            />
+            <div style={{ fontFamily: HAND_FONT, fontSize: 16, color: TC.grey }}>
+              Waiting for all counselors to submit depositions…
+            </div>
+          </div>
+        )}
+
+        {/* ── LEADERBOARD ── */}
+        {roomStatus === 'leaderboard' && roundResult && (
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 20, width: '100%' }}>
+            <div style={{
+              background: `${TC.green}15`,
+              border: `4px solid ${TC.green}`,
+              boxShadow: `8px 8px 0 ${TC.ink}`,
+              padding: '28px 36px',
+              maxWidth: 600,
+              width: '100%',
+              boxSizing: 'border-box',
+              textAlign: 'center',
+              animation: 'fadeIn 0.3s steps(4)',
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 16 }}>
+                <JudgeSprite size={100} pose="verdict" isTalking />
+              </div>
+              <div style={{ fontFamily: PIXEL_FONT, fontSize: 10, fontWeight: 700, textTransform: 'uppercase', color: TC.green, marginBottom: 8 }}>
+                ROUND {currentRound} VERDICT ON RECORD
+              </div>
+              <div style={{ fontFamily: PIXEL_FONT, fontSize: 24, color: TC.green, marginBottom: 16 }}>
+                EXHIBIT CERTIFIED
+              </div>
+              <div style={{
+                background: `${TC.green}10`,
+                border: `2px solid ${TC.green}`,
+                padding: '16px 20px',
+                fontFamily: HAND_FONT,
+                fontSize: 16,
+                color: TC.ink,
+                lineHeight: 1.5,
+                textAlign: 'left',
+              }}>
+                <div style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: TC.green, marginBottom: 8, textTransform: 'uppercase' }}>
+                  OFFICIAL FINDINGS
+                </div>
+                {roundResult.explanation}
+              </div>
+            </div>
+
+            <SpeedTrialLeaderboard
+              entries={roundResult.leaderboard}
+              myPlayerId={playerId}
+            />
+
+            {!roundResult.isLastRound ? (
+              <PixelButton variant="primary" onClick={nextRound}>
+                NEXT ROUND →
+              </PixelButton>
+            ) : (
+              <div style={{ display: 'flex', gap: 12 }}>
+                <PixelButton variant="warning" onClick={startGrandJury}>
+                  START GRAND JURY FINAL
+                </PixelButton>
+                <PixelButton variant="success" onClick={finishTournament}>
+                  FINISH NOW
+                </PixelButton>
+              </div>
+            )}
+          </div>
+        )}
+
+        {roomStatus === 'finished' && finalLeaderboard.length > 0 && (
+          <SpeedTrialLeaderboard
+            entries={finalLeaderboard}
+            myPlayerId={playerId}
+            isPodium
+          />
+        )}
+      </div>
     </div>
   )
 }
@@ -169,36 +211,59 @@ function TopBar({ roomCode, currentRound, totalRounds, answeredCount, totalPlaye
     <div style={{
       display: 'flex',
       alignItems: 'center',
-      gap: 12,
-      background: TC.ink,
-      color: TC.cream,
-      padding: '8px 16px',
+      background: TC.cream,
+      borderBottom: `3px solid ${TC.ink}`,
+      padding: '14px clamp(16px,4vw,40px)',
       width: '100%',
       boxSizing: 'border-box',
       flexWrap: 'wrap',
       justifyContent: 'space-between',
+      position: 'sticky',
+      top: 0,
+      zIndex: 10,
+      gap: 16,
     }}>
-      <span style={{ fontFamily: PIXEL_FONT, fontSize: 10, color: TC.orange }}>SPEED TRIAL</span>
-      {currentRound > 0 && (
-        <span style={{ fontFamily: PIXEL_FONT, fontSize: 10 }}>
-          ROUND {currentRound}/{totalRounds}
-        </span>
-      )}
-      {status === 'question' && (
-        <span style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: TC.green }}>
-          {answeredCount}/{totalPlayers} ANSWERED
-        </span>
-      )}
-      {status === 'grand_jury' && (
-        <span style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: TC.magenta }}>
-          GRAND JURY — {answeredCount}/{totalPlayers}
-        </span>
-      )}
-      {roomCode && (
-        <span style={{ fontFamily: MONO_FONT, fontSize: 10, color: TC.greyLight }}>
-          ROOM: {roomCode}
-        </span>
-      )}
+      {/* LEFT */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+        <div style={{
+          background: TC.orange, color: '#fff', padding: '6px 10px',
+          fontFamily: PIXEL_FONT, fontSize: 10, border: `2px solid ${TC.ink}`,
+          boxShadow: `2px 2px 0 ${TC.ink}`
+        }}>
+          SPEED TRIAL HOST
+        </div>
+        {currentRound > 0 && (
+          <span style={{ fontFamily: PIXEL_FONT, fontSize: 12, color: TC.ink }}>
+            ROUND {currentRound}/{totalRounds}
+          </span>
+        )}
+      </div>
+
+      {/* RIGHT */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+        {status === 'question' && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#fff', border: `2px solid ${TC.ink}`, padding: '4px 10px', boxShadow: `2px 2px 0 ${TC.ink}` }}>
+            <span style={{ fontFamily: PIXEL_FONT, fontSize: 10, color: TC.grey }}>COUNSELORS:</span>
+            <span style={{ fontFamily: PIXEL_FONT, fontSize: 11, color: answeredCount === totalPlayers && totalPlayers > 0 ? TC.green : TC.ink }}>
+              {answeredCount} / {totalPlayers} ANSWERS
+            </span>
+          </div>
+        )}
+        {status === 'grand_jury' && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: TC.magenta, color: '#fff', border: `2px solid ${TC.ink}`, padding: '4px 10px', boxShadow: `2px 2px 0 ${TC.ink}` }}>
+            <span style={{ fontFamily: PIXEL_FONT, fontSize: 10, color: TC.cream }}>FINAL:</span>
+            <span style={{ fontFamily: PIXEL_FONT, fontSize: 11 }}>
+              GRAND JURY — {answeredCount} / {totalPlayers}
+            </span>
+          </div>
+        )}
+        {roomCode && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: TC.ink, color: TC.cream, padding: '4px 10px' }}>
+            <span style={{ fontFamily: PIXEL_FONT, fontSize: 10 }}>ROOM:</span>
+            <span style={{ fontFamily: MONO_FONT, fontSize: 14, letterSpacing: 2 }}>{roomCode}</span>
+          </div>
+        )}
+      </div>
     </div>
   )
 }
@@ -243,36 +308,45 @@ function ActiveQuestionView({ question, startedAt, answeredCount, totalPlayers, 
       background: TC.cream,
       border: `3px solid ${isGrandJury ? TC.magenta : TC.ink}`,
       boxShadow: `6px 6px 0 ${isGrandJury ? TC.magenta : TC.ink}`,
-      padding: '16px 20px',
+      padding: '24px 32px',
       width: '100%',
+      boxSizing: 'border-box',
     }}>
       {isGrandJury && (
-        <div style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: TC.magenta, marginBottom: 8 }}>
-          ⚖ GRAND JURY FINAL
+        <div style={{ fontFamily: PIXEL_FONT, fontSize: 12, letterSpacing: 1, color: TC.magenta, marginBottom: 12, fontWeight: 700 }}>
+          GRAND JURY FINAL
         </div>
       )}
-      <div style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: TC.grey, marginBottom: 8 }}>
-        {question.technique.replace('_', ' ')} · {question.timeLimitSeconds}s
+      <div style={{ fontFamily: PIXEL_FONT, fontSize: 10, color: TC.grey, marginBottom: 12 }}>
+        {question.technique.replace('_', ' ')} · {question.timeLimitSeconds}s LIMIT
       </div>
-      <div style={{ fontFamily: HAND_FONT, fontSize: 16, color: TC.ink, lineHeight: 1.5, whiteSpace: 'pre-wrap' }}>
+      <div style={{ fontFamily: HAND_FONT, fontSize: 18, color: TC.ink, lineHeight: 1.6, whiteSpace: 'pre-wrap', marginBottom: 20 }}>
         {question.prompt}
       </div>
       {question.codeSnippet && (
-        <pre style={{
-          fontFamily: MONO_FONT,
-          fontSize: 11,
-          background: '#1A1A1A',
-          color: TC.cream,
-          padding: '10px 14px',
-          marginTop: 10,
-          overflowX: 'auto',
-          whiteSpace: 'pre-wrap',
-        }}>
-          {question.codeSnippet}
-        </pre>
+        <div style={{ marginBottom: 20 }}>
+          <div style={{ fontFamily: PIXEL_FONT, fontSize: 10, fontWeight: 700, textTransform: 'uppercase', color: TC.orange, marginBottom: 8 }}>
+            EXHIBIT — SOURCE CODE
+          </div>
+          <pre style={{
+            background: '#1e1e2e',
+            color: '#cdd6f4',
+            fontFamily: MONO_FONT,
+            fontSize: 13,
+            padding: 20,
+            border: `2px solid ${TC.ink}`,
+            lineHeight: 1.6,
+            overflowX: 'auto',
+            whiteSpace: 'pre-wrap',
+            wordBreak: 'break-word',
+            margin: 0,
+          }}>
+            {question.codeSnippet}
+          </pre>
+        </div>
       )}
       <div style={{
-        marginTop: 14,
+        marginTop: 20,
         display: 'flex',
         alignItems: 'center',
         gap: 12,
@@ -280,7 +354,7 @@ function ActiveQuestionView({ question, startedAt, answeredCount, totalPlayers, 
         <div style={{
           flex: 1,
           background: TC.grid,
-          height: 8,
+          height: 10,
           border: `2px solid ${TC.ink}`,
           position: 'relative',
           overflow: 'hidden',
@@ -293,8 +367,8 @@ function ActiveQuestionView({ question, startedAt, answeredCount, totalPlayers, 
             transition: 'width 0.3s ease',
           }} />
         </div>
-        <span style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: TC.ink, whiteSpace: 'nowrap' }}>
-          {answeredCount}/{totalPlayers}
+        <span style={{ fontFamily: PIXEL_FONT, fontSize: 10, color: TC.ink, whiteSpace: 'nowrap' }}>
+          {answeredCount}/{totalPlayers} COUNSELORS
         </span>
       </div>
     </div>

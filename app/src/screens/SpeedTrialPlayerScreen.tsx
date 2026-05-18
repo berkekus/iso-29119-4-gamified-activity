@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { TC, PIXEL_FONT, HAND_FONT, MONO_FONT } from '../ui/tokens'
 import PixelButton from '../ui/PixelButton'
+import { JudgeSprite, BugSprite } from '../ui/CharacterSprites'
 import SpeedTrialQuestionCard from './SpeedTrialQuestionCard'
 import SpeedTrialLeaderboard from './SpeedTrialLeaderboard'
 import { useSpeedTrialStore } from '../stores/speedTrialStore'
@@ -78,18 +79,30 @@ export default function SpeedTrialPlayerScreen({ onNavigate, onBack }: Props) {
           background: TC.cream,
           border: `3px solid ${TC.ink}`,
           boxShadow: `4px 4px 0 ${TC.ink}`,
-          padding: '16px 24px',
+          padding: '20px 28px',
           width: '100%',
-          maxWidth: 320,
+          maxWidth: 380,
+          boxSizing: 'border-box',
         }}>
-          <div style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: TC.ink, marginBottom: 10 }}>
+          <div style={{ fontFamily: PIXEL_FONT, fontSize: 10, color: TC.ink, marginBottom: 14 }}>
             {connectedCount} IN LOBBY
           </div>
-          {players.map((p) => (
-            <div key={p.id} style={{ fontFamily: HAND_FONT, fontSize: 16, color: p.id === playerId ? TC.blue : TC.ink, padding: '2px 0' }}>
-              {p.nickname}{p.id === playerId ? ' ← YOU' : ''}{p.isHost ? ' [HOST]' : ''}
-            </div>
-          ))}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {players.map((p) => (
+              <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '6px 0', borderBottom: `1px dashed ${TC.grid}` }}>
+                {p.avatar && (
+                  <img
+                    src={`/assets/${p.avatar}.png`}
+                    alt={p.nickname}
+                    style={{ width: 44, height: 44, objectFit: 'contain', imageRendering: 'pixelated', flexShrink: 0 }}
+                  />
+                )}
+                <span style={{ fontFamily: HAND_FONT, fontSize: 18, color: p.id === playerId ? TC.blue : TC.ink, fontWeight: p.id === playerId ? 700 : 400 }}>
+                  {p.nickname}{p.id === playerId ? ' ← YOU' : ''}{p.isHost ? ' [HOST]' : ''}
+                </span>
+              </div>
+            ))}
+          </div>
         </div>
         <div style={{ fontFamily: HAND_FONT, fontSize: 16, color: TC.grey }}>
           Waiting for the host to start…
@@ -104,7 +117,7 @@ export default function SpeedTrialPlayerScreen({ onNavigate, onBack }: Props) {
     const hasAnswered = !!myAnsweredOptionId
 
     return (
-      <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', zIndex: 1, position: 'relative', padding: '12px 16px', gap: 12 }}>
+      <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', zIndex: 1, position: 'relative', width: '100%' }}>
         {/* Top bar */}
         <PlayerTopBar
           currentRound={currentRound}
@@ -115,21 +128,23 @@ export default function SpeedTrialPlayerScreen({ onNavigate, onBack }: Props) {
           totalPlayers={totalPlayerCount}
         />
 
-        {hasAnswered ? (
-          <WaitingPanel
-            ack={myAnswerAck}
-            answeredCount={answeredCount}
-            totalPlayers={totalPlayerCount}
-          />
-        ) : (
-          <SpeedTrialQuestionCard
-            question={currentQuestion}
-            selectedOptionId={myAnsweredOptionId}
-            correctOptionId={null}
-            onSelect={(optId) => submitAnswer(currentQuestion.id, optId)}
-            disabled={false}
-          />
-        )}
+        <div style={{ padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: 16, alignItems: 'center', width: '100%', boxSizing: 'border-box' }}>
+          {hasAnswered ? (
+            <WaitingPanel
+              ack={myAnswerAck}
+              answeredCount={answeredCount}
+              totalPlayers={totalPlayerCount}
+            />
+          ) : (
+            <SpeedTrialQuestionCard
+              question={currentQuestion}
+              selectedOptionId={myAnsweredOptionId}
+              correctOptionId={null}
+              onSelect={(optId) => submitAnswer(currentQuestion.id, optId)}
+              disabled={false}
+            />
+          )}
+        </div>
       </div>
     )
   }
@@ -137,59 +152,67 @@ export default function SpeedTrialPlayerScreen({ onNavigate, onBack }: Props) {
   // ── LEADERBOARD ────────────────────────────────────────────────────────────
   if (roomStatus === 'leaderboard' && roundResult) {
     const myEntry = roundResult.leaderboard.find((e) => e.playerId === playerId)
-    const answeredOptionId = myAnswerAck?.correctOptionId ? myAnswerAck.correctOptionId : null
+    const isCorrect = myAnswerAck?.isCorrect ?? false
 
     return (
       <CenteredLayout>
-        <div style={{ fontFamily: PIXEL_FONT, fontSize: 10, color: TC.orange }}>
-          ROUND {currentRound} COMPLETE
-        </div>
-
-        {myEntry && (
-          <div style={{
-            background: TC.cream,
-            border: `3px solid ${myAnswerAck?.isCorrect ? TC.green : TC.magenta}`,
-            boxShadow: `4px 4px 0 ${TC.ink}`,
-            padding: '12px 20px',
-            textAlign: 'center',
-          }}>
-            <div style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: myAnswerAck?.isCorrect ? TC.green : TC.magenta }}>
-              {myAnswerAck?.isCorrect ? '✓ CORRECT' : '✗ WRONG'}
-            </div>
-            {myAnswerAck?.isCorrect && (
-              <div style={{ fontFamily: PIXEL_FONT, fontSize: 18, color: TC.ink, marginTop: 6 }}>
-                +{myAnswerAck.pointsEarned}
-              </div>
-            )}
-            <div style={{ fontFamily: HAND_FONT, fontSize: 14, color: TC.grey, marginTop: 4 }}>
-              YOUR RANK: #{myEntry.rank} · {myEntry.score} pts
-            </div>
-          </div>
-        )}
-
+        {/* Unified Verdict Card */}
         <div style={{
-          background: `${TC.blue}11`,
-          border: `2px solid ${TC.blue}`,
-          padding: '10px 16px',
-          maxWidth: 400,
+          background: TC.cream,
+          border: `4px solid ${isCorrect ? TC.green : TC.magenta}`,
+          boxShadow: `8px 8px 0 ${TC.ink}`,
+          padding: '28px 36px',
+          maxWidth: 600,
           width: '100%',
+          boxSizing: 'border-box',
+          textAlign: 'center',
+          animation: 'fadeIn 0.3s steps(4)',
         }}>
-          <div style={{ fontFamily: PIXEL_FONT, fontSize: 8, color: TC.blue }}>EXPLANATION</div>
-          <div style={{ fontFamily: HAND_FONT, fontSize: 15, color: TC.ink, marginTop: 6, lineHeight: 1.5 }}>
+          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 16 }}>
+            <BugSprite size={100} mood={isCorrect ? 'prisoned' : 'escaped'} />
+          </div>
+          <div style={{ fontFamily: PIXEL_FONT, fontSize: 10, fontWeight: 700, textTransform: 'uppercase', color: TC.grey, marginBottom: 10 }}>
+            ROUND {currentRound} VERDICT
+          </div>
+          <div style={{ fontFamily: PIXEL_FONT, fontSize: 32, color: isCorrect ? TC.green : TC.magenta, lineHeight: 1.2, marginBottom: 12 }}>
+            {isCorrect ? 'SUSTAINED' : 'OVERRULED'}
+          </div>
+          {isCorrect && myAnswerAck && (
+            <div style={{ fontFamily: PIXEL_FONT, fontSize: 18, color: TC.green, marginBottom: 16 }}>
+              +{myAnswerAck.pointsEarned} PTS RECORDED
+            </div>
+          )}
+          {myEntry && (
+            <div style={{ fontFamily: MONO_FONT, fontSize: 13, color: TC.grey, marginBottom: 20 }}>
+              YOUR RANK: #{myEntry.rank} · {myEntry.score.toLocaleString()} pts total
+            </div>
+          )}
+          <div style={{
+            background: isCorrect ? `${TC.green}10` : `${TC.magenta}10`,
+            border: `2px solid ${isCorrect ? TC.green : TC.magenta}`,
+            padding: '16px 20px',
+            fontFamily: HAND_FONT,
+            fontSize: 16,
+            color: TC.ink,
+            lineHeight: 1.5,
+            textAlign: 'left',
+          }}>
+            <div style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: isCorrect ? TC.green : TC.magenta, marginBottom: 8, textTransform: 'uppercase' }}>
+              EXHIBIT FINDINGS
+            </div>
             {roundResult.explanation}
           </div>
         </div>
 
         <SpeedTrialLeaderboard entries={roundResult.leaderboard} myPlayerId={playerId} />
 
-        {roundResult.isLastRound && (
+        {roundResult.isLastRound ? (
           <div style={{ fontFamily: HAND_FONT, fontSize: 16, color: TC.grey }}>
-            Waiting for host to start Grand Jury Final…
+            Waiting for the bench to commence Grand Jury Final…
           </div>
-        )}
-        {!roundResult.isLastRound && (
+        ) : (
           <div style={{ fontFamily: HAND_FONT, fontSize: 16, color: TC.grey }}>
-            Waiting for host to start next round…
+            Waiting for the bench to call the next case…
           </div>
         )}
       </CenteredLayout>
@@ -201,11 +224,11 @@ export default function SpeedTrialPlayerScreen({ onNavigate, onBack }: Props) {
     if (!isGrandJuryQualified) {
       return (
         <CenteredLayout>
-          <div style={{ fontSize: 48 }}>⚖</div>
-          <div style={{ fontFamily: PIXEL_FONT, fontSize: 10, color: TC.magenta }}>GRAND JURY IN SESSION</div>
-          <div style={{ fontFamily: HAND_FONT, fontSize: 18, color: TC.grey, textAlign: 'center' }}>
-            The top 5 players are deciding the final verdict.
-            <br />Watch the leaderboard…
+          <JudgeSprite size={120} pose="verdict" />
+          <div style={{ fontFamily: PIXEL_FONT, fontSize: 12, color: TC.magenta, letterSpacing: 2 }}>GRAND JURY IN SESSION</div>
+          <div style={{ fontFamily: HAND_FONT, fontSize: 18, color: TC.ink, textAlign: 'center', maxWidth: 480, lineHeight: 1.5 }}>
+            The top 5 counselors are presenting their final arguments to the bench.
+            <br /><span style={{ color: TC.grey, fontSize: 15 }}>Watch the live verdict unfold below…</span>
           </div>
         </CenteredLayout>
       )
@@ -214,28 +237,34 @@ export default function SpeedTrialPlayerScreen({ onNavigate, onBack }: Props) {
     const hasAnswered = !!myGrandJuryAnsweredOptionId
 
     return (
-      <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', zIndex: 1, position: 'relative', padding: '12px 16px', gap: 12 }}>
+      <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', zIndex: 1, position: 'relative', width: '100%' }}>
         <div style={{
-          display: 'flex', alignItems: 'center', gap: 10,
-          background: TC.magenta, color: '#fff', padding: '8px 16px', width: '100%', boxSizing: 'border-box',
+          display: 'flex', alignItems: 'center', flexWrap: 'wrap',
+          background: TC.magenta, color: '#fff', padding: '14px clamp(16px,4vw,40px)', width: '100%', boxSizing: 'border-box',
+          position: 'sticky', top: 0, zIndex: 10, justifyContent: 'space-between',
+          borderBottom: `3px solid ${TC.ink}`, gap: 16,
         }}>
-          <span style={{ fontFamily: PIXEL_FONT, fontSize: 9 }}>⚖ GRAND JURY FINAL</span>
-          <TimerChip timeLeft={gjTimeLeft} timeLimitSeconds={grandJuryQuestion?.timeLimitSeconds ?? 45} isOrange />
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <span style={{ fontFamily: PIXEL_FONT, fontSize: 12, letterSpacing: 2 }}>GRAND JURY FINAL</span>
+          </div>
+          <TimerChip timeLeft={gjTimeLeft} timeLimitSeconds={grandJuryQuestion?.timeLimitSeconds ?? 45} />
         </div>
 
-        {grandJuryQuestion && (
-          hasAnswered ? (
-            <WaitingPanel ack={myGrandJuryAnswerAck} answeredCount={answeredCount} totalPlayers={totalPlayerCount} />
-          ) : (
-            <SpeedTrialQuestionCard
-              question={grandJuryQuestion}
-              selectedOptionId={myGrandJuryAnsweredOptionId}
-              correctOptionId={null}
-              onSelect={(optId) => submitAnswer(grandJuryQuestion.id, optId)}
-              disabled={false}
-            />
-          )
-        )}
+        <div style={{ padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: 16, alignItems: 'center', width: '100%', boxSizing: 'border-box' }}>
+          {grandJuryQuestion && (
+            hasAnswered ? (
+              <WaitingPanel ack={myGrandJuryAnswerAck} answeredCount={answeredCount} totalPlayers={totalPlayerCount} />
+            ) : (
+              <SpeedTrialQuestionCard
+                question={grandJuryQuestion}
+                selectedOptionId={myGrandJuryAnsweredOptionId}
+                correctOptionId={null}
+                onSelect={(optId) => submitAnswer(grandJuryQuestion.id, optId)}
+                disabled={false}
+              />
+            )
+          )}
+        </div>
       </div>
     )
   }
@@ -287,35 +316,60 @@ function PlayerTopBar({ currentRound, totalRounds, timeLeft, timeLimitSeconds, a
 }) {
   return (
     <div style={{
-      display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap',
-      background: TC.ink, color: TC.cream, padding: '8px 14px',
+      display: 'flex', alignItems: 'center', flexWrap: 'wrap',
+      background: TC.cream,
+      borderBottom: `3px solid ${TC.ink}`,
+      padding: '14px clamp(16px,4vw,40px)',
       width: '100%', boxSizing: 'border-box', justifyContent: 'space-between',
+      position: 'sticky', top: 0, zIndex: 10,
+      gap: 16,
     }}>
-      <span style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: TC.orange }}>SPEED TRIAL</span>
-      <span style={{ fontFamily: PIXEL_FONT, fontSize: 9 }}>ROUND {currentRound}/{totalRounds}</span>
-      <TimerChip timeLeft={timeLeft} timeLimitSeconds={timeLimitSeconds} isOrange />
-      <span style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: TC.green }}>
-        {answeredCount}/{totalPlayers}
-      </span>
+      {/* LEFT */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+        <div style={{
+          background: TC.orange, color: '#fff', padding: '6px 10px',
+          fontFamily: PIXEL_FONT, fontSize: 10, border: `2px solid ${TC.ink}`,
+          boxShadow: `2px 2px 0 ${TC.ink}`
+        }}>
+          SPEED TRIAL
+        </div>
+        {currentRound > 0 && (
+          <span style={{ fontFamily: PIXEL_FONT, fontSize: 12, color: TC.ink }}>
+            ROUND {currentRound}/{totalRounds}
+          </span>
+        )}
+      </div>
+
+      {/* RIGHT */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+        <TimerChip timeLeft={timeLeft} timeLimitSeconds={timeLimitSeconds} />
+        
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#fff', border: `2px solid ${TC.ink}`, padding: '4px 10px', boxShadow: `2px 2px 0 ${TC.ink}` }}>
+          <span style={{ fontFamily: PIXEL_FONT, fontSize: 10, color: TC.grey }}>COUNSELORS:</span>
+          <span style={{ fontFamily: PIXEL_FONT, fontSize: 11, color: answeredCount === totalPlayers && totalPlayers > 0 ? TC.green : TC.ink }}>
+            {answeredCount} / {totalPlayers}
+          </span>
+        </div>
+      </div>
     </div>
   )
 }
 
-function TimerChip({ timeLeft, timeLimitSeconds, isOrange }: {
+function TimerChip({ timeLeft, timeLimitSeconds }: {
   timeLeft: number
   timeLimitSeconds: number
-  isOrange?: boolean
 }) {
   const ratio = timeLeft / timeLimitSeconds
   const color = ratio > 0.5 ? TC.green : ratio > 0.25 ? TC.orange : TC.magenta
   const secs = Math.ceil(timeLeft)
 
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-      <div style={{ width: 50, height: 6, background: TC.grey, border: `1px solid ${isOrange ? TC.cream : TC.ink}`, overflow: 'hidden' }}>
+    <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#fff', border: `2px solid ${TC.ink}`, padding: '4px 8px', boxShadow: `2px 2px 0 ${TC.ink}` }}>
+      <span style={{ fontFamily: PIXEL_FONT, fontSize: 10, color: TC.grey }}>TIME:</span>
+      <div style={{ width: 60, height: 8, background: TC.grid, border: `1px solid ${TC.ink}`, overflow: 'hidden' }}>
         <div style={{ height: '100%', width: `${ratio * 100}%`, background: color, transition: 'width 0.25s linear, background 0.25s' }} />
       </div>
-      <span style={{ fontFamily: MONO_FONT, fontSize: 11, color: isOrange ? '#fff' : color, minWidth: 24 }}>
+      <span style={{ fontFamily: MONO_FONT, fontSize: 14, color: TC.ink, minWidth: 28, textAlign: 'right' }}>
         {secs}s
       </span>
     </div>
@@ -330,28 +384,32 @@ function WaitingPanel({ ack, answeredCount, totalPlayers }: {
   return (
     <div style={{
       display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16,
-      background: TC.cream, border: `3px solid ${TC.ink}`, boxShadow: `4px 4px 0 ${TC.ink}`,
-      padding: '28px 32px', maxWidth: 380, width: '100%',
+      background: TC.cream, border: `3px solid ${TC.ink}`, boxShadow: `6px 6px 0 ${TC.ink}`,
+      padding: '32px 36px', maxWidth: 440, width: '100%', textAlign: 'center',
+      boxSizing: 'border-box',
     }}>
-      {ack ? (
-        <>
-          <div style={{ fontFamily: PIXEL_FONT, fontSize: 14, color: ack.isCorrect ? TC.green : TC.magenta }}>
-            {ack.isCorrect ? '✓ CORRECT!' : '✗ WRONG'}
+      <JudgeSprite size={90} pose="idle" />
+      <div style={{ fontFamily: PIXEL_FONT, fontSize: 10, color: TC.grey }}>
+        COURT IS DELIBERATING<span style={{ animation: 'blink 0.5s steps(2) infinite' }}>...</span>
+      </div>
+      {ack && (
+        <div style={{
+          marginTop: 8, padding: '12px 18px', width: '100%', boxSizing: 'border-box',
+          background: ack.isCorrect ? `${TC.green}15` : `${TC.magenta}15`,
+          border: `2px solid ${ack.isCorrect ? TC.green : TC.magenta}`,
+        }}>
+          <div style={{ fontFamily: PIXEL_FONT, fontSize: 12, color: ack.isCorrect ? TC.green : TC.magenta, marginBottom: 6 }}>
+            {ack.isCorrect ? '✓ OBJECTION SUSTAINED!' : '✗ OBJECTION OVERRULED'}
           </div>
           {ack.isCorrect && (
             <div style={{ fontFamily: PIXEL_FONT, fontSize: 22, color: TC.ink }}>
-              +{ack.pointsEarned} pts
+              +{ack.pointsEarned} PTS
             </div>
           )}
-        </>
-      ) : (
-        <div style={{ fontFamily: PIXEL_FONT, fontSize: 10, color: TC.grey }}>ANSWER SUBMITTED</div>
+        </div>
       )}
-      <div style={{ fontFamily: HAND_FONT, fontSize: 16, color: TC.grey }}>
-        {answeredCount}/{totalPlayers} players answered
-      </div>
-      <div style={{ fontFamily: HAND_FONT, fontSize: 14, color: TC.grey }}>
-        Waiting for others…
+      <div style={{ fontFamily: HAND_FONT, fontSize: 16, color: TC.ink, marginTop: 8 }}>
+        {answeredCount}/{totalPlayers} counselors have submitted their depositions.
       </div>
     </div>
   )

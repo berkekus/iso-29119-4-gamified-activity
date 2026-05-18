@@ -41,7 +41,7 @@ export function computeScore(
 
 /** Build a sorted leaderboard from the player map. */
 export function buildLeaderboard(
-  players: Map<string, { id: string; nickname: string; score: number; answers: Record<string, { isCorrect: boolean }> }>,
+  players: Map<string, { id: string; nickname: string; avatar: import('./types.js').AvatarId; score: number; answers: Record<string, { isCorrect: boolean }> }>,
   prevScores: Map<string, number>,
 ): import('./types.js').LeaderboardEntry[] {
   const entries = Array.from(players.values()).map((p) => {
@@ -50,6 +50,7 @@ export function buildLeaderboard(
     return {
       playerId: p.id,
       nickname: p.nickname,
+      avatar: p.avatar,
       score: p.score,
       correctAnswers,
       delta: p.score - prev,

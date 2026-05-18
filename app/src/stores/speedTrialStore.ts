@@ -8,6 +8,7 @@ import type {
   AnswerAck,
   RoundEndedPayload,
   RoomStatus,
+  AvatarId,
 } from '../speed-trial/types'
 
 // ─── State shape ──────────────────────────────────────────────────────────────
@@ -23,6 +24,7 @@ interface SpeedTrialState {
   role: SpeedTrialRole
   playerId: string | null
   nickname: string | null
+  myAvatar: AvatarId | null
 
   // Room
   roomCode: string | null
@@ -59,8 +61,8 @@ interface SpeedTrialState {
   // Actions
   connect: () => void
   disconnect: () => void
-  createRoom: (nickname: string) => void
-  joinRoom: (code: string, nickname: string) => void
+  createRoom: (nickname: string, avatar: AvatarId) => void
+  joinRoom: (code: string, nickname: string, avatar: AvatarId) => void
   startTournament: () => void
   submitAnswer: (questionId: string, optionId: string) => void
   nextRound: () => void
@@ -78,6 +80,7 @@ const INITIAL: Omit<SpeedTrialState, keyof Actions> = {
   role: null,
   playerId: null,
   nickname: null,
+  myAvatar: null,
   roomCode: null,
   roomStatus: 'lobby',
   players: [],
@@ -209,16 +212,16 @@ export const useSpeedTrialStore = create<SpeedTrialState>()((set, get) => {
       set({ ...INITIAL })
     },
 
-    createRoom(nickname) {
+    createRoom(nickname, avatar) {
       const socket = getSocket()
-      set({ role: 'host', nickname, error: null })
-      socket.emit(EV.CREATE_ROOM, { nickname })
+      set({ role: 'host', nickname, myAvatar: avatar, error: null })
+      socket.emit(EV.CREATE_ROOM, { nickname, avatar })
     },
 
-    joinRoom(code, nickname) {
+    joinRoom(code, nickname, avatar) {
       const socket = getSocket()
-      set({ role: 'player', nickname, error: null })
-      socket.emit(EV.JOIN_ROOM, { code, nickname })
+      set({ role: 'player', nickname, myAvatar: avatar, error: null })
+      socket.emit(EV.JOIN_ROOM, { code, nickname, avatar })
     },
 
     startTournament() {

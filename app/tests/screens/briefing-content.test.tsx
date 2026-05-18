@@ -1,7 +1,7 @@
 import { describe, test, expect, beforeEach, afterEach } from 'vitest'
 import { createRoot, type Root } from 'react-dom/client'
 import { act } from 'react'
-import BriefingScreen from '../../src/screens/BriefingScreen'
+import BriefingSection from '../../src/screens/sections/BriefingSection'
 import { useGameStore } from '../../src/stores/gameStore'
 
 // Mount in jsdom so that zustand's client snapshot path runs (the SSR
@@ -37,7 +37,7 @@ describe('BriefingScreen — technique-neutral content for non-MCDC cases', () =
     useGameStore.getState().loadCaseById('stmt-tutorial-01')
     expect(useGameStore.getState().caseFile?.id).toBe('stmt-tutorial-01')
     act(() => {
-      root.render(<BriefingScreen onNavigate={() => {}} onBack={() => {}} />)
+      root.render(<BriefingSection isActive isCompleted={false} onAdvance={() => {}} />)
     })
     const html = userVisibleText()
     expect(html).not.toMatch(/MC\/DC/)
@@ -52,7 +52,7 @@ describe('BriefingScreen — technique-neutral content for non-MCDC cases', () =
     useGameStore.getState().loadCaseById('stmt-hidden-branch-01')
     expect(useGameStore.getState().caseFile?.id).toBe('stmt-hidden-branch-01')
     act(() => {
-      root.render(<BriefingScreen onNavigate={() => {}} onBack={() => {}} />)
+      root.render(<BriefingSection isActive isCompleted={false} onAdvance={() => {}} />)
     })
     const html = userVisibleText()
     expect(html).not.toMatch(/MC\/DC/)
