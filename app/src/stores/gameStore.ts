@@ -63,6 +63,13 @@ export type Screen =
   | 'speed-trial-host'
   | 'speed-trial-player'
   | 'speed-trial-winner'
+  // Mock Trial multiplayer screens
+  | 'mock-trial-lobby'
+  | 'mock-trial-court-select'
+  | 'mock-trial-host'
+  | 'mock-trial-case'
+  | 'mock-trial-reveal'
+  | 'mock-trial-final'
 
 // ── MCDC namespace types ──────────────────────────────────────────────────────
 
