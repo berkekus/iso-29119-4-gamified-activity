@@ -277,7 +277,7 @@ export default function BriefingSection({ isCompleted, onAdvance }: SectionProps
                         fontWeight: 400,
                         color:      TC.ink,
                         lineHeight: 1.5,
-                        fontStyle:  'italic',
+                        fontStyle:  'normal',
                       }}>
                         “{defQuote}”
                       </div>

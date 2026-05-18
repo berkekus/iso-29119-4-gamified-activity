@@ -1,5 +1,6 @@
+import React, { useState, useEffect } from 'react'
 import { TC, PIXEL_FONT, HAND_FONT, MONO_FONT } from '../ui/tokens'
-import { BugSprite } from '../ui/CharacterSprites'
+import { JudgeSprite } from '../ui/CharacterSprites'
 import type { Screen } from '../stores/gameStore'
 import { CASE_ORDER } from '../content/caseOrder'
 
@@ -10,17 +11,17 @@ import { CASE_ORDER } from '../content/caseOrder'
 // preserved, but saturation/brightness are dialled down so the cards feel
 // like printed ink stamps instead of neon UI chips.
 const ACT_COLORS = {
-  stmtBranch:   '#6B4A2B', // tobacco brown  (was TC.orange)
-  decisionBc:   '#4F7A3A', // olive ink      (was TC.green)
-  bcc:          '#2D5C8A', // navy ink       (was TC.blue)
-  mcdc:         '#8A3D6B', // dried plum     (was TC.magenta)
-  coverageMix:  '#5C5246', // deep sepia grey (was TC.grey)
+  stmtBranch: '#6B4A2B', // tobacco brown  (was TC.orange)
+  decisionBc: '#4F7A3A', // olive ink      (was TC.green)
+  bcc: '#2D5C8A', // navy ink       (was TC.blue)
+  mcdc: '#8A3D6B', // dried plum     (was TC.magenta)
+  coverageMix: '#5C5246', // deep sepia grey (was TC.grey)
 } as const
 
 // Semantic accents used inside case cards. Tuned to sit on the PAPER
 // background and stay within the same desaturated print palette.
 const INK_COMPLETE = '#4F7A3A' // olive ink — case solved
-const INK_BOSS     = '#8E2A2A' // burnt bordeaux — final boss flag
+const INK_BOSS = '#8E2A2A' // burnt bordeaux — final boss flag
 
 interface Props {
   onNavigate: (screen: Screen) => void
@@ -57,9 +58,9 @@ const acts: ActEntry[] = [
     bugType: 'combinatorial',
     clauses: '§5.3.1 – §5.3.2',
     cases: [
-      { id: 'stmt-tutorial-01',      name: 'First Trial',      difficulty: 1 },
+      { id: 'stmt-tutorial-01', name: 'First Trial', difficulty: 1 },
       { id: 'stmt-hidden-branch-01', name: 'The Missing Else', difficulty: 2 },
-      { id: 'branch-loop-trap-01',   name: 'The Empty Loop',   difficulty: 3 },
+      { id: 'branch-loop-trap-01', name: 'The Empty Loop', difficulty: 3 },
     ],
   },
   {
@@ -72,8 +73,8 @@ const acts: ActEntry[] = [
     clauses: '§5.3.3 – §5.3.4',
     cases: [
       { id: 'decision-and-trap-01', name: 'Two-Factor Login', difficulty: 1 },
-      { id: 'bc-or-three-cond-01',  name: 'Triple Alarm',     difficulty: 2 },
-      { id: 'bc-negation-mask-01',  name: 'Negation Mask',    difficulty: 3 },
+      { id: 'bc-or-three-cond-01', name: 'Triple Alarm', difficulty: 2 },
+      { id: 'bc-negation-mask-01', name: 'Negation Mask', difficulty: 3 },
     ],
   },
   {
@@ -85,9 +86,9 @@ const acts: ActEntry[] = [
     bugType: 'bcc',
     clauses: '§5.3.5',
     cases: [
-      { id: 'bcc-intro-01',          name: 'E-Commerce Discount', difficulty: 1 },
-      { id: 'bcc-vs-bc-01',          name: 'Bank Loan Scandal',   difficulty: 2 },
-      { id: 'bcc-explosion-01',      name: 'Emergency Brake',     difficulty: 3 },
+      { id: 'bcc-intro-01', name: 'E-Commerce Discount', difficulty: 1 },
+      { id: 'bcc-vs-bc-01', name: 'Bank Loan Scandal', difficulty: 2 },
+      { id: 'bcc-explosion-01', name: 'Emergency Brake', difficulty: 3 },
     ],
   },
   {
@@ -99,9 +100,9 @@ const acts: ActEntry[] = [
     bugType: 'mcdc',
     clauses: '§5.3.6',
     cases: [
-      { id: 'mcdc-tutorial-01',       name: 'The Single Flip',     difficulty: 1 },
+      { id: 'mcdc-tutorial-01', name: 'The Single Flip', difficulty: 1 },
       { id: 'mcdc-trap-isolation-01', name: 'The Sabotaged Drone', difficulty: 2 },
-      { id: 'mcdc-vault-boss-01',     name: 'The Casino Vault',    difficulty: 3 },
+      { id: 'mcdc-vault-boss-01', name: 'The Casino Vault', difficulty: 3 },
     ],
   },
   {
@@ -113,7 +114,7 @@ const acts: ActEntry[] = [
     bugType: 'dataflow',
     clauses: '§5.3.1 – §5.3.6',
     cases: [
-      { id: 'coverage-mix-01', name: 'The Logging Glitch',        difficulty: 1 },
+      { id: 'coverage-mix-01', name: 'The Logging Glitch', difficulty: 1 },
       { id: 'coverage-mix-02', name: 'The Insurance Rule Engine', difficulty: 2 },
       { id: 'coverage-mix-03', name: 'The Life-Support Controller', difficulty: 3, isBoss: true },
     ],
@@ -130,8 +131,8 @@ function isCaseUnlocked(caseId: string, completed: string[]): boolean {
 }
 
 // ── Palette ───────────────────────────────────────────────────────────────────
-const INK    = '#1e130a'
-const PAPER  = '#f0e5cb'
+const INK = '#1e130a'
+const PAPER = '#f0e5cb'
 const BORDER = '#9a7a50'
 
 // ── Small reusable SVG icons ──────────────────────────────────────────────────
@@ -204,20 +205,20 @@ function NavBtn({
       onClick={onClick}
       disabled={disabled}
       style={{
-        background:    '#2a1a08',
-        border:        `2px solid ${BORDER}`,
-        boxShadow:     disabled ? 'none' : `3px 3px 0 ${INK}`,
-        padding:       '10px 20px',
-        cursor:        disabled ? 'not-allowed' : 'pointer',
-        opacity:       disabled ? 0.45 : 1,
-        display:       'flex',
-        alignItems:    'center',
-        gap:           10,
-        fontFamily:    PIXEL_FONT,
-        fontSize:      9,
-        color:         '#f0e5cb',
+        background: '#2a1a08',
+        border: `2px solid ${BORDER}`,
+        boxShadow: disabled ? 'none' : `3px 3px 0 ${INK}`,
+        padding: '10px 20px',
+        cursor: disabled ? 'not-allowed' : 'pointer',
+        opacity: disabled ? 0.45 : 1,
+        display: 'flex',
+        alignItems: 'center',
+        gap: 10,
+        fontFamily: PIXEL_FONT,
+        fontSize: 9,
+        color: '#f0e5cb',
         letterSpacing: 0.5,
-        whiteSpace:    'nowrap',
+        whiteSpace: 'nowrap',
       }}
     >
       {icon}
@@ -232,17 +233,17 @@ function StatChip({ label, value }: { label: string; value: string }) {
     <div
       aria-label={`${label} ${value}`}
       style={{
-        background:    '#2a1a08',
-        border:        `2px solid ${BORDER}`,
-        boxShadow:     `3px 3px 0 ${INK}`,
-        padding:       '10px 16px',
-        display:       'flex',
-        alignItems:    'center',
-        gap:           8,
-        fontFamily:    PIXEL_FONT,
-        fontSize:      9,
+        background: '#2a1a08',
+        border: `2px solid ${BORDER}`,
+        boxShadow: `3px 3px 0 ${INK}`,
+        padding: '10px 16px',
+        display: 'flex',
+        alignItems: 'center',
+        gap: 8,
+        fontFamily: PIXEL_FONT,
+        fontSize: 9,
         letterSpacing: 0.5,
-        whiteSpace:    'nowrap',
+        whiteSpace: 'nowrap',
       }}
     >
       <span style={{ color: '#c8a870' }}>{label}</span>
@@ -253,6 +254,20 @@ function StatChip({ label, value }: { label: string; value: string }) {
 
 // ── Main component ────────────────────────────────────────────────────────────
 export default function CampaignMapScreen({ onNavigate, onBack, completedCases, onSelectCase }: Props) {
+  const [showIntro, setShowIntro] = useState(false)
+
+  useEffect(() => {
+    const seen = localStorage.getItem('hasSeenCampaignIntro')
+    if (!seen) {
+      setShowIntro(true)
+    }
+  }, [])
+
+  const closeIntro = () => {
+    localStorage.setItem('hasSeenCampaignIntro', 'true')
+    setShowIntro(false)
+  }
+
   const completedCount = completedCases.filter(id =>
     acts.some(a => a.cases.some(c => c.id === id))
   ).length
@@ -271,15 +286,15 @@ export default function CampaignMapScreen({ onNavigate, onBack, completedCases, 
 
       {/* ── Header bar ──────────────────────────────────────────────────────── */}
       <div style={{
-        background:    '#1a0e06',
-        borderBottom:  `3px solid #6a4020`,
-        padding:       '10px 20px',
-        display:       'flex',
-        alignItems:    'center',
-        justifyContent:'space-between',
-        gap:           16,
-        flexShrink:    0,
-        flexWrap:      'wrap',
+        background: '#1a0e06',
+        borderBottom: `3px solid #6a4020`,
+        padding: '10px 20px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        gap: 16,
+        flexShrink: 0,
+        flexWrap: 'wrap',
       }}>
         {/* Left: nav buttons */}
         <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
@@ -290,12 +305,12 @@ export default function CampaignMapScreen({ onNavigate, onBack, completedCases, 
           />
           <NavBtn
             label="LAW LIBRARY"
-            icon={<svg width="18" height="16" viewBox="0 0 18 16" fill="none"><rect x="1" y="1" width="7" height="14" fill={PAPER} stroke={PAPER} strokeWidth="1"/><rect x="10" y="1" width="7" height="14" fill={PAPER} stroke={PAPER} strokeWidth="1"/><rect x="8" y="0" width="2" height="16" fill="#8a7a60"/><line x1="2" y1="5" x2="7" y2="5" stroke="#8a7a60" strokeWidth="1"/><line x1="2" y1="8" x2="7" y2="8" stroke="#8a7a60" strokeWidth="1"/><line x1="11" y1="5" x2="16" y2="5" stroke="#8a7a60" strokeWidth="1"/><line x1="11" y1="8" x2="16" y2="8" stroke="#8a7a60" strokeWidth="1"/></svg>}
+            icon={<svg width="18" height="16" viewBox="0 0 18 16" fill="none"><rect x="1" y="1" width="7" height="14" fill={PAPER} stroke={PAPER} strokeWidth="1" /><rect x="10" y="1" width="7" height="14" fill={PAPER} stroke={PAPER} strokeWidth="1" /><rect x="8" y="0" width="2" height="16" fill="#8a7a60" /><line x1="2" y1="5" x2="7" y2="5" stroke="#8a7a60" strokeWidth="1" /><line x1="2" y1="8" x2="7" y2="8" stroke="#8a7a60" strokeWidth="1" /><line x1="11" y1="5" x2="16" y2="5" stroke="#8a7a60" strokeWidth="1" /><line x1="11" y1="8" x2="16" y2="8" stroke="#8a7a60" strokeWidth="1" /></svg>}
             onClick={() => onNavigate('law-library')}
           />
           <NavBtn
             label="ACHIEVEMENTS"
-            icon={<svg width="16" height="18" viewBox="0 0 16 18" fill="none"><rect x="4" y="1" width="8" height="10" rx="4" fill={PAPER} stroke={PAPER} strokeWidth="1"/><rect x="2" y="1" width="2" height="8" fill={PAPER}/><rect x="12" y="1" width="2" height="8" fill={PAPER}/><rect x="6" y="11" width="4" height="4" fill={PAPER}/><rect x="3" y="15" width="10" height="2" fill={PAPER}/></svg>}
+            icon={<svg width="16" height="18" viewBox="0 0 16 18" fill="none"><rect x="4" y="1" width="8" height="10" rx="4" fill={PAPER} stroke={PAPER} strokeWidth="1" /><rect x="2" y="1" width="2" height="8" fill={PAPER} /><rect x="12" y="1" width="2" height="8" fill={PAPER} /><rect x="6" y="11" width="4" height="4" fill={PAPER} /><rect x="3" y="15" width="10" height="2" fill={PAPER} /></svg>}
             onClick={() => onNavigate('achievements')}
           />
         </div>
@@ -303,7 +318,7 @@ export default function CampaignMapScreen({ onNavigate, onBack, completedCases, 
         {/* Right: progress chips (uses NavBtn-style frame for visual consistency) */}
         <div style={{ display: 'flex', gap: 10 }}>
           <StatChip label="CASES" value={`${String(completedCount).padStart(2, '0')}/${String(TOTAL_CASES).padStart(2, '0')}`} />
-          <StatChip label="ACTS"  value={`${String(completedActs).padStart(2, '0')}/${String(acts.length).padStart(2, '0')}`} />
+          <StatChip label="ACTS" value={`${String(completedActs).padStart(2, '0')}/${String(acts.length).padStart(2, '0')}`} />
         </div>
       </div>
 
@@ -316,14 +331,14 @@ export default function CampaignMapScreen({ onNavigate, onBack, completedCases, 
           {/* Title panel */}
           <div style={{ textAlign: 'center', marginBottom: 28 }}>
             <div style={{
-              display:       'inline-flex',
+              display: 'inline-flex',
               flexDirection: 'column',
-              alignItems:    'center',
-              gap:           8,
-              background:    PAPER,
-              border:        `2px solid ${INK}`,
-              boxShadow:     `4px 4px 0 ${INK}`,
-              padding:       '14px 36px',
+              alignItems: 'center',
+              gap: 8,
+              background: PAPER,
+              border: `2px solid ${INK}`,
+              boxShadow: `4px 4px 0 ${INK}`,
+              padding: '14px 36px',
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
                 <CrosshairIcon />
@@ -333,11 +348,11 @@ export default function CampaignMapScreen({ onNavigate, onBack, completedCases, 
                 <CrosshairIcon />
               </div>
               <div style={{
-                fontFamily:    HAND_FONT,
-                fontSize:      12,
-                color:         TC.grey,
+                fontFamily: HAND_FONT,
+                fontSize: 12,
+                color: TC.grey,
                 letterSpacing: 0.4,
-                fontStyle:     'italic',
+                fontStyle: 'italic',
               }}>
                 Five acts · fifteen cases · one verdict
               </div>
@@ -358,14 +373,14 @@ export default function CampaignMapScreen({ onNavigate, onBack, completedCases, 
                   {/* Act header card */}
                   <div style={{
                     background: PAPER,
-                    border:     `2px solid ${INK}`,
-                    boxShadow:  `4px 4px 0 ${INK}`,
+                    border: `2px solid ${INK}`,
+                    boxShadow: `4px 4px 0 ${INK}`,
                   }}>
                     {/* Coloured tab */}
                     <div style={{
-                      background:   act.color,
+                      background: act.color,
                       borderBottom: `2px solid ${INK}`,
-                      padding:      '6px 12px',
+                      padding: '6px 12px',
                     }}>
                       <span style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: '#fff', letterSpacing: 1 }}>
                         {act.name}
@@ -373,18 +388,41 @@ export default function CampaignMapScreen({ onNavigate, onBack, completedCases, 
                     </div>
 
                     {/* Card body */}
-                    <div style={{ padding: '12px 10px', textAlign: 'center' }}>
-                      <div style={{ fontFamily: PIXEL_FONT, fontSize: 7, color: TC.grey, letterSpacing: 0.5, marginBottom: 6 }}>
-                        {act.name}
+                    <div style={{ padding: '16px 10px 12px', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+
+                      {/* Aesthetic Icon Box */}
+                      <div style={{
+                        width: 52, height: 52,
+                        background: PAPER,
+                        border: `2px solid ${INK}`,
+                        boxShadow: `inset 0 0 0 2px #e0d4b8, 3px 3px 0 ${act.color}`,
+                        display: 'flex', alignItems: 'flex-start', justifyContent: 'center',
+                        marginBottom: 16,
+                        overflow: 'hidden'
+                      }}>
+                        <img
+                          src="/assets/prosecutor.png"
+                          alt="Prosecutor"
+                          style={{
+                            height: 50,
+                            width: 'auto',
+                            objectFit: 'contain',
+                            imageRendering: 'pixelated',
+                            transform: 'translateY(4px)'
+                          }}
+                        />
                       </div>
+
                       <div style={{ fontFamily: PIXEL_FONT, fontSize: 11, color: act.color, lineHeight: 1.4, marginBottom: 4 }}>
                         {act.title}
                       </div>
-                      <div style={{ fontFamily: HAND_FONT, fontSize: 13, color: INK, marginBottom: 8 }}>
+                      <div style={{ fontFamily: HAND_FONT, fontSize: 13, color: INK, marginBottom: 6 }}>
                         {act.subtitle}
                       </div>
-                      <BugSprite size={46} type={act.bugType} />
-                      <div style={{ fontFamily: MONO_FONT, fontSize: 10, color: TC.grey, marginTop: 7, letterSpacing: 0.3 }}>
+
+                      <div style={{ width: 24, height: 2, background: BORDER, margin: '6px 0 8px' }} />
+
+                      <div style={{ fontFamily: MONO_FONT, fontSize: 10, color: TC.grey, letterSpacing: 0.3 }}>
                         {act.clauses}
                       </div>
                     </div>
@@ -397,8 +435,8 @@ export default function CampaignMapScreen({ onNavigate, onBack, completedCases, 
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                     {act.cases.map(c => {
                       const isComplete = completedCases.includes(c.id)
-                      const isLocked   = !isComplete && !isCaseUnlocked(c.id, completedCases)
-                      const isCurrent  = c.id === currentCaseId && !isComplete
+                      const isLocked = !isComplete && !isCaseUnlocked(c.id, completedCases)
+                      const isCurrent = c.id === currentCaseId && !isComplete
 
                       return (
                         <button
@@ -419,39 +457,39 @@ export default function CampaignMapScreen({ onNavigate, onBack, completedCases, 
                           }
                           title={isLocked ? 'Complete the previous case to unlock' : c.name}
                           style={{
-                            background:  c.isBoss && !isLocked ? `${INK_BOSS}14` : PAPER,
-                            border:      `2px solid ${isLocked ? BORDER : c.isBoss ? INK_BOSS : INK}`,
-                            boxShadow:   !isLocked ? `2px 2px 0 ${INK}` : 'none',
-                            padding:     '8px 9px',
-                            minHeight:   44,
-                            display:     'flex',
-                            alignItems:  'center',
-                            gap:         8,
-                            cursor:      isLocked ? 'not-allowed' : 'pointer',
-                            opacity:     isLocked ? 0.6 : 1,
-                            textAlign:   'left',
-                            width:       '100%',
+                            background: c.isBoss && !isLocked ? `${INK_BOSS}14` : PAPER,
+                            border: `2px solid ${isLocked ? BORDER : c.isBoss ? INK_BOSS : INK}`,
+                            boxShadow: !isLocked ? `2px 2px 0 ${INK}` : 'none',
+                            padding: '8px 9px',
+                            minHeight: 44,
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 8,
+                            cursor: isLocked ? 'not-allowed' : 'pointer',
+                            opacity: isLocked ? 0.6 : 1,
+                            textAlign: 'left',
+                            width: '100%',
                           }}
                         >
                           {/* Left icon */}
                           <div style={{ width: 14, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                            {isLocked   ? <LockIcon /> :
-                             isComplete ? <CheckIcon /> :
-                             isCurrent  ? <PlayIcon filled /> :
-                                          <PlayIcon />}
+                            {isLocked ? <LockIcon /> :
+                              isComplete ? <CheckIcon /> :
+                                isCurrent ? <PlayIcon filled /> :
+                                  <PlayIcon />}
                           </div>
 
                           {/* Name block */}
                           <div style={{ flex: 1, minWidth: 0 }}>
                             <div style={{
-                              fontFamily:    PIXEL_FONT,
-                              fontSize:      9,
-                              color:         isComplete ? INK_COMPLETE : c.isBoss ? INK_BOSS : INK,
-                              lineHeight:    1.45,
-                              whiteSpace:    'normal',
-                              overflowWrap:  'break-word',
-                              wordBreak:     'break-word',
-                              hyphens:       'auto',
+                              fontFamily: PIXEL_FONT,
+                              fontSize: 9,
+                              color: isComplete ? INK_COMPLETE : c.isBoss ? INK_BOSS : INK,
+                              lineHeight: 1.45,
+                              whiteSpace: 'normal',
+                              overflowWrap: 'break-word',
+                              wordBreak: 'break-word',
+                              hyphens: 'auto',
                             }}>
                               {c.name}
                             </div>
@@ -466,10 +504,10 @@ export default function CampaignMapScreen({ onNavigate, onBack, completedCases, 
                           <div style={{ display: 'flex', gap: 2, flexShrink: 0 }}>
                             {[1, 2, 3].map(d => (
                               <div key={d} style={{
-                                width:      7,
-                                height:     7,
+                                width: 7,
+                                height: 7,
                                 background: d <= c.difficulty ? (isLocked ? BORDER : act.color) : '#e0d4b8',
-                                border:     `1px solid ${isLocked ? BORDER : INK}`,
+                                border: `1px solid ${isLocked ? BORDER : INK}`,
                               }} />
                             ))}
                           </div>
@@ -487,24 +525,24 @@ export default function CampaignMapScreen({ onNavigate, onBack, completedCases, 
 
             {/* Hint text box */}
             <div style={{
-              flex:       1,
+              flex: 1,
               background: PAPER,
-              border:     `2px solid ${BORDER}`,
-              boxShadow:  `3px 3px 0 ${INK}`,
-              padding:    '12px 20px',
-              position:   'relative',
-              overflow:   'hidden',
-              display:    'flex',
+              border: `2px solid ${BORDER}`,
+              boxShadow: `3px 3px 0 ${INK}`,
+              padding: '12px 20px',
+              position: 'relative',
+              overflow: 'hidden',
+              display: 'flex',
               alignItems: 'center',
             }}>
               {/* Corner decorators */}
-              {(['tl','tr','bl','br'] as const).map(pos => (
+              {(['tl', 'tr', 'bl', 'br'] as const).map(pos => (
                 <div key={pos} style={{
                   position: 'absolute',
-                  top:    pos.startsWith('t') ? 5 : undefined,
+                  top: pos.startsWith('t') ? 5 : undefined,
                   bottom: pos.startsWith('b') ? 5 : undefined,
-                  left:   pos.endsWith('l')   ? 5 : undefined,
-                  right:  pos.endsWith('r')   ? 5 : undefined,
+                  left: pos.endsWith('l') ? 5 : undefined,
+                  right: pos.endsWith('r') ? 5 : undefined,
                 }}>
                   <CrosshairIcon />
                 </div>
@@ -528,6 +566,91 @@ export default function CampaignMapScreen({ onNavigate, onBack, completedCases, 
           </div>
         </div>
       </div>
+
+      {/* ── Tutorial Intro Modal (Judge Dialog) ───────────────────────── */}
+      {showIntro && (
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 100,
+          background: 'rgba(0,0,0,0.85)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          padding: 20,
+          backdropFilter: 'blur(4px)'
+        }}>
+          <div style={{
+            background: PAPER,
+            border: `4px solid ${INK}`,
+            boxShadow: `8px 8px 0 ${INK}`,
+            padding: '32px 40px',
+            maxWidth: 640,
+            width: '100%',
+            position: 'relative',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            textAlign: 'center'
+          }}>
+            {/* Center: Judge Image & Nameplate */}
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: 24 }}>
+              <div style={{
+                width: 160,
+                height: 160,
+                background: '#e0d4b8',
+                border: `2px solid ${INK}`,
+                boxShadow: `4px 4px 0 ${TC.grey}`,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                overflow: 'hidden',
+              }}>
+                <img src="/assets/new_judge.png" alt="Judge" style={{ width: '100%', height: '100%', objectFit: 'cover', imageRendering: 'pixelated' }} />
+              </div>
+              <div style={{
+                background: '#8E2A2A',
+                color: PAPER,
+                fontFamily: PIXEL_FONT,
+                fontSize: 10,
+                padding: '4px 16px',
+                border: `2px solid ${INK}`,
+                marginTop: -8, // Slight overlap with the portrait
+                zIndex: 2,
+                letterSpacing: 1
+              }}>
+                THE HONORABLE JUDGE
+              </div>
+            </div>
+            
+            {/* Dialog Text */}
+            <div style={{ width: '100%' }}>
+              <div style={{ fontFamily: HAND_FONT, fontSize: 18, color: INK, lineHeight: 1.6, marginBottom: 16 }}>
+                Welcome to the Test Courthouse. I see you are the newly appointed lead prosecutor.
+              </div>
+
+              <div style={{ fontFamily: HAND_FONT, fontSize: 18, color: INK, lineHeight: 1.6, marginBottom: 32 }}>
+                Your mission is to bring elusive software bugs to justice using the <strong>ISO/IEC/IEEE 29119-4</strong> structural coverage standards. Review the evidence, interrogate the logic for missing test paths, and secure a <strong>GUILTY</strong> verdict. Don't let them escape!
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'center' }}>
+                <button
+                  onClick={closeIntro}
+                  style={{
+                    background: '#2a1a08',
+                    border: `2px solid ${BORDER}`,
+                    boxShadow: `3px 3px 0 ${INK}`,
+                    padding: '12px 32px',
+                    fontFamily: PIXEL_FONT,
+                    fontSize: 14,
+                    color: PAPER,
+                    cursor: 'pointer',
+                    letterSpacing: 1
+                  }}
+                >
+                  I UNDERSTAND, YOUR HONOR
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   )

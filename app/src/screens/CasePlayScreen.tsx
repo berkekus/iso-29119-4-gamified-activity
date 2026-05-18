@@ -9,20 +9,18 @@ import BriefingSection from './sections/BriefingSection'
 import InvestigationSection from './sections/InvestigationSection'
 import EvidenceSection from './sections/EvidenceSection'
 import TrialSection from './sections/TrialSection'
-import DebriefSection from './sections/DebriefSection'
 
 interface Props {
   onNavigateOut: (screen: Screen) => void
 }
 
-const PHASES: GamePhase[] = ['briefing', 'investigation', 'evidence', 'trial', 'debrief']
+const PHASES: GamePhase[] = ['briefing', 'investigation', 'evidence', 'trial']
 
 const PHASE_COLORS: Record<GamePhase, string> = {
   briefing: TC.grey,
   investigation: TC.orange,
   evidence: TC.green,
   trial: TC.magenta,
-  debrief: TC.blue,
 }
 
 const PHASE_LABELS: Record<GamePhase, string> = {
@@ -30,7 +28,6 @@ const PHASE_LABELS: Record<GamePhase, string> = {
   investigation: 'INVESTIGATION',
   evidence: 'EVIDENCE',
   trial: 'TRIAL',
-  debrief: 'DEBRIEF',
 }
 
 function phaseAtLeast(current: GamePhase, target: GamePhase): boolean {
@@ -166,7 +163,6 @@ export default function CasePlayScreen({ onNavigateOut }: Props) {
   const investigationRef = useRef<HTMLDivElement>(null)
   const evidenceRef = useRef<HTMLDivElement>(null)
   const trialRef = useRef<HTMLDivElement>(null)
-  const debriefRef = useRef<HTMLDivElement>(null)
 
   const isPairSelector = caseFile?.question_type === 'pair_selector'
 
@@ -177,7 +173,6 @@ export default function CasePlayScreen({ onNavigateOut }: Props) {
       investigation: investigationRef,
       evidence: evidenceRef,
       trial: trialRef,
-      debrief: debriefRef,
     }
     const target = refMap[phase]?.current
     if (target) {
@@ -239,21 +234,9 @@ export default function CasePlayScreen({ onNavigateOut }: Props) {
         {/* § 4 TRIAL */}
         {phaseAtLeast(phase, 'trial') && (
           <div ref={trialRef}>
-            <SectionDivider phaseLabel="TRIAL" phaseNumber={isPairSelector ? 4 : 3} color={PHASE_COLORS.trial} />
+            <SectionDivider phaseLabel="TRIAL CONCLUSION" phaseNumber={isPairSelector ? 4 : 3} color={PHASE_COLORS.trial} />
             <TrialSection
               isActive={phase === 'trial'}
-              isCompleted={phaseAtLeast(phase, 'debrief')}
-              onAdvance={advancePhase}
-            />
-          </div>
-        )}
-
-        {/* § 5 DEBRIEF */}
-        {phaseAtLeast(phase, 'debrief') && (
-          <div ref={debriefRef}>
-            <SectionDivider phaseLabel="DEBRIEF" phaseNumber={isPairSelector ? 5 : 4} color={PHASE_COLORS.debrief} />
-            <DebriefSection
-              isActive={phase === 'debrief'}
               isCompleted={false}
               onAdvance={advancePhase}
               onNavigateOut={onNavigateOut}
