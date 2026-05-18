@@ -111,7 +111,7 @@ export default function SpeedTrialLobbyScreen({ onNavigate, onBack }: Props) {
         gap: 16,
         boxSizing: 'border-box',
       }}>
-        <AvatarSelector value={avatar} onChange={setAvatar} />
+        {tab === 'join' && <AvatarSelector value={avatar} onChange={setAvatar} />}
 
         {tab === 'host' ? (
           <>
@@ -128,7 +128,7 @@ export default function SpeedTrialLobbyScreen({ onNavigate, onBack }: Props) {
             <PixelButton
               variant="warning"
               disabled={!canSubmit}
-              onClick={() => canSubmit && createRoom(nickname.trim(), avatar)}
+              onClick={() => canSubmit && createRoom(nickname.trim(), 'new_judge')}
             >
               CREATE ROOM
             </PixelButton>

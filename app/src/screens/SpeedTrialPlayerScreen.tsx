@@ -68,6 +68,9 @@ export default function SpeedTrialPlayerScreen({ onNavigate, onBack }: Props) {
 
   // ── LOBBY ──────────────────────────────────────────────────────────────────
   if (roomStatus === 'lobby') {
+    const hostPlayer = players.find((p) => p.isHost)
+    const gamePlayers = players.filter((p) => !p.isHost)
+
     return (
       <CenteredLayout>
         <div style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: TC.grey }}>SPEED TRIAL</div>
@@ -75,6 +78,35 @@ export default function SpeedTrialPlayerScreen({ onNavigate, onBack }: Props) {
           <div style={{ fontFamily: PIXEL_FONT, fontSize: 9, color: TC.grey, marginBottom: 6 }}>ROOM CODE</div>
           <div style={{ fontFamily: MONO_FONT, fontSize: 40, color: TC.ink, letterSpacing: 10 }}>{roomCode}</div>
         </div>
+
+        {/* Host info */}
+        {hostPlayer && (
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 10,
+            background: `${TC.orange}18`,
+            border: `2px solid ${TC.orange}`,
+            padding: '10px 18px',
+            width: '100%',
+            maxWidth: 380,
+            boxSizing: 'border-box',
+          }}>
+            <div style={{
+              background: TC.orange,
+              color: '#fff',
+              fontFamily: PIXEL_FONT,
+              fontSize: 9,
+              padding: '3px 8px',
+              border: `2px solid ${TC.ink}`,
+              flexShrink: 0,
+            }}>
+              HOST
+            </div>
+            <span style={{ fontFamily: HAND_FONT, fontSize: 18, color: TC.ink }}>{hostPlayer.nickname}</span>
+          </div>
+        )}
+
         <div style={{
           background: TC.cream,
           border: `3px solid ${TC.ink}`,
@@ -85,10 +117,10 @@ export default function SpeedTrialPlayerScreen({ onNavigate, onBack }: Props) {
           boxSizing: 'border-box',
         }}>
           <div style={{ fontFamily: PIXEL_FONT, fontSize: 10, color: TC.ink, marginBottom: 14 }}>
-            {connectedCount} IN LOBBY
+            {gamePlayers.filter((p) => p.connected).length} PLAYER{gamePlayers.filter((p) => p.connected).length !== 1 ? 'S' : ''} IN LOBBY
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-            {players.map((p) => (
+            {gamePlayers.map((p) => (
               <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '6px 0', borderBottom: `1px dashed ${TC.grid}` }}>
                 {p.avatar && (
                   <img
@@ -98,10 +130,15 @@ export default function SpeedTrialPlayerScreen({ onNavigate, onBack }: Props) {
                   />
                 )}
                 <span style={{ fontFamily: HAND_FONT, fontSize: 18, color: p.id === playerId ? TC.blue : TC.ink, fontWeight: p.id === playerId ? 700 : 400 }}>
-                  {p.nickname}{p.id === playerId ? ' ← YOU' : ''}{p.isHost ? ' [HOST]' : ''}
+                  {p.nickname}{p.id === playerId ? ' ← YOU' : ''}
                 </span>
               </div>
             ))}
+            {gamePlayers.length === 0 && (
+              <div style={{ fontFamily: HAND_FONT, fontSize: 15, color: TC.grey, textAlign: 'center', padding: '8px 0' }}>
+                No players yet…
+              </div>
+            )}
           </div>
         </div>
         <div style={{ fontFamily: HAND_FONT, fontSize: 16, color: TC.grey }}>

@@ -73,10 +73,10 @@ export default function SpeedTrialHostScreen({ onNavigate, onBack }: Props) {
               boxSizing: 'border-box',
             }}>
               <div style={{ fontFamily: PIXEL_FONT, fontSize: 10, color: TC.ink, marginBottom: 14 }}>
-                {connectedCount} PLAYER{connectedCount !== 1 ? 'S' : ''} IN LOBBY
+                {players.filter((p) => !p.isHost && p.connected).length} PLAYER{players.filter((p) => !p.isHost && p.connected).length !== 1 ? 'S' : ''} IN LOBBY
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12, maxHeight: 320, overflowY: 'auto' }}>
-                {players.map((p) => (
+                {players.filter((p) => !p.isHost).map((p) => (
                   <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '6px 0', borderBottom: `1px dashed ${TC.grid}` }}>
                     <span style={{
                       width: 10, height: 10, borderRadius: '50%',
@@ -92,11 +92,16 @@ export default function SpeedTrialHostScreen({ onNavigate, onBack }: Props) {
                         style={{ width: 44, height: 44, objectFit: 'contain', imageRendering: 'pixelated', flexShrink: 0 }}
                       />
                     )}
-                    <span style={{ fontFamily: HAND_FONT, fontSize: 18, color: TC.ink, fontWeight: p.id === playerId ? 700 : 400 }}>
-                      {p.nickname}{p.id === playerId ? ' (HOST)' : ''}
+                    <span style={{ fontFamily: HAND_FONT, fontSize: 18, color: TC.ink }}>
+                      {p.nickname}
                     </span>
                   </div>
                 ))}
+                {players.filter((p) => !p.isHost).length === 0 && (
+                  <div style={{ fontFamily: HAND_FONT, fontSize: 15, color: TC.grey, textAlign: 'center', padding: '8px 0' }}>
+                    Waiting for players to join…
+                  </div>
+                )}
               </div>
             </div>
 
