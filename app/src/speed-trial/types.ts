@@ -3,6 +3,7 @@
 
 export type Technique = 'STATEMENT' | 'BRANCH' | 'BCC' | 'MCDC' | 'DATA_FLOW'
 export type RoomStatus = 'lobby' | 'question' | 'leaderboard' | 'grand_jury' | 'finished'
+export type AvatarId = 'new_judge' | 'new_prosecutor' | 'new_defense' | 'bug-defendant'
 
 export interface QuestionOption {
   id: string
@@ -23,6 +24,7 @@ export interface QuestionPublic {
 export interface PlayerInfo {
   id: string
   nickname: string
+  avatar: AvatarId
   score: number
   connected: boolean
   isHost: boolean
@@ -31,6 +33,7 @@ export interface PlayerInfo {
 export interface LeaderboardEntry {
   playerId: string
   nickname: string
+  avatar: AvatarId
   score: number
   rank: number
   correctAnswers: number

@@ -56,6 +56,17 @@ export default function SpeedTrialLeaderboard({ entries, myPlayerId, isPodium }:
                 }
               </div>
 
+              {/* Avatar */}
+              {entry.avatar && (
+                <div style={{ minWidth: 32, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <img
+                    src={`/assets/${entry.avatar}.png`}
+                    alt={entry.nickname}
+                    style={{ width: 32, height: 32, objectFit: 'contain', imageRendering: 'pixelated' }}
+                  />
+                </div>
+              )}
+
               {/* Nickname */}
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{
