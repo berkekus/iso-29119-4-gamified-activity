@@ -3,7 +3,8 @@ import { TC, HAND_FONT, PIXEL_FONT, MONO_FONT } from '../ui/tokens'
 import PixelButton from '../ui/PixelButton'
 import { getMyCourt, useMockTrialStore } from '../stores/mockTrialStore'
 import type { Screen } from '../stores/gameStore'
-import type { CourtResult, SelfScore } from '../mock-trial/types'
+import type { CasePublic, CourtResult, SelfScore } from '../mock-trial/types'
+import { ArgumentDocket, ScoreChip, VerdictStamp } from './mock-trial-panels/MockTrialVisuals'
 
 interface Props {
   onNavigate: (screen: Screen) => void
@@ -22,7 +23,7 @@ export default function MockTrialRevealScreen({ onNavigate, onBack }: Props) {
 
   const myCourt = getMyCourt(state)
   const myResult = useMemo(
-    () => revealData?.courtResults.find((r) => r.courtId === myCourtId) ?? null,
+    () => revealData?.courtResults.find((result) => result.courtId === myCourtId) ?? null,
     [revealData?.courtResults, myCourtId],
   )
   const hasJury = Boolean(myCourt?.slots.jury1 || myCourt?.slots.jury2)
@@ -45,33 +46,33 @@ export default function MockTrialRevealScreen({ onNavigate, onBack }: Props) {
   }
 
   return (
-    <div style={{ minHeight: '100vh', padding: 16, maxWidth: 760, margin: '0 auto', zIndex: 1, position: 'relative' }}>
-      <div style={{ border: `2px solid ${TC.ink}`, background: TC.cream, padding: 14, marginBottom: 12 }}>
+    <div style={{ minHeight: '100vh', padding: 16, maxWidth: 840, margin: '0 auto', zIndex: 1, position: 'relative' }}>
+      <div style={{ border: `3px solid ${TC.ink}`, background: TC.cream, padding: 14, marginBottom: 12 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
-          <h1 style={{ fontFamily: PIXEL_FONT, color: TC.ink, fontSize: 20, margin: 0 }}>
-            Case Reveal
-          </h1>
-          <span style={{ fontFamily: MONO_FONT, fontSize: 13, color: TC.grey }}>
-            Case {roomState.currentCaseIdx + 1} / {roomState.caseCount}
-          </span>
+          <div>
+            <h1 style={{ fontFamily: PIXEL_FONT, color: TC.ink, fontSize: 20, margin: 0 }}>Case Reveal</h1>
+            <span style={{ fontFamily: MONO_FONT, fontSize: 13, color: TC.grey }}>
+              Case {roomState.currentCaseIdx + 1} / {roomState.caseCount}
+            </span>
+          </div>
+          <VerdictStamp verdict={revealData.correctVerdict} />
         </div>
 
         <h2 style={{ fontFamily: PIXEL_FONT, color: TC.blue, fontSize: 15, margin: '14px 0 6px' }}>
           {currentCase.title}
         </h2>
-        <div style={{ fontFamily: HAND_FONT, color: TC.ink, marginBottom: 10 }}>
-          Official verdict:{' '}
-          <strong style={{ color: revealData.correctVerdict === 'satisfied' ? TC.green : TC.magenta }}>
-            {formatVerdict(revealData.correctVerdict)}
-          </strong>
-        </div>
+        {revealData.pitfallTag ? (
+          <div style={{ display: 'inline-block', fontFamily: MONO_FONT, color: TC.orange, border: `2px solid ${TC.orange}`, background: '#fff', padding: '3px 7px', marginBottom: 8 }}>
+            Pitfall: {revealData.pitfallTag}
+          </div>
+        ) : null}
         <div style={{ fontFamily: HAND_FONT, color: TC.ink, whiteSpace: 'pre-wrap', lineHeight: 1.55 }}>
           {revealData.answerExplanation}
         </div>
       </div>
 
       {myResult && (
-        <CourtResultCard result={myResult} title={myCourt?.name ?? 'Your Court'} />
+        <CourtResultCard result={myResult} caseData={currentCase} title={myCourt?.name ?? 'Your Court'} featured />
       )}
 
       {canSelfScore && (
@@ -107,7 +108,13 @@ export default function MockTrialRevealScreen({ onNavigate, onBack }: Props) {
         </h2>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           {revealData.courtResults.map((result) => (
-            <CourtResultCard key={result.courtId} result={result} compact />
+            <CourtResultCard
+              key={result.courtId}
+              result={result}
+              caseData={currentCase}
+              compact
+              featured={result.courtId === myCourtId}
+            />
           ))}
         </div>
       </div>
@@ -124,30 +131,84 @@ export default function MockTrialRevealScreen({ onNavigate, onBack }: Props) {
   )
 }
 
-function CourtResultCard({ result, title, compact = false }: { result: CourtResult; title?: string; compact?: boolean }) {
+function CourtResultCard({
+  result,
+  caseData,
+  title,
+  compact = false,
+  featured = false,
+}: {
+  result: CourtResult
+  caseData: CasePublic
+  title?: string
+  compact?: boolean
+  featured?: boolean
+}) {
+  const prosecutorCard = result.submission.prosecutorArgId
+    ? caseData.prosecutorArguments.find((a) => a.id === result.submission.prosecutorArgId)?.text
+    : undefined
+  const defenseCard = result.submission.defenseArgId
+    ? caseData.defenseArguments.find((a) => a.id === result.submission.defenseArgId)?.text
+    : undefined
+
   return (
-    <div style={{ border: `2px solid ${TC.ink}`, background: compact ? '#fff' : TC.cream, padding: compact ? 8 : 12 }}>
+    <div style={{
+      border: `2px solid ${featured ? TC.orange : TC.ink}`,
+      background: featured ? '#fff7d8' : compact ? '#fff' : TC.cream,
+      padding: compact ? 8 : 12,
+    }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
         <strong style={{ fontFamily: PIXEL_FONT, fontSize: compact ? 11 : 13, color: TC.ink }}>
           {title ?? result.courtName}
         </strong>
-        <span style={{ fontFamily: MONO_FONT, color: TC.blue }}>
+        <span style={{ fontFamily: MONO_FONT, color: TC.blue, fontSize: compact ? 15 : 18 }}>
           +{result.caseTotal} pts
         </span>
       </div>
+
       {!compact && (
-        <div style={{ fontFamily: HAND_FONT, color: TC.ink, marginTop: 8 }}>
-          <div>Verdict: <strong>{result.submission.verdict ? formatVerdict(result.submission.verdict) : 'Not submitted'}</strong></div>
-          <div>Justification: <em>"{result.submission.justification || 'No justification submitted'}"</em></div>
-          <div style={{ marginTop: 6, fontFamily: MONO_FONT, fontSize: 12 }}>
-            Verdict {result.verdictScore} + Prosecutor {result.prosecutorBonus} + Defense {result.defenseBonus} + Self-score {result.juryBonus}
+        <>
+          <div className="mt-evidence-grid" style={{ marginTop: 10 }}>
+            <ArgumentDocket
+              title="Prosecutor"
+              color={TC.magenta}
+              card={prosecutorCard}
+              note={result.submission.prosecutorSentence}
+              empty="No attack filed."
+            />
+            <ArgumentDocket
+              title="Defense"
+              color={TC.green}
+              card={defenseCard}
+              note={result.submission.defenseSentence}
+              empty="No counter filed."
+            />
           </div>
-        </div>
+          <div style={{ fontFamily: HAND_FONT, color: TC.ink, marginTop: 8 }}>
+            <div>Verdict: <strong>{formatVerdict(result.submission.verdict)}</strong></div>
+            <div>Justification: <em>"{result.submission.justification || 'No justification submitted'}"</em></div>
+          </div>
+          <ScoreBreakdown result={result} />
+        </>
       )}
     </div>
   )
 }
 
-function formatVerdict(verdict: string): string {
-  return verdict === 'satisfied' ? 'Satisfied' : 'Not Satisfied'
+function ScoreBreakdown({ result }: { result: CourtResult }) {
+  return (
+    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 8 }}>
+      <ScoreChip label="verdict" value={result.verdictScore} tone={TC.blue} />
+      <ScoreChip label="prosecutor" value={result.prosecutorBonus} tone={TC.magenta} />
+      <ScoreChip label="defense" value={result.defenseBonus} tone={TC.green} />
+      <ScoreChip label="self-score" value={result.juryBonus} tone={TC.orange} />
+      {result.hostOverride !== 0 ? <ScoreChip label="override" value={result.hostOverride} tone={TC.grey} /> : null}
+    </div>
+  )
+}
+
+function formatVerdict(verdict: string | null): string {
+  if (verdict === 'satisfied') return 'Satisfied'
+  if (verdict === 'not_satisfied') return 'Not Satisfied'
+  return 'Not submitted'
 }

@@ -56,6 +56,8 @@ export interface MockTrialState {
   submitVerdict: (verdict: Verdict, justification: string) => void
   submitSelfScore: (score: SelfScore) => void
   hostOverride: (courtId: string, delta: number) => void
+  skipPhase: () => void
+  togglePause: () => void
   nextCase: () => void
   finishGame: () => void
   clearError: () => void
@@ -79,6 +81,23 @@ const INITIAL = {
   finalLeaderboard: [] as LeaderboardCourt[],
 }
 
+const PLAYER_ID_KEY = 'mock-trial-session-player-id'
+
+function getStablePlayerId(): string {
+  const existing = sessionStorage.getItem(PLAYER_ID_KEY)
+  if (existing) return existing
+  const generated =
+    typeof crypto !== 'undefined' && 'randomUUID' in crypto
+      ? `mt_${crypto.randomUUID()}`
+      : `mt_${Date.now().toString(36)}_${Math.random().toString(36).slice(2)}`
+  sessionStorage.setItem(PLAYER_ID_KEY, generated)
+  return generated
+}
+
+function rememberPlayerId(playerId: string): void {
+  sessionStorage.setItem(PLAYER_ID_KEY, playerId)
+}
+
 function deriveMyCourtRole(state: RoomState | null, playerId: string | null): { myCourtId: string | null; myRole: MockTrialRole | null } {
   if (!state || !playerId) return { myCourtId: null, myRole: null }
   for (const court of state.courts) {
@@ -97,9 +116,11 @@ export const useMockTrialStore = create<MockTrialState>()((set, get) => {
     s.on('connect_error', (e) => set({ error: `Connection failed: ${e.message}` }))
 
     s.on(MT_EV.ROOM_CREATED, ({ code: _code, playerId }: { code: string; playerId: string }) => {
+      rememberPlayerId(playerId)
       set({ playerId })
     })
     s.on(MT_EV.ROOM_JOINED, ({ playerId }: { playerId: string; isSpectator: boolean }) => {
+      rememberPlayerId(playerId)
       set({ playerId })
     })
     s.on(MT_EV.ROOM_STATE, (state: RoomState) => {
@@ -114,14 +135,14 @@ export const useMockTrialStore = create<MockTrialState>()((set, get) => {
         liveVotes: {},
         revealData: null,
         roomState: st.roomState
-          ? { ...st.roomState, status: 'in_case', currentCaseIdx: caseIdx, currentPhase: phase, phaseEndsAt: endsAt }
+          ? { ...st.roomState, status: 'in_case', currentCaseIdx: caseIdx, currentPhase: phase, phaseEndsAt: endsAt, phasePaused: false }
           : st.roomState,
       }))
     })
     s.on(MT_EV.PHASE_CHANGE, ({ phase, endsAt }: { phase: MockTrialPhase; endsAt: number }) => {
       set((st) => ({
         roomState: st.roomState
-          ? { ...st.roomState, currentPhase: phase, phaseEndsAt: endsAt }
+          ? { ...st.roomState, currentPhase: phase, phaseEndsAt: endsAt, phasePaused: false }
           : st.roomState,
       }))
     })
@@ -140,7 +161,7 @@ export const useMockTrialStore = create<MockTrialState>()((set, get) => {
       set((st) => ({
         revealData: payload,
         roomState: st.roomState
-          ? { ...st.roomState, status: 'reveal', currentPhase: 'reveal' }
+          ? { ...st.roomState, status: 'reveal', currentPhase: 'reveal', phasePaused: false }
           : st.roomState,
       }))
     })
@@ -170,11 +191,11 @@ export const useMockTrialStore = create<MockTrialState>()((set, get) => {
     },
     createRoom(nickname, avatar, config) {
       set({ roleScope: 'host', nickname, myAvatar: avatar, error: null })
-      getMockTrialSocket().emit(MT_EV.CREATE_ROOM, { nickname, avatar, config })
+      getMockTrialSocket().emit(MT_EV.CREATE_ROOM, { nickname, avatar, config, playerId: getStablePlayerId() })
     },
     joinRoom(code, nickname, avatar) {
       set({ roleScope: 'player', nickname, myAvatar: avatar, error: null })
-      getMockTrialSocket().emit(MT_EV.JOIN_ROOM, { code, nickname, avatar })
+      getMockTrialSocket().emit(MT_EV.JOIN_ROOM, { code, nickname, avatar, playerId: getStablePlayerId() })
     },
     claimSlot(courtId, role)      { getMockTrialSocket().emit(MT_EV.CLAIM_SLOT, { courtId, role }) },
     releaseSlot()                  { getMockTrialSocket().emit(MT_EV.RELEASE_SLOT) },
@@ -187,6 +208,8 @@ export const useMockTrialStore = create<MockTrialState>()((set, get) => {
     },
     submitSelfScore(score)         { getMockTrialSocket().emit(MT_EV.SUBMIT_SELFSCORE, { score }) },
     hostOverride(courtId, delta)   { getMockTrialSocket().emit(MT_EV.HOST_OVERRIDE, { courtId, delta }) },
+    skipPhase()                    { getMockTrialSocket().emit(MT_EV.SKIP_PHASE) },
+    togglePause()                  { getMockTrialSocket().emit(MT_EV.TOGGLE_PAUSE) },
     nextCase()                     { getMockTrialSocket().emit(MT_EV.NEXT_CASE) },
     finishGame()                   { getMockTrialSocket().emit(MT_EV.FINISH_GAME) },
     clearError()                   { set({ error: null }) },

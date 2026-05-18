@@ -86,6 +86,7 @@ export interface MockTrialConfig {
 export interface MockTrialRoom {
   code: string
   hostSocketId: string
+  hostPlayerId: string
   hostNickname: string
   hostAvatar: AvatarId
   status: MockTrialStatus
@@ -97,6 +98,8 @@ export interface MockTrialRoom {
   currentPhase: MockTrialPhase | null
   phaseEndsAt: number | null
   phaseTimer: ReturnType<typeof setTimeout> | null
+  phasePaused: boolean
+  pausedRemainingMs: number | null
 }
 
 // ─── Public lobby snapshot (sent to clients) ─────────────────────────────────
@@ -107,6 +110,15 @@ export interface CourtPublic {
   slots: Record<MockTrialRole, MockTrialPlayer | null>
   totalScore: number
   lastCaseDelta: number
+  caseHistory: Array<{
+    caseId: string
+    verdictScore: number
+    prosecutorBonus: number
+    defenseBonus: number
+    juryBonus: number
+    hostOverride: number
+    caseTotal: number
+  }>
 }
 
 export interface RoomStatePayload {
@@ -120,6 +132,7 @@ export interface RoomStatePayload {
   currentCaseIdx: number
   currentPhase: MockTrialPhase | null
   phaseEndsAt: number | null
+  phasePaused: boolean
 }
 
 export interface CasePublic {
@@ -140,8 +153,8 @@ export interface CasePublic {
 
 // ─── Client → Server payloads ────────────────────────────────────────────────
 
-export interface C2S_MTCreateRoom { nickname: string; avatar: AvatarId; config: MockTrialConfig }
-export interface C2S_MTJoinRoom   { code: string; nickname: string; avatar: AvatarId }
+export interface C2S_MTCreateRoom { nickname: string; avatar: AvatarId; config: MockTrialConfig; playerId?: string }
+export interface C2S_MTJoinRoom   { code: string; nickname: string; avatar: AvatarId; playerId?: string }
 export interface C2S_MTClaimSlot  { courtId: string; role: MockTrialRole }
 export interface C2S_MTAddCourt   {}
 export interface C2S_MTStartGame  {}
@@ -152,6 +165,8 @@ export interface C2S_MTSubmitSelfScore { score: SelfScore }
 export interface C2S_MTHostOverride { courtId: string; delta: number }
 export interface C2S_MTNextCase   {}
 export interface C2S_MTFinishGame {}
+export interface C2S_MTSkipPhase  {}
+export interface C2S_MTTogglePause {}
 
 // ─── Server → Client payloads ────────────────────────────────────────────────
 
@@ -174,7 +189,9 @@ export interface S2C_MTCaseReveal   {
     prosecutorBonus: number
     defenseBonus: number
     juryBonus: number
-    caseTotal: number          // before host override
+    hostOverride: number
+    baseTotal: number
+    caseTotal: number
   }>
 }
 export interface S2C_MTLeaderboard {
@@ -202,6 +219,8 @@ export const MT_EV = {
   HOST_OVERRIDE:      'mt_host_override',
   NEXT_CASE:          'mt_next_case',
   FINISH_GAME:        'mt_finish_game',
+  SKIP_PHASE:         'mt_skip_phase',
+  TOGGLE_PAUSE:       'mt_toggle_pause',
   // S → C
   ROOM_CREATED:       'mt_room_created',
   ROOM_JOINED:        'mt_room_joined',

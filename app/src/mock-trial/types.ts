@@ -23,6 +23,15 @@ export interface CourtPublic {
   slots: Record<MockTrialRole, MockTrialPlayer | null>
   totalScore: number
   lastCaseDelta: number
+  caseHistory: Array<{
+    caseId: string
+    verdictScore: number
+    prosecutorBonus: number
+    defenseBonus: number
+    juryBonus: number
+    hostOverride: number
+    caseTotal: number
+  }>
 }
 
 export interface MockTrialConfig {
@@ -65,6 +74,8 @@ export interface CourtResult {
   prosecutorBonus: number
   defenseBonus: number
   juryBonus: number
+  hostOverride: number
+  baseTotal: number
   caseTotal: number
 }
 
@@ -87,6 +98,7 @@ export interface RoomState {
   currentCaseIdx: number
   currentPhase: MockTrialPhase | null
   phaseEndsAt: number | null
+  phasePaused: boolean
 }
 
 export const MT_EV = {
@@ -103,6 +115,8 @@ export const MT_EV = {
   HOST_OVERRIDE:      'mt_host_override',
   NEXT_CASE:          'mt_next_case',
   FINISH_GAME:        'mt_finish_game',
+  SKIP_PHASE:         'mt_skip_phase',
+  TOGGLE_PAUSE:       'mt_toggle_pause',
   ROOM_CREATED:       'mt_room_created',
   ROOM_JOINED:        'mt_room_joined',
   ROOM_STATE:         'mt_room_state',

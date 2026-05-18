@@ -42,6 +42,15 @@ function toCourtPublic(room: MockTrialRoom): CourtPublic[] {
       slots: c.slots,
       totalScore: c.totalScore,
       lastCaseDelta: last?.caseTotal ?? 0,
+      caseHistory: c.caseHistory.map((result) => ({
+        caseId: result.caseId,
+        verdictScore: result.verdictScore,
+        prosecutorBonus: result.prosecutorBonus,
+        defenseBonus: result.defenseBonus,
+        juryBonus: result.juryBonus,
+        hostOverride: result.hostOverride,
+        caseTotal: result.caseTotal,
+      })),
     }
   })
 }
@@ -58,6 +67,7 @@ function toRoomState(room: MockTrialRoom): RoomStatePayload {
     currentCaseIdx: room.currentCaseIdx,
     currentPhase: room.currentPhase,
     phaseEndsAt: room.phaseEndsAt,
+    phasePaused: room.phasePaused,
   }
 }
 
@@ -67,6 +77,19 @@ function broadcastRoomState(nsp: Namespace, room: MockTrialRoom): void {
 
 function clearPhaseTimer(room: MockTrialRoom): void {
   if (room.phaseTimer) { clearTimeout(room.phaseTimer); room.phaseTimer = null }
+}
+
+function setPhaseTimer(room: MockTrialRoom, callback: () => void, ms: number): void {
+  clearPhaseTimer(room)
+  room.phaseTimer = setTimeout(callback, ms)
+}
+
+function setPhaseClock(room: MockTrialRoom, ms: number): number {
+  room.phasePaused = false
+  room.pausedRemainingMs = null
+  const endsAt = Date.now() + ms
+  room.phaseEndsAt = endsAt
+  return endsAt
 }
 
 function currentCourtResults(room: MockTrialRoom) {
@@ -84,6 +107,8 @@ function currentCourtResults(room: MockTrialRoom) {
         prosecutorBonus: result.prosecutorBonus,
         defenseBonus: result.defenseBonus,
         juryBonus: result.juryBonus,
+        hostOverride: result.hostOverride,
+        baseTotal: result.caseTotal - result.hostOverride,
         caseTotal: result.caseTotal,
       }
     })
@@ -116,15 +141,14 @@ function startBriefing(nsp: Namespace, room: MockTrialRoom): void {
   }
 
   room.currentPhase = 'briefing'
-  const endsAt = Date.now() + BRIEFING_SEC * 1000
-  room.phaseEndsAt = endsAt
+  const endsAt = setPhaseClock(room, BRIEFING_SEC * 1000)
   nsp.to(room.code).emit(MT_EV.CASE_START, {
     case: toCasePublic(c, room.config.defaultArgumentSec, room.config.defaultDeliberationSec),
     caseIdx: room.currentCaseIdx,
     phase: 'briefing',
     endsAt,
   })
-  room.phaseTimer = setTimeout(() => startArguing(nsp, room), BRIEFING_SEC * 1000)
+  setPhaseTimer(room, () => startArguing(nsp, room), BRIEFING_SEC * 1000)
 }
 
 function startArguing(nsp: Namespace, room: MockTrialRoom): void {
@@ -133,10 +157,10 @@ function startArguing(nsp: Namespace, room: MockTrialRoom): void {
   if (!c) return
   room.currentPhase = 'arguing'
   const sec = c.argumentSeconds ?? room.config.defaultArgumentSec
-  const endsAt = Date.now() + sec * 1000
-  room.phaseEndsAt = endsAt
+  const durationMs = sec * 1000
+  const endsAt = setPhaseClock(room, durationMs)
   nsp.to(room.code).emit(MT_EV.PHASE_CHANGE, { phase: 'arguing', endsAt })
-  room.phaseTimer = setTimeout(() => startDeliberating(nsp, room), sec * 1000 + PHASE_GRACE_MS)
+  setPhaseTimer(room, () => startDeliberating(nsp, room), durationMs + PHASE_GRACE_MS)
 }
 
 function startDeliberating(nsp: Namespace, room: MockTrialRoom): void {
@@ -145,10 +169,10 @@ function startDeliberating(nsp: Namespace, room: MockTrialRoom): void {
   if (!c) return
   room.currentPhase = 'deliberating'
   const sec = c.deliberationSeconds ?? room.config.defaultDeliberationSec
-  const endsAt = Date.now() + sec * 1000
-  room.phaseEndsAt = endsAt
+  const durationMs = sec * 1000
+  const endsAt = setPhaseClock(room, durationMs)
   nsp.to(room.code).emit(MT_EV.PHASE_CHANGE, { phase: 'deliberating', endsAt })
-  room.phaseTimer = setTimeout(() => startReveal(nsp, room), sec * 1000 + PHASE_GRACE_MS)
+  setPhaseTimer(room, () => startReveal(nsp, room), durationMs + PHASE_GRACE_MS)
 }
 
 function startReveal(nsp: Namespace, room: MockTrialRoom): void {
@@ -159,6 +183,7 @@ function startReveal(nsp: Namespace, room: MockTrialRoom): void {
   // Compute case results for every court with a valid baseline lineup
   for (const court of room.courts.values()) {
     if (!court.slots.prosecutor || !court.slots.defense || !court.slots.scribe) continue
+    if (court.caseHistory[court.caseHistory.length - 1]?.caseId === c.id) continue
     const result = computeCaseScore(c, court.currentSubmission)
     court.caseHistory.push(result)
     court.totalScore += result.caseTotal
@@ -166,8 +191,7 @@ function startReveal(nsp: Namespace, room: MockTrialRoom): void {
 
   room.currentPhase = 'reveal'
   room.status = 'reveal'
-  const endsAt = Date.now() + REVEAL_SEC * 1000
-  room.phaseEndsAt = endsAt
+  setPhaseClock(room, REVEAL_SEC * 1000)
 
   emitReveal(nsp, room)
   broadcastRoomState(nsp, room)
@@ -176,6 +200,7 @@ function startReveal(nsp: Namespace, room: MockTrialRoom): void {
 }
 
 function tryEarlyAdvance(nsp: Namespace, room: MockTrialRoom): void {
+  if (room.phasePaused) return
   if (room.currentPhase === 'arguing') {
     const allSubmitted = Array.from(room.courts.values())
       .filter((c) => c.slots.prosecutor && c.slots.defense && c.slots.scribe)
@@ -192,6 +217,44 @@ function tryEarlyAdvance(nsp: Namespace, room: MockTrialRoom): void {
   }
 }
 
+function skipCurrentPhase(nsp: Namespace, room: MockTrialRoom): void {
+  if (room.currentPhase === 'briefing') startArguing(nsp, room)
+  else if (room.currentPhase === 'arguing') startDeliberating(nsp, room)
+  else if (room.currentPhase === 'deliberating') startReveal(nsp, room)
+}
+
+function resumeCurrentPhase(nsp: Namespace, room: MockTrialRoom): void {
+  if (!room.currentPhase || !room.pausedRemainingMs) return
+  const remaining = Math.max(500, room.pausedRemainingMs)
+  room.phasePaused = false
+  room.pausedRemainingMs = null
+  room.phaseEndsAt = Date.now() + remaining
+  nsp.to(room.code).emit(MT_EV.PHASE_CHANGE, { phase: room.currentPhase, endsAt: room.phaseEndsAt })
+
+  if (room.currentPhase === 'briefing') {
+    setPhaseTimer(room, () => startArguing(nsp, room), remaining)
+  } else if (room.currentPhase === 'arguing') {
+    setPhaseTimer(room, () => startDeliberating(nsp, room), remaining + PHASE_GRACE_MS)
+  } else if (room.currentPhase === 'deliberating') {
+    setPhaseTimer(room, () => startReveal(nsp, room), remaining + PHASE_GRACE_MS)
+  }
+  broadcastRoomState(nsp, room)
+}
+
+function togglePause(nsp: Namespace, room: MockTrialRoom): void {
+  if (!room.currentPhase || room.currentPhase === 'reveal') return
+  if (room.phasePaused) {
+    resumeCurrentPhase(nsp, room)
+    return
+  }
+  const remaining = room.phaseEndsAt ? Math.max(0, room.phaseEndsAt - Date.now()) : 0
+  clearPhaseTimer(room)
+  room.phasePaused = true
+  room.pausedRemainingMs = remaining
+  room.phaseEndsAt = null
+  broadcastRoomState(nsp, room)
+}
+
 // ─── Public registration ─────────────────────────────────────────────────────
 
 export function registerMockTrial(io: Server): void {
@@ -200,18 +263,18 @@ export function registerMockTrial(io: Server): void {
   nsp.on('connection', (socket) => {
     console.log(`[mt+] ${socket.id} connected`)
 
-    socket.on(MT_EV.CREATE_ROOM, ({ nickname, avatar, config }: C2S_MTCreateRoom) => {
+    socket.on(MT_EV.CREATE_ROOM, ({ nickname, avatar, config, playerId: requestedPlayerId }: C2S_MTCreateRoom) => {
       if (!nickname?.trim()) { socket.emit(MT_EV.ERROR, { message: 'Nickname required' }); return }
-      const { room, playerId } = CM.createRoom(socket.id, nickname.trim(), avatar || 'new_judge', config)
+      const { room, playerId } = CM.createRoom(socket.id, nickname.trim(), avatar || 'new_judge', config, requestedPlayerId)
       activeRooms.set(room.code, room)
       socket.join(room.code)
       socket.emit(MT_EV.ROOM_CREATED, { code: room.code, playerId })
       broadcastRoomState(nsp, room)
     })
 
-    socket.on(MT_EV.JOIN_ROOM, ({ code, nickname, avatar }: C2S_MTJoinRoom) => {
+    socket.on(MT_EV.JOIN_ROOM, ({ code, nickname, avatar, playerId: requestedPlayerId }: C2S_MTJoinRoom) => {
       if (!nickname?.trim() || !code?.trim()) { socket.emit(MT_EV.ERROR, { message: 'Nickname and code required' }); return }
-      const result = CM.joinRoom(socket.id, code, nickname.trim(), avatar || 'new_defense')
+      const result = CM.joinRoom(socket.id, code, nickname.trim(), avatar || 'new_defense', requestedPlayerId)
       if ('error' in result) { socket.emit(MT_EV.ERROR, { message: result.error }); return }
       activeRooms.set(result.room.code, result.room)
       socket.join(result.room.code)
@@ -254,6 +317,7 @@ export function registerMockTrial(io: Server): void {
       room.currentCaseIdx = 0
       room.status = 'in_case'
       startBriefing(nsp, room)
+      broadcastRoomState(nsp, room)
     })
 
     socket.on(MT_EV.SUBMIT_ARGUMENT, ({ argId, sentence }: C2S_MTSubmitArgument) => {
@@ -301,6 +365,11 @@ export function registerMockTrial(io: Server): void {
       if (slot.role !== 'scribe') return
       const court = room.courts.get(slot.courtId)
       if (!court) return
+      const hasJury = Boolean(court.slots.jury1 || court.slots.jury2)
+      if (hasJury && !court.currentSubmission.juryVote) {
+        socket.emit(MT_EV.ERROR, { message: 'Wait for a Jury vote before submitting the court verdict.' })
+        return
+      }
       court.currentSubmission.verdict = verdict
       court.currentSubmission.justification = (justification ?? '').slice(0, 200)
       tryEarlyAdvance(nsp, room)
@@ -346,6 +415,19 @@ export function registerMockTrial(io: Server): void {
       broadcastRoomState(nsp, room)
     })
 
+    socket.on(MT_EV.SKIP_PHASE, () => {
+      const room = CM.getRoomForSocket(socket.id)
+      if (!room || !CM.isHost(socket.id)) return
+      skipCurrentPhase(nsp, room)
+      broadcastRoomState(nsp, room)
+    })
+
+    socket.on(MT_EV.TOGGLE_PAUSE, () => {
+      const room = CM.getRoomForSocket(socket.id)
+      if (!room || !CM.isHost(socket.id)) return
+      togglePause(nsp, room)
+    })
+
     socket.on(MT_EV.NEXT_CASE, () => {
       const room = CM.getRoomForSocket(socket.id)
       if (!room || !CM.isHost(socket.id)) return
@@ -363,7 +445,11 @@ export function registerMockTrial(io: Server): void {
       if (isLastCase) {
         room.status = 'finished'
         room.currentPhase = null
+        room.phasePaused = false
+        room.pausedRemainingMs = null
+        room.phaseEndsAt = Date.now()
         nsp.to(room.code).emit(MT_EV.GAME_FINISHED, { finalLeaderboard: lb })
+        broadcastRoomState(nsp, room)
         return
       }
       room.currentCaseIdx += 1
@@ -377,8 +463,12 @@ export function registerMockTrial(io: Server): void {
       clearPhaseTimer(room)
       room.status = 'finished'
       room.currentPhase = null
+      room.phasePaused = false
+      room.pausedRemainingMs = null
+      room.phaseEndsAt = Date.now()
       const lb = buildLeaderboard(room.courts)
       nsp.to(room.code).emit(MT_EV.GAME_FINISHED, { finalLeaderboard: lb })
+      broadcastRoomState(nsp, room)
     })
 
     socket.on('disconnect', () => {

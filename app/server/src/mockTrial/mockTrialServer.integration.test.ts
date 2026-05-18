@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest'
 import { createServer, type Server as HttpServer } from 'http'
-import { Server, type Socket as ServerSocket } from 'socket.io'
+import { Server } from 'socket.io'
 import { io as ioc, type Socket as ClientSocket } from 'socket.io-client'
 import { registerMockTrial } from './mockTrialServer.js'
 import * as CM from './courtManager.js'
@@ -42,59 +42,71 @@ afterEach(async () => {
 })
 
 describe('Mock Trial end-to-end', () => {
-  it('runs lobby → briefing → arguing → deliberating → reveal for 1 case with 4 players', async () => {
+  it('runs one case and enforces Jury-before-Scribe when a Jury exists', async () => {
     const host = await makeClient()
-    const p1 = await makeClient()
-    const p2 = await makeClient()
-    const p3 = await makeClient()
+    const prosecutor = await makeClient()
+    const defense = await makeClient()
+    const scribe = await makeClient()
+    const jury = await makeClient()
 
-    // Host creates the room
     host.emit(MT_EV.CREATE_ROOM, {
-      nickname: 'Hoca', avatar: 'new_judge',
+      nickname: 'Hoca',
+      avatar: 'new_judge',
       config: { caseCount: 5, defaultArgumentSec: 90, defaultDeliberationSec: 45 },
+      playerId: 'host-player',
     })
     const created = await waitForEvent<{ code: string; playerId: string }>(host, MT_EV.ROOM_CREATED)
     expect(created.code).toMatch(/^[A-Z0-9]{6}$/)
+    expect(created.playerId).toBe('host-player')
 
-    // 3 players join
-    p1.emit(MT_EV.JOIN_ROOM, { code: created.code, nickname: 'Ali', avatar: 'new_prosecutor' })
-    p2.emit(MT_EV.JOIN_ROOM, { code: created.code, nickname: 'Veli', avatar: 'new_defense' })
-    p3.emit(MT_EV.JOIN_ROOM, { code: created.code, nickname: 'Ayse', avatar: 'new_judge' })
-    await waitForEvent(p1, MT_EV.ROOM_JOINED)
-    await waitForEvent(p2, MT_EV.ROOM_JOINED)
-    await waitForEvent(p3, MT_EV.ROOM_JOINED)
+    prosecutor.emit(MT_EV.JOIN_ROOM, { code: created.code, nickname: 'Ali', avatar: 'new_prosecutor', playerId: 'p-player' })
+    defense.emit(MT_EV.JOIN_ROOM, { code: created.code, nickname: 'Veli', avatar: 'new_defense', playerId: 'd-player' })
+    scribe.emit(MT_EV.JOIN_ROOM, { code: created.code, nickname: 'Ayse', avatar: 'new_judge', playerId: 's-player' })
+    jury.emit(MT_EV.JOIN_ROOM, { code: created.code, nickname: 'Can', avatar: 'bug-defendant', playerId: 'j-player' })
+    await waitForEvent(prosecutor, MT_EV.ROOM_JOINED)
+    await waitForEvent(defense, MT_EV.ROOM_JOINED)
+    await waitForEvent(scribe, MT_EV.ROOM_JOINED)
+    await waitForEvent(jury, MT_EV.ROOM_JOINED)
 
-    // Each claims a slot in court-1
-    p1.emit(MT_EV.CLAIM_SLOT, { courtId: 'court-1', role: 'prosecutor' })
-    p2.emit(MT_EV.CLAIM_SLOT, { courtId: 'court-1', role: 'defense' })
-    p3.emit(MT_EV.CLAIM_SLOT, { courtId: 'court-1', role: 'scribe' })
-    // Allow a tick for slot broadcasts
+    prosecutor.emit(MT_EV.CLAIM_SLOT, { courtId: 'court-1', role: 'prosecutor' })
+    defense.emit(MT_EV.CLAIM_SLOT, { courtId: 'court-1', role: 'defense' })
+    scribe.emit(MT_EV.CLAIM_SLOT, { courtId: 'court-1', role: 'scribe' })
+    jury.emit(MT_EV.CLAIM_SLOT, { courtId: 'court-1', role: 'jury1' })
     await new Promise((r) => setTimeout(r, 100))
 
-    // Host starts the game
-    const briefingP = waitForEvent<any>(p1, MT_EV.CASE_START, 3000)
+    const briefingP = waitForEvent<any>(prosecutor, MT_EV.CASE_START, 3000)
     host.emit(MT_EV.START_GAME)
     const briefing = await briefingP
     expect(briefing.caseIdx).toBe(0)
     expect(briefing.phase).toBe('briefing')
 
-    // Wait for briefing → arguing transition (briefing is 30s fixed)
-    const arguing = await waitForEvent<any>(p1, MT_EV.PHASE_CHANGE, 32_000)
+    const arguingP = waitForEvent<any>(prosecutor, MT_EV.PHASE_CHANGE, 2000)
+    host.emit(MT_EV.SKIP_PHASE)
+    const arguing = await arguingP
     expect(arguing.phase).toBe('arguing')
 
-    // Prosecutor + Defense submit arguments → should early-advance to deliberating
-    p1.emit(MT_EV.SUBMIT_ARGUMENT, { argId: 'p1', sentence: 'p says strong' })
-    p2.emit(MT_EV.SUBMIT_ARGUMENT, { argId: 'd1', sentence: 'd says strong' })
-    const delib = await waitForEvent<any>(p1, MT_EV.PHASE_CHANGE, 2000)
+    prosecutor.emit(MT_EV.SUBMIT_ARGUMENT, { argId: 'p1', sentence: 'p says strong' })
+    defense.emit(MT_EV.SUBMIT_ARGUMENT, { argId: 'd1', sentence: 'd says weak' })
+    const delib = await waitForEvent<any>(prosecutor, MT_EV.PHASE_CHANGE, 2000)
     expect(delib.phase).toBe('deliberating')
 
-    // Scribe submits verdict → early-advance to reveal
-    p3.emit(MT_EV.SUBMIT_VERDICT, { verdict: 'not_satisfied', justification: 'Missing third test' })
-    const reveal = await waitForEvent<any>(p1, MT_EV.CASE_REVEAL, 2000)
+    const scribeErrorP = waitForEvent<any>(scribe, MT_EV.ERROR, 2000)
+    scribe.emit(MT_EV.SUBMIT_VERDICT, { verdict: 'not_satisfied', justification: 'Missing third test' })
+    const scribeError = await scribeErrorP
+    expect(scribeError.message).toContain('Jury vote')
+
+    jury.emit(MT_EV.SUBMIT_VOTE, { side: 'prosecutor' })
+    scribe.emit(MT_EV.SUBMIT_VERDICT, { verdict: 'not_satisfied', justification: 'Missing third test' })
+    const reveal = await waitForEvent<any>(prosecutor, MT_EV.CASE_REVEAL, 2000)
     expect(reveal.correctVerdict).toBe('not_satisfied')
     expect(reveal.courtResults).toHaveLength(1)
     expect(reveal.courtResults[0].verdictScore).toBe(2)
+    expect(reveal.courtResults[0].baseTotal).toBe(3)
 
-    host.disconnect(); p1.disconnect(); p2.disconnect(); p3.disconnect()
-  }, 40_000)
+    host.disconnect()
+    prosecutor.disconnect()
+    defense.disconnect()
+    scribe.disconnect()
+    jury.disconnect()
+  }, 10_000)
 })

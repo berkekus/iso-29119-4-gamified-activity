@@ -14,9 +14,9 @@ beforeEach(() => {
 
 describe('createRoom', () => {
   it('generates a 6-char alphanumeric code and registers the host socket', () => {
-    const { room, playerId } = CM.createRoom('socket-host', 'Hoca', 'new_judge', DEFAULT_CONFIG)
+    const { room, playerId } = CM.createRoom('socket-host', 'Hoca', 'new_judge', DEFAULT_CONFIG, 'host-player')
     expect(room.code).toMatch(/^[A-Z0-9]{6}$/)
-    expect(playerId).toBe('socket-host')
+    expect(playerId).toBe('host-player')
     expect(CM.getRoomForSocket('socket-host')).toBe(room)
   })
 
@@ -56,11 +56,24 @@ describe('joinRoom', () => {
 
   it('attaches player as spectator initially (no slot claimed yet)', () => {
     const { room } = CM.createRoom('h', 'Hoca', 'new_judge', DEFAULT_CONFIG)
-    const result = CM.joinRoom('s1', room.code, 'Ali', 'new_defense')
+    const result = CM.joinRoom('s1', room.code, 'Ali', 'new_defense', 'ali-player')
     expect('error' in result).toBe(false)
     if ('error' in result) return
-    expect(room.spectators.has('s1')).toBe(true)
+    expect(room.spectators.has('ali-player')).toBe(true)
     expect(result.isSpectator).toBe(true)
+  })
+
+  it('reattaches a disconnected slotted player by stable playerId', () => {
+    const { room } = CM.createRoom('h', 'Hoca', 'new_judge', DEFAULT_CONFIG)
+    CM.joinRoom('s1', room.code, 'Ali', 'new_defense', 'ali-player')
+    CM.claimSlot('s1', 'court-1', 'prosecutor')
+    CM.disconnectSocket('s1')
+
+    const result = CM.joinRoom('s2', room.code, 'Ali', 'new_prosecutor', 'ali-player')
+    expect('error' in result).toBe(false)
+    expect(CM.getCourtRoleForSocket('s2')).toEqual({ courtId: 'court-1', role: 'prosecutor' })
+    expect(room.courts.get('court-1')!.slots.prosecutor?.connected).toBe(true)
+    expect(room.courts.get('court-1')!.slots.prosecutor?.avatar).toBe('new_prosecutor')
   })
 
   it('rejects duplicate nickname (case-insensitive)', () => {
@@ -69,17 +82,29 @@ describe('joinRoom', () => {
     const dup = CM.joinRoom('s2', room.code, 'ALI', 'new_prosecutor')
     expect('error' in dup).toBe(true)
   })
+
+  it('does not reattach as host when a second tab reuses host playerId with a different nickname', () => {
+    const { room } = CM.createRoom('h', 'Hoca', 'new_judge', DEFAULT_CONFIG, 'host-player')
+    const result = CM.joinRoom('s1', room.code, 'Ali', 'new_defense', 'host-player')
+
+    expect('error' in result).toBe(false)
+    if ('error' in result) return
+    expect(result.playerId).not.toBe('host-player')
+    expect(result.isSpectator).toBe(true)
+    expect(CM.claimSlot('s1', 'court-1', 'prosecutor').ok).toBe(true)
+    expect(room.courts.get('court-1')!.slots.prosecutor?.nickname).toBe('Ali')
+  })
 })
 
 describe('claimSlot', () => {
   it('moves spectator into the requested court slot', () => {
     const { room } = CM.createRoom('h', 'Hoca', 'new_judge', DEFAULT_CONFIG)
-    CM.joinRoom('s1', room.code, 'Ali', 'new_defense')
+    CM.joinRoom('s1', room.code, 'Ali', 'new_defense', 'ali-player')
 
     const result = CM.claimSlot('s1', 'court-1', 'prosecutor')
     expect(result.ok).toBe(true)
     expect(room.courts.get('court-1')!.slots.prosecutor?.nickname).toBe('Ali')
-    expect(room.spectators.has('s1')).toBe(false)
+    expect(room.spectators.has('ali-player')).toBe(false)
   })
 
   it('rejects if slot already occupied by another player', () => {
@@ -141,9 +166,9 @@ describe('disconnectSocket', () => {
 
   it('removes spectator on disconnect', () => {
     const { room } = CM.createRoom('h', 'Hoca', 'new_judge', DEFAULT_CONFIG)
-    CM.joinRoom('s1', room.code, 'Ali', 'new_defense')
+    CM.joinRoom('s1', room.code, 'Ali', 'new_defense', 'ali-player')
 
     CM.disconnectSocket('s1')
-    expect(room.spectators.has('s1')).toBe(false)
+    expect(room.spectators.get('ali-player')?.connected).toBe(false)
   })
 })

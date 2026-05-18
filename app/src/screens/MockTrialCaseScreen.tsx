@@ -7,6 +7,7 @@ import ProsecutorPanel from './mock-trial-panels/ProsecutorPanel'
 import DefensePanel from './mock-trial-panels/DefensePanel'
 import JuryPanel from './mock-trial-panels/JuryPanel'
 import ScribePanel from './mock-trial-panels/ScribePanel'
+import { ArgumentDocket } from './mock-trial-panels/MockTrialVisuals'
 import type { Screen } from '../stores/gameStore'
 
 interface Props {
@@ -19,13 +20,13 @@ export default function MockTrialCaseScreen({ onNavigate, onBack }: Props) {
   const { roomState, currentCase, myRole, reset } = state
 
   useEffect(() => {
-    if (roomState?.status === 'reveal')   onNavigate('mock-trial-reveal')
+    if (roomState?.status === 'reveal') onNavigate('mock-trial-reveal')
     if (roomState?.status === 'finished') onNavigate('mock-trial-final')
   }, [roomState?.status, onNavigate])
 
   const myCourt = getMyCourt(state)
   if (!roomState || !currentCase) {
-    return <div style={{ padding: 24, fontFamily: HAND_FONT }}>Loading case…</div>
+    return <div style={{ padding: 24, fontFamily: HAND_FONT }}>Loading case...</div>
   }
   if (!myCourt || !myRole) {
     return (
@@ -36,8 +37,10 @@ export default function MockTrialCaseScreen({ onNavigate, onBack }: Props) {
     )
   }
 
+  const hasJury = Boolean(myCourt.slots.jury1 || myCourt.slots.jury2)
+
   return (
-    <div style={{ minHeight: '100vh', padding: 16, display: 'flex', flexDirection: 'column', gap: 12, maxWidth: 720, margin: '0 auto', zIndex: 1, position: 'relative' }}>
+    <div style={{ minHeight: '100vh', padding: 16, display: 'flex', flexDirection: 'column', gap: 12, maxWidth: 760, margin: '0 auto', zIndex: 1, position: 'relative' }}>
       <CaseUpperPanel
         caseData={currentCase}
         phase={roomState.currentPhase ?? 'briefing'}
@@ -45,19 +48,20 @@ export default function MockTrialCaseScreen({ onNavigate, onBack }: Props) {
         courtName={myCourt.name}
         caseIdx={roomState.currentCaseIdx}
         caseCount={roomState.caseCount}
+        paused={roomState.phasePaused}
       />
 
       {roomState.currentPhase === 'briefing' && (
-        <div style={{ padding: 16, background: TC.cream, border: `2px solid ${TC.ink}`, fontFamily: HAND_FONT, color: TC.ink, textAlign: 'center' }}>
-          <h3 style={{ fontFamily: PIXEL_FONT, color: TC.ink, margin: '0 0 8px 0' }}>Read the case carefully.</h3>
-          <p>Argument phase begins when the timer runs out.</p>
+        <div className="mt-argument-card" style={{ padding: 16, background: TC.cream, border: `2px solid ${TC.ink}`, fontFamily: HAND_FONT, color: TC.ink, textAlign: 'center' }}>
+          <h3 style={{ fontFamily: PIXEL_FONT, color: TC.ink, margin: '0 0 8px 0' }}>Case file opened.</h3>
+          <p>{roomState.phasePaused ? 'Host paused the court clock.' : 'Argument phase begins when the timer runs out.'}</p>
         </div>
       )}
 
       {roomState.currentPhase === 'arguing' && (
         <>
-          {myRole === 'prosecutor' && <ProsecutorPanel caseData={currentCase} courtId={myCourt.id} />}
-          {myRole === 'defense'    && <DefensePanel    caseData={currentCase} courtId={myCourt.id} />}
+          {myRole === 'prosecutor' && <ProsecutorPanel caseData={currentCase} courtId={myCourt.id} player={myCourt.slots.prosecutor} />}
+          {myRole === 'defense' && <DefensePanel caseData={currentCase} courtId={myCourt.id} player={myCourt.slots.defense} />}
           {(myRole === 'jury1' || myRole === 'jury2' || myRole === 'scribe') && (
             <WaitingForArguments courtId={myCourt.id} caseData={currentCase} role={myRole} />
           )}
@@ -66,12 +70,10 @@ export default function MockTrialCaseScreen({ onNavigate, onBack }: Props) {
 
       {roomState.currentPhase === 'deliberating' && (
         <>
-          {(myRole === 'jury1' || myRole === 'jury2') && <JuryPanel caseData={currentCase} courtId={myCourt.id} />}
-          {myRole === 'scribe' && <ScribePanel caseData={currentCase} courtId={myCourt.id} hasJury={!!myCourt.slots.jury1 || !!myCourt.slots.jury2} />}
+          {(myRole === 'jury1' || myRole === 'jury2') && <JuryPanel caseData={currentCase} courtId={myCourt.id} player={myCourt.slots[myRole]} />}
+          {myRole === 'scribe' && <ScribePanel caseData={currentCase} courtId={myCourt.id} hasJury={hasJury} player={myCourt.slots.scribe} />}
           {(myRole === 'prosecutor' || myRole === 'defense') && (
-            <div style={{ padding: 16, background: TC.cream, border: `2px solid ${TC.ink}`, fontFamily: HAND_FONT, color: TC.ink, textAlign: 'center' }}>
-              Arguments are in. Jury is voting and Scribe is writing the verdict…
-            </div>
+            <WaitingForArguments courtId={myCourt.id} caseData={currentCase} role="deliberation" />
           )}
         </>
       )}
@@ -83,21 +85,23 @@ function WaitingForArguments({ courtId, caseData, role }: { courtId: string; cas
   const liveArgs = useMockTrialStore((s) => s.liveArguments[courtId])
   return (
     <div style={{ padding: 12, background: TC.cream, border: `2px solid ${TC.ink}`, fontFamily: HAND_FONT, color: TC.ink }}>
-      <h3 style={{ fontFamily: PIXEL_FONT, fontSize: 14, margin: '0 0 8px 0' }}>You are the {role.toUpperCase()} — wait for arguments.</h3>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-        <SideBox title="Prosecutor" color={TC.magenta} card={liveArgs?.prosecutor ? caseData.prosecutorArguments.find((a) => a.id === liveArgs.prosecutor!.argId)?.text : undefined} note={liveArgs?.prosecutor?.sentence} />
-        <SideBox title="Defense"    color={TC.green}   card={liveArgs?.defense    ? caseData.defenseArguments.find((a) => a.id === liveArgs.defense!.argId)?.text    : undefined} note={liveArgs?.defense?.sentence} />
+      <h3 style={{ fontFamily: PIXEL_FONT, fontSize: 14, margin: '0 0 8px 0' }}>
+        {role === 'deliberation' ? 'Argument docket is closed.' : `You are the ${role.toUpperCase()} - watch the argument docket.`}
+      </h3>
+      <div className="mt-evidence-grid">
+        <ArgumentDocket
+          title="Prosecutor"
+          color={TC.magenta}
+          card={liveArgs?.prosecutor ? caseData.prosecutorArguments.find((a) => a.id === liveArgs.prosecutor!.argId)?.text : undefined}
+          note={liveArgs?.prosecutor?.sentence}
+        />
+        <ArgumentDocket
+          title="Defense"
+          color={TC.green}
+          card={liveArgs?.defense ? caseData.defenseArguments.find((a) => a.id === liveArgs.defense!.argId)?.text : undefined}
+          note={liveArgs?.defense?.sentence}
+        />
       </div>
-    </div>
-  )
-}
-
-function SideBox({ title, color, card, note }: { title: string; color: string; card?: string; note?: string }) {
-  return (
-    <div style={{ border: `2px solid ${color}`, padding: 8, background: '#fff', minHeight: 80 }}>
-      <strong style={{ color }}>{title}</strong>
-      {card ? <div style={{ fontSize: 12, marginTop: 4 }}>{card}</div> : <div style={{ fontStyle: 'italic', fontSize: 12, color: '#999', marginTop: 4 }}>(waiting…)</div>}
-      {note ? <div style={{ fontSize: 12, marginTop: 4, color: '#555' }}>"{note}"</div> : null}
     </div>
   )
 }

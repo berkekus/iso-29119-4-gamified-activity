@@ -59,6 +59,16 @@
       "long_description": "MC/DC requires that for each condition in a decision, there exist test cases that show the condition independently affects the decision's outcome. \"Independently\" means exactly one condition changes between two test cases while all others remain fixed, and the decision outcome changes. MC/DC achieves N+1 test cases on average — far cheaper than BCC's 2^N — while ruling out masking.",
       "pitfall": "Two tests that differ in more than one condition cannot prove independent effect — they only prove the decision changed somehow. The pair must be a single-flip pair.",
       "example_note": "For if (A && (B || C)), an independence pair for B might be {A=T,B=T,C=F → decision=T} vs {A=T,B=F,C=F → decision=F}: only B flips, the decision flips, A and C are held fixed."
+    },
+    {
+      "id": "law-dataflow",
+      "technique": "DATA_FLOW",
+      "title": "Data Flow Coverage",
+      "iso_clause": "§5.2",
+      "short_definition": "Exercise relevant definition-use paths so values are tested where they are produced and consumed.",
+      "long_description": "Data flow coverage focuses on how values move through code. A test suite should cover meaningful paths from variable definition to later use, especially where the value influences a decision, output, or state update.",
+      "pitfall": "A line or branch can execute while the important value path remains untested. Data flow faults often hide in stale, overwritten, or never-used values.",
+      "example_note": "If a variable is assigned in one branch and later used in a calculation, the test set should include the path where that definition reaches the use without being overwritten."
     }
   ]
 }

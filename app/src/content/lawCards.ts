@@ -4,7 +4,7 @@ import raw from './lawCards.json'
 // ── Zod schema ───────────────────────────────────────────────────────────────
 const LawCardSchema = z.object({
   id: z.string(),
-  technique: z.enum(['STATEMENT', 'BRANCH', 'DECISION', 'BC', 'BCC', 'MCDC']),
+  technique: z.enum(['STATEMENT', 'BRANCH', 'DECISION', 'BC', 'BCC', 'MCDC', 'DATA_FLOW']),
   title: z.string(),
   iso_clause: z.string(),
   short_definition: z.string(),
