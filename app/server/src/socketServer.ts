@@ -6,6 +6,7 @@ import cors from 'cors'
 import { ROUND_QUESTIONS, GRAND_JURY_QUESTION } from './speedTrialQuestions.js'
 import { computeScore, buildLeaderboard } from './scoring.js'
 import * as RM from './roomManager.js'
+import { registerMockTrial } from './mockTrial/mockTrialServer.js'
 import type {
   C2S_CreateRoom,
   C2S_JoinRoom,
@@ -28,6 +29,9 @@ const io = new Server(httpServer, {
   pingTimeout: 30_000,
   pingInterval: 10_000,
 })
+
+// ─── Mock Trial mode (separate namespace) ─────────────────────────────────────
+registerMockTrial(io)
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
