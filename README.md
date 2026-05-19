@@ -229,23 +229,6 @@ Core interface colors:
 
 ---
 
-## 🗺️ Current Status
-
-- [x] Single-player campaign shell
-- [x] 15 campaign cases
-- [x] Statement, branch, decision, branch-condition, BCC, MC/DC, and mixed-coverage content
-- [x] Law Library
-- [x] Achievement system
-- [x] Persisted campaign progress
-- [x] Misconception-aware debriefing
-- [x] Speed Trial multiplayer mode
-- [x] Socket.IO classroom server
-- [ ] Expanded data-flow coverage activities
-- [ ] Instructor dashboard
-- [ ] Replay and annotation mode
-
----
-
 ## 🤝 Contributing
 
 This repository is primarily an academic project, but the structure is intentionally content-friendly. New scenarios should keep domain logic in JSON where possible and reserve code changes for new interaction types, coverage rules, or shared engine behavior.
