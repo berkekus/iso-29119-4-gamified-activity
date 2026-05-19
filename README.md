@@ -261,6 +261,16 @@ npm run build
 
 ---
 
+## 👥 Project Team
+
+Test Courthouse was designed and developed with care by:
+
+- Alin Kısakürek
+- Ahmet Karakoyun
+- İzzettin Berke Kuş
+
+---
+
 ## 📄 License
 
 This project is licensed under the [MIT License](LICENSE).
