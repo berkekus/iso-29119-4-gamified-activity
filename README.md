@@ -1,126 +1,193 @@
-# Test Courthouse
+# Test Courthouse ⚖️
 
-> A browser-based educational game for ISO/IEC/IEEE 29119-4 test design techniques.
-> Built for SENG 436 — Learner-as-Designer Project.
+> A browser-based educational game that teaches ISO/IEC/IEEE 29119-4 test design techniques through courtroom-inspired play.
 
----
+Test Courthouse turns software testing concepts into interactive trial scenarios. Players investigate a suspected defect, build evidence through test cases, submit their reasoning, and receive a verdict that exposes whether their test design actually detects the seeded fault.
 
-## Overview
-
-**Test Courthouse** reframes four of the most demanding test design techniques in ISO/IEC/IEEE 29119-4 as criminal trials. A suspected software defect is the *defendant*, the test engineer is the *prosecutor*, and test cases are *evidence*. Coverage is the standard of proof — and a misconception in technique application leads directly to an acquittal: the bug walks free.
-
-The game makes self-concealing misconceptions visible through consequence, not instruction. A player who confuses BCC with MCDC, or mistakes `c-use` for `p-use`, builds a test suite that *looks* correct until the verdict screen reveals the seeded fault was never caught.
-
-**Techniques covered:**
-
-| Act | ISO/IEC/IEEE 29119-4 Clause | Focus |
-|---|---|---|
-| Statement & Branch Coverage | §5.2.1 – §5.2.2 | Structural foundations |
-| Branch Condition Combination (BCC) | §5.3.5 | Full combinatorial truth tables |
-| Modified Condition/Decision Coverage (MCDC) | §5.3.6 | Independence pairing |
-| *(Data Flow — planned)* | §5.3.7 | Def-use chains |
+The project was built as a learner-as-designer educational activity for SENG 436, with an emphasis on misconception-driven feedback, replayable practice, and lightweight classroom use.
 
 ---
 
-## Screenshots
+## ✨ Highlights
 
-| Main Menu | Campaign Map | Trial |
-|---|---|---|
-| *Retro sketchbook aesthetic with pixel chrome* | *Act progression with unlockable cases* | *Verdict screen with misconception probe* |
+- **Gamified ISO 29119-4 learning** through a courtroom metaphor.
+- **15 single-player campaign cases** covering structural and combinatorial test design techniques.
+- **Misconception-aware feedback** that explains why an answer failed, not only that it failed.
+- **Law Library** with unlockable ISO clause reference cards.
+- **Achievements and progress persistence** via local storage.
+- **Speed Trial multiplayer mode** powered by Socket.IO for live classroom competition.
+- **Framework-independent TypeScript engine** for coverage, verdict, and misconception logic.
 
 ---
 
-## Getting Started
+## 🎯 Learning Scope
+
+| Area | ISO/IEC/IEEE 29119-4 Focus | In-Game Activity |
+| --- | --- | --- |
+| Statement Coverage | Section 5.2.1 | Identify executable statements and cover required paths. |
+| Branch Coverage | Section 5.2.2 | Exercise true and false outcomes, including hidden branches and loop traps. |
+| Decision Coverage | Section 5.3 | Distinguish decisions from individual conditions. |
+| Branch Condition Coverage | Section 5.3.4 | Track individual condition outcomes without confusing it with full combinations. |
+| Branch Condition Combination | Section 5.3.5 | Build full truth-table coverage and reason about combinatorial growth. |
+| Modified Condition/Decision Coverage | Section 5.3.6 | Construct independence pairs where exactly one condition changes and the decision flips. |
+| Mixed Coverage Review | Multiple clauses | Diagnose which coverage criterion is appropriate for a scenario. |
+
+---
+
+## 🕹️ Gameplay
+
+Each case follows a compact trial flow:
+
+1. **Briefing** - read the scenario, failure mode, and relevant test-design objective.
+2. **Investigation** - inspect the system behavior and identify the testing model.
+3. **Evidence** - choose rows, values, fragments, or pairs depending on the technique.
+4. **Trial** - submit the proposed test evidence.
+5. **Debrief** - review the verdict, detected faults, missed coverage, and triggered misconception.
+
+Passing cases unlocks progress, law cards, and achievements. Failed attempts are designed to be informative and retry-friendly.
+
+---
+
+## 🚀 Getting Started
 
 ### Prerequisites
 
-- Node.js ≥ 18
-- pnpm (recommended) or npm
+- Node.js 18 or newer
+- npm, or pnpm if you prefer it
 
-### Installation
+### Install the Frontend
 
 ```bash
 git clone https://github.com/ahmetkrkyn0/iso-29119-4-gamified-activity.git
 cd iso-29119-4-gamified-activity/app
-pnpm install
+npm install
 ```
 
-### Development
+### Run the App
 
 ```bash
-pnpm dev
+npm run dev
 ```
 
 Open [http://localhost:5173](http://localhost:5173) in your browser.
 
-### Build
+### Build for Production
 
 ```bash
-pnpm build
+npm run build
 ```
 
-The output is a fully static bundle in `app/dist/` — deployable to Vercel, Netlify, or GitHub Pages with no backend.
+The production bundle is generated in `app/dist/` and can be deployed as a static site.
 
-### Other Commands
+### Quality Checks
 
 ```bash
-pnpm lint      # ESLint
-pnpm test      # Vitest
-pnpm format    # Prettier
+npm run lint
+npm run test
+npm run format
 ```
 
 ---
 
-## How It Works
+## ⚡ Speed Trial Multiplayer
 
-A single case follows five phases:
+Speed Trial is the live classroom mode. A host creates a room, players join with a room code, and timed questions award points based on correctness and response speed.
 
-1. **Briefing** — Open a case file: a scenario describing the system under test, the charges (failure modes), and the required coverage criterion.
-2. **Investigation (TD1)** — Build the test model. Identify decisions, conditions, and program statements relevant to the technique.
-3. **Evidence Derivation (TD2)** — Select and construct test cases from the model (truth table rows, independence pairs, coverage items).
-4. **Trial (TD3)** — Submit your test suite. A deterministic simulator runs it against seeded faults and renders a verdict.
-5. **Debrief** — See which faults were detected, which coverage items were missed, and which specific misconception (if any) allowed the gap — linked to the exact ISO clause.
+### Start Manually
+
+Terminal 1:
+
+```bash
+cd app/server
+npm install
+npm run dev
+```
+
+Terminal 2:
+
+```bash
+cd app
+npm run dev
+```
+
+The Socket.IO server runs on [http://localhost:3001](http://localhost:3001) by default, while the frontend runs on [http://localhost:5173](http://localhost:5173).
+
+### Configure the Socket URL
+
+Create `app/.env.local` when the frontend should connect to a deployed or non-default server:
+
+```env
+VITE_SOCKET_URL=http://localhost:3001
+```
+
+### Windows Launcher
+
+From the repository root, you can also start both services with:
+
+```powershell
+.\start-speed-trial.ps1
+```
 
 ---
 
-## Architecture
+## 🧱 Architecture
 
+```text
+app/
+  src/
+    App.tsx                  # Screen-level navigation shell
+    content/
+      cases/                 # JSON case files, one file per campaign case
+      achievements.*         # Achievement definitions and unlock logic
+      lawCards.*             # ISO law-card content and case mappings
+      caseOrder.ts           # Canonical campaign order
+    engine/
+      coverage/              # Coverage and MC/DC helpers
+      faults/                # Deterministic seeded-fault simulation
+      misconceptions/        # Misconception detection
+      verdict/               # Verdict computation
+      caseLoader.ts          # Zod-validated case parsing
+      types.ts               # Shared domain types
+    screens/                 # React screens for campaign, case play, library, achievements, Speed Trial
+    stores/                  # Zustand stores and persisted campaign progress
+    ui/                      # Reusable visual components
+    speed-trial/             # Socket client and multiplayer types
+  server/
+    src/                     # Express + Socket.IO Speed Trial server
+  tests/                     # Vitest coverage for engine, stores, content, and screens
 ```
-app/src/
-├── engine/             # Framework-free TypeScript — the game's logic core
-│   ├── coverage/       # Coverage validators per technique
-│   ├── faults/         # Deterministic fault simulator
-│   ├── misconceptions/ # Misconception detector functions
-│   ├── verdict/        # Verdict computation
-│   ├── caseLoader.ts   # Zod-validated JSON case file loader
-│   └── types.ts        # Shared type definitions
-├── content/
-│   └── cases/          # JSON case files (one file = one level)
-├── screens/            # React screen components
-├── ui/                 # Reusable design system components
-└── stores/             # Zustand game state
-```
 
-The `engine/` directory has no React dependency. It is unit-tested independently and represents the game's interpretation of ISO/IEC/IEEE 29119-4.
+The core game engine is kept separate from React so that coverage rules, verdict logic, and misconception detection can be tested independently.
 
-### Case Files
+---
 
-Every level is a JSON document. Adding a new case requires no code changes:
+## 🧩 Case Content
+
+Campaign cases are JSON-driven. Most new learning scenarios can be added by creating a case file, registering it in the case registry, and placing it in the campaign order.
+
+Example shape:
 
 ```jsonc
 {
-  "id": "mcdc-altitude-disengage-01",
+  "id": "mcdc-vault-boss-01",
   "act": "MCDC",
-  "difficulty": 2,
-  "iso_clauses": ["§5.3.6", "Annex C.2.3.6"],
-  "scenario": { "title": "...", "code": "..." },
-  "td1_expected": { ... },
-  "td2_expected": { ... },
-  "seeded_faults": [ ... ],
+  "difficulty": 3,
+  "iso_clauses": ["Section 5.3.6"],
+  "scenario": {
+    "title": "Vault Access Decision",
+    "decision_expression": "M && (K || T)",
+    "conditions": ["M", "K", "T"]
+  },
+  "seeded_faults": [
+    {
+      "id": "FAULT-001",
+      "description": "A decision condition is implemented incorrectly."
+    }
+  ],
   "misconceptions": [
     {
       "id": "MCDC-INDEP-AS-ISOLATION",
-      "explanation_md": "You tested each condition in isolation, but §5.3.6.2 requires *paired* test cases..."
+      "explanation_md": "MC/DC requires paired tests that isolate one condition while the decision outcome changes."
     }
   ]
 }
@@ -128,87 +195,72 @@ Every level is a JSON document. Adding a new case requires no code changes:
 
 ---
 
-## Tech Stack
+## 🧪 Testing Strategy
 
-| Layer | Choice |
-|---|---|
-| Language | TypeScript (strict) |
-| Framework | React 19 |
-| Build tool | Vite |
-| State management | Zustand + persist middleware |
-| Styling | Tailwind CSS |
-| Schema validation | Zod |
-| Sketchy graphics | Rough.js |
-| Tests | Vitest |
-| Lint / format | ESLint + Prettier |
-| Persistence | localStorage (Zustand persist) |
-| Deployment | Static (Vercel / Netlify / GitHub Pages) |
+The test suite focuses on the educational logic rather than only UI rendering:
 
----
+- **Engine tests** validate truth-table generation, MC/DC coverage, seeded-fault simulation, verdicts, and misconception detection.
+- **Store tests** cover navigation state, answer submission, progress persistence, law-card unlocks, and achievement unlocks.
+- **Content tests** ensure campaign cases, case ordering, law cards, and achievements remain consistent.
+- **Screen tests** verify user-visible behavior for key views such as the Law Library, Achievements, and case briefings.
 
-## Content
+Run all tests from `app/`:
 
-Currently 12 playable cases across three acts:
-
-- **Statement & Branch** — Tutorial walk-through, hidden branch trap, loop edge case
-- **BCC** — Three-AND truth table, cost-intuition trap
-- **MCDC** — Guided tutorial, altitude disengage scenario, isolation trap, vault boss challenge, and more
-
-The Law Library provides in-game reference cards for key ISO clauses. Achievements track demonstrated mastery per technique.
+```bash
+npm run test
+```
 
 ---
 
-## Visual Design
+## 🎨 Visual Direction
 
-Test Courthouse uses a **Retro Sketchbook** aesthetic: hand-drawn, monochrome line-art panels rendered with Rough.js, combined with chunky pixel-art interactive chrome (buttons, score chips, coverage meters). The two registers communicate *serious learning content* and *low-stakes, retry-friendly play* simultaneously.
+Test Courthouse uses a retro sketchbook courtroom style: paper-like surfaces, hand-drawn visual framing, pixel-inspired buttons, and readable high-contrast UI elements. The tone is intentionally playful without reducing the seriousness of the testing concepts.
 
-**Colour palette:**
+Core interface colors:
 
 | Role | Hex |
-|---|---|
-| Cream paper | `#F5F0E1` |
-| Notebook ink | `#1A1A1A` |
-| Pixel green (pass / detected) | `#34A853` |
-| Pixel magenta (misconception / retry) | `#C13584` |
-| Pixel orange (info / instructor) | `#F26B1F` |
-| Pixel blue (navigation / CTA) | `#2C6FBB` |
+| --- | --- |
+| Paper | `#F5F0E1` |
+| Ink | `#1A1A1A` |
+| Success | `#34A853` |
+| Misconception / Retry | `#C13584` |
+| Information | `#F26B1F` |
+| Navigation / CTA | `#2C6FBB` |
 
 ---
 
-## Learning Objectives
+## 🗺️ Current Status
 
-After playing, participants will be able to:
-
-1. Differentiate the four combinatorial sub-techniques (All Combinations, Pair-wise, Each Choice, Base Choice) by predicting test case counts.
-2. Distinguish BCC from MCDC by deriving correct test counts (`2^N` vs `N+1`) and explaining when each is required.
-3. Apply the MCDC independence criterion by constructing paired test cases where one condition changes and the decision outcome flips.
-4. Build a def-use model, correctly classifying reads as `c-use` or `p-use`, and select the appropriate data flow coverage form.
-5. Diagnose a failing test suite by identifying which step of the standard process (TD1 → TD2 → TD3) was performed incorrectly.
-
----
-
-## Roadmap
-
-- [x] Statement & Branch act (2 cases)
-- [x] BCC act (2 cases)
-- [x] MCDC act (6+ cases)
-- [x] Achievement system with persistence
-- [x] Law Library (ISO clause reference cards)
-- [x] Debrief screen with coverage statistics
-- [ ] Data Flow act (def-use graph editor)
-- [ ] Local multiplayer — Mock Trial mode
-- [ ] Adaptive difficulty based on misconception history
-- [ ] Replay with annotation
-- [ ] Class Mode (WebSocket / P2P)
+- [x] Single-player campaign shell
+- [x] 15 campaign cases
+- [x] Statement, branch, decision, branch-condition, BCC, MC/DC, and mixed-coverage content
+- [x] Law Library
+- [x] Achievement system
+- [x] Persisted campaign progress
+- [x] Misconception-aware debriefing
+- [x] Speed Trial multiplayer mode
+- [x] Socket.IO classroom server
+- [ ] Expanded data-flow coverage activities
+- [ ] Instructor dashboard
+- [ ] Replay and annotation mode
 
 ---
 
-## Contributing
+## 🤝 Contributing
 
-This project is a university coursework submission. The case file format is designed so that content contributors do not need to touch application code — see the [Case Files](#case-files) section above.
+This repository is primarily an academic project, but the structure is intentionally content-friendly. New scenarios should keep domain logic in JSON where possible and reserve code changes for new interaction types, coverage rules, or shared engine behavior.
+
+Before submitting changes, run:
+
+```bash
+cd app
+npm run lint
+npm run test
+npm run build
+```
 
 ---
 
-## License
+## 📄 License
 
-[MIT](LICENSE)
+This project is licensed under the [MIT License](LICENSE).
