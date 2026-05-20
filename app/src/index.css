@@ -148,3 +148,109 @@ button {
 @media (max-width: 500px) {
   .menu-grid { grid-template-columns: 1fr; }
 }
+
+/* Mock Trial stage, avatar, and feedback animations */
+@keyframes mt-pop {
+  0% { opacity: 0; transform: scale(0.88) translateY(8px); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+@keyframes mt-idle {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+
+@keyframes mt-thinking {
+  0%, 100% { transform: rotate(-1deg); }
+  50% { transform: rotate(1deg); }
+}
+
+@keyframes mt-card-slide {
+  0% { opacity: 0; transform: translateY(10px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes mt-stamp {
+  0% { opacity: 0; transform: scale(1.35) rotate(-8deg); }
+  55% { opacity: 1; transform: scale(0.92) rotate(-2deg); }
+  100% { opacity: 1; transform: scale(1) rotate(-2deg); }
+}
+
+@keyframes mt-score-pop {
+  0% { opacity: 0; transform: translateY(7px) scale(0.96); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.mt-avatar {
+  animation: mt-pop 180ms ease-out both, mt-idle 2.6s ease-in-out 220ms infinite;
+}
+
+.mt-avatar-thinking {
+  animation: mt-pop 160ms ease-out both, mt-thinking 1.4s ease-in-out 220ms infinite;
+}
+
+.mt-avatar-submitted,
+.mt-avatar-celebrate {
+  animation: mt-pop 160ms ease-out both, mt-idle 1.2s ease-in-out 180ms 3;
+}
+
+.mt-avatar-disconnected {
+  opacity: 0.48;
+  filter: grayscale(1);
+  animation: none;
+}
+
+.mt-argument-card {
+  animation: mt-card-slide 180ms ease-out both;
+}
+
+.mt-ready-stamp,
+.mt-verdict-stamp {
+  animation: mt-stamp 260ms ease-out both;
+}
+
+.mt-score-chip {
+  animation: mt-score-pop 220ms ease-out both;
+}
+
+.mt-court-slot-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(112px, 1fr));
+  gap: 8px;
+}
+
+.mt-evidence-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.mt-podium-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  align-items: end;
+}
+
+@media (max-width: 720px) {
+  .mt-court-slot-grid {
+    grid-template-columns: repeat(2, minmax(128px, 1fr));
+  }
+  .mt-evidence-grid,
+  .mt-podium-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mt-avatar,
+  .mt-avatar-thinking,
+  .mt-avatar-submitted,
+  .mt-avatar-celebrate,
+  .mt-argument-card,
+  .mt-ready-stamp,
+  .mt-verdict-stamp,
+  .mt-score-chip {
+    animation: none !important;
+  }
+}

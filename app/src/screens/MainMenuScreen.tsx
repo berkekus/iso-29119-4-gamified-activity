@@ -134,6 +134,14 @@ const menuItems = [
     icon: (c: string) => <PeopleIcon color={c} />,
     disabled: false,
   },
+  {
+    id: 'mock-trial-lobby' as Screen,
+    label: 'MOCK TRIAL',
+    desc: 'ROLE-BASED GROUP PLAY. COURTS OF 4-5.',
+    color: '#8b6914',
+    icon: (c: string) => <ScalesIcon color={c} />,
+    disabled: false,
+  },
 ]
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -237,7 +245,7 @@ export default function MainMenuScreen({ onNavigate }: Props) {
       {/* ── 1×2 Menu row ─────────────────────────────────────── */}
       <div style={{
         display: 'grid',
-        gridTemplateColumns: 'repeat(2, 1fr)',
+        gridTemplateColumns: 'repeat(3, 1fr)',
         gap: 24,
         width: 'min(640px, 94vw)',
         marginTop: -30,

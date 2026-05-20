@@ -12,6 +12,12 @@ import SpeedTrialLobbyScreen  from './screens/SpeedTrialLobbyScreen'
 import SpeedTrialHostScreen   from './screens/SpeedTrialHostScreen'
 import SpeedTrialPlayerScreen from './screens/SpeedTrialPlayerScreen'
 import SpeedTrialWinnerScreen from './screens/SpeedTrialWinnerScreen'
+import MockTrialLobbyScreen from './screens/MockTrialLobbyScreen'
+import MockTrialCourtSelectionScreen from './screens/MockTrialCourtSelectionScreen'
+import MockTrialHostScreen from './screens/MockTrialHostScreen'
+import MockTrialCaseScreen from './screens/MockTrialCaseScreen'
+import MockTrialRevealScreen from './screens/MockTrialRevealScreen'
+import MockTrialFinalScreen from './screens/MockTrialFinalScreen'
 
 export default function App() {
   const { screen, navigate, goBack, completedCases, loadCaseById } = useGameStore()
@@ -48,6 +54,18 @@ export default function App() {
         return <SpeedTrialPlayerScreen onNavigate={navigate} onBack={goBack} />
       case 'speed-trial-winner':
         return <SpeedTrialWinnerScreen onNavigate={navigate} onBack={goBack} />
+      case 'mock-trial-lobby':
+        return <MockTrialLobbyScreen onNavigate={navigate} onBack={goBack} />
+      case 'mock-trial-court-select':
+        return <MockTrialCourtSelectionScreen onNavigate={navigate} onBack={goBack} />
+      case 'mock-trial-host':
+        return <MockTrialHostScreen onNavigate={navigate} onBack={goBack} />
+      case 'mock-trial-case':
+        return <MockTrialCaseScreen onNavigate={navigate} onBack={goBack} />
+      case 'mock-trial-reveal':
+        return <MockTrialRevealScreen onNavigate={navigate} onBack={goBack} />
+      case 'mock-trial-final':
+        return <MockTrialFinalScreen onNavigate={navigate} onBack={goBack} />
       default:
         return <MainMenuScreen onNavigate={navigate} />
     }
